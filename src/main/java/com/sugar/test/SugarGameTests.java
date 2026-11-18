@@ -62,6 +62,12 @@ public class SugarGameTests {
         TempleService.start(level.getServer(), data);
         helper.assertTrue(TempleService.setDoors(level.getServer(), data, 1, true) == 9, "La puerta del canal 1 no se abre");
 
+        // Sin jugadores cerca el servidor descargaría la zona: la mantenemos cargada durante la prueba
+        int acx = data.altar.getX() >> 4, acz = data.altar.getZ() >> 4;
+        for (int cx = acx - 2; cx <= acx + 2; cx++)
+            for (int cz = acz - 2; cz <= acz + 2; cz++)
+                level.setChunkForced(cx, cz, true);
+
         BlockPos spawn = data.altar.above();
         MagmaSerpent boss = ModEntities.MAGMA_SERPENT.get().create(level);
         helper.assertTrue(boss != null, "No se pudo crear la Sierpe");
@@ -73,11 +79,15 @@ public class SugarGameTests {
         data.bossId = boss.getUUID();
 
         helper.runAfterDelay(400, () -> {
-            helper.assertTrue(boss.isAlive(), "La Sierpe ha desaparecido durante el evento");
-            helper.assertTrue(boss.phase() != MagmaSerpent.BURROWED || boss.tickCount > 0, "La Sierpe no se mueve");
+            helper.assertTrue(boss.isAlive(), "La Sierpe ha desaparecido durante el evento (motivo: "
+                    + boss.getRemovalReason() + ", fase " + boss.phase() + ", pos " + boss.blockPosition().toShortString() + ")");
+            helper.assertTrue(boss.tickCount > 300, "La Sierpe no se actualiza");
             TempleService.reset(level.getServer(), data);
             helper.assertTrue(!boss.isAlive(), "El reset no ha quitado a la Sierpe");
             saved.remove(TempleType.VOLCAN);
+            for (int cx = acx - 2; cx <= acx + 2; cx++)
+                for (int cz = acz - 2; cz <= acz + 2; cz++)
+                    level.setChunkForced(cx, cz, false);
             helper.succeed();
         });
     }
