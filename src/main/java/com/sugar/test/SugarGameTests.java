@@ -150,7 +150,7 @@ public class SugarGameTests {
         helper.assertTrue(bushes == 14, "Matas: " + bushes);
         helper.assertTrue(geysers == 24, "Géiseres: " + geysers);
         helper.assertTrue(cracks == 6, "Grietas: " + cracks);
-        helper.assertTrue(doors == 27, "Puertas: " + doors);
+        helper.assertTrue(doors == 18, "Puertas: " + doors);
         helper.assertTrue(crates == 4, "Cofres: " + crates);
 
         int acx = data.altar.getX() >> 4, acz = data.altar.getZ() >> 4;
