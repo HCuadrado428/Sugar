@@ -244,18 +244,20 @@ public class SugarGameTests {
 
         // Simón dice: el grupo repite cada ritmo en cuanto termina de sonar
         Runnable play = () -> {
-            helper.assertTrue(EchoPuzzle.isWaitingInput(gong), "El puzle no espera a los jugadores");
+            helper.assertTrue(EchoPuzzle.isWaitingInput(gong), "El puzle no espera a los jugadores (" + EchoPuzzle.describe(gong) + ")");
+            String before = EchoPuzzle.describe(gong);
             for (int note : EchoPuzzle.currentSequence(gong)) {
                 BlockPos drum = TempleService.positionsOf(level, data, EchoDrumBlock.class).stream()
                         .filter(p -> level.getBlockState(p).getValue(EchoDrumBlock.NOTE) == note).findFirst().orElseThrow();
                 EchoPuzzle.drumHit(level, drum, note, null);
             }
+            SugarMod.LOGGER.info("Puzle del eco: {} -> {}", before, EchoPuzzle.describe(gong));
         };
         helper.runAfterDelay(90, play);
         helper.runAfterDelay(200, play);
         helper.runAfterDelay(330, play);
         helper.runAfterDelay(340, () -> {
-            helper.assertTrue(EchoPuzzle.isSolved(gong), "El puzle de los tambores no se ha resuelto");
+            helper.assertTrue(EchoPuzzle.isSolved(gong), "El puzle de los tambores no se ha resuelto (" + EchoPuzzle.describe(gong) + ")");
             BlockPos door = TempleService.positionsOf(level, data, EventDoorBlock.class).stream()
                     .filter(p -> level.getBlockState(p).getValue(EventDoorBlock.CHANNEL) == EchoPuzzle.CHANNEL).findFirst().orElseThrow();
             helper.assertTrue(level.getBlockState(door).getValue(EventDoorBlock.OPEN), "La puerta del canal 1 no se ha abierto");

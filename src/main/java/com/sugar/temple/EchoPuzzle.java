@@ -157,6 +157,11 @@ public final class EchoPuzzle {
         return List.copyOf(s.sequence.subList(0, ROUNDS[s.round]));
     }
 
+    public static String describe(BlockPos gong) {
+        State s = STATES.get(gong);
+        return s == null ? "sin estado" : "ronda " + s.round + ", paso " + s.step + ", modo " + s.mode + ", secuencia " + s.sequence;
+    }
+
     public static boolean isSolved(BlockPos gong) {
         State s = STATES.get(gong);
         return s != null && s.mode == Mode.SOLVED;
