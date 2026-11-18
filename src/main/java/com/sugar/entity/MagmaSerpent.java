@@ -62,6 +62,9 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final RawAnimation ANIM_HEAD = RawAnimation.begin().thenLoop("animation.magma_serpent.head_idle");
     private static final RawAnimation ANIM_STUNNED = RawAnimation.begin().thenLoop("animation.magma_serpent.stunned");
     private static final RawAnimation ANIM_FLY = RawAnimation.begin().thenLoop("animation.magma_serpent.fly");
+    private static final RawAnimation ANIM_EMERGE = RawAnimation.begin().thenPlay("animation.magma_serpent.emerge");
+    private static final RawAnimation ANIM_SPIT = RawAnimation.begin().thenPlay("animation.magma_serpent.spit");
+    private static final RawAnimation ANIM_DEATH = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.death");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -131,6 +134,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             }
             case HEAD -> {
                 faceNearestPlayer();
+                if (timer == 13 || timer == 43) triggerAnim("main", "spit");   // coge aire y lanza la cabeza
                 if (timer == 25 || timer == 55) spit(level);
                 if (timer >= 90) setPhase(SUBMERGING);
             }
@@ -179,6 +183,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         vent = pickVent(level, null);
         setPos(vent.getX() + 0.5, vent.getY() - 5.0, vent.getZ() + 0.5);
         setPhase(EMERGING);
+        triggerAnim("main", "emerge");
         level.playSound(null, vent, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 3.0F, 0.7F);
         level.sendParticles(ParticleTypes.LAVA, vent.getX() + 0.5, vent.getY() + 1.2, vent.getZ() + 0.5, 20, 0.6, 0.3, 0.6, 0.0);
 
@@ -432,13 +437,13 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 6, state -> {
-            if (isDeadOrDying()) return state.setAndContinue(ANIM_STUNNED);
+            if (isDeadOrDying()) return state.setAndContinue(ANIM_DEATH);
             return switch (phase()) {
                 case STUNNED -> state.setAndContinue(ANIM_STUNNED);
                 case TAKEOFF, FLYING, DIVING -> state.setAndContinue(ANIM_FLY);
                 default -> state.setAndContinue(ANIM_HEAD);
             };
-        }));
+        }).triggerableAnim("emerge", ANIM_EMERGE).triggerableAnim("spit", ANIM_SPIT));
     }
 
     @Override

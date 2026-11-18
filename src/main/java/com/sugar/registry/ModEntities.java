@@ -16,12 +16,12 @@ public final class ModEntities {
 
     public static final RegistryObject<EntityType<MagmaSerpent>> MAGMA_SERPENT = ENTITIES.register("magma_serpent",
             () -> EntityType.Builder.of(MagmaSerpent::new, MobCategory.MONSTER)
-                    .sized(2.5F, 5.0F).fireImmune().clientTrackingRange(12).updateInterval(1)
+                    .sized(2.5F, 5.5F).fireImmune().clientTrackingRange(12).updateInterval(1)
                     .build(SugarMod.id("magma_serpent").toString()));
 
     public static final RegistryObject<EntityType<MagmaDecoy>> MAGMA_DECOY = ENTITIES.register("magma_decoy",
             () -> EntityType.Builder.of(MagmaDecoy::new, MobCategory.MISC)
-                    .sized(2.5F, 5.0F).fireImmune().clientTrackingRange(10).updateInterval(1)
+                    .sized(2.5F, 5.5F).fireImmune().clientTrackingRange(10).updateInterval(1)
                     .build(SugarMod.id("magma_decoy").toString()));
 
     public static final RegistryObject<EntityType<MagmaBolt>> MAGMA_BOLT = ENTITIES.register("magma_bolt",

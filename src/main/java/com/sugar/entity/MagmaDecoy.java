@@ -26,7 +26,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * Si un jugador la golpea, estalla en llamas y hace daño alrededor.
  */
 public class MagmaDecoy extends Mob implements GeoEntity {
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.magma_serpent.head_idle");
+    private static final RawAnimation EMERGE = RawAnimation.begin().thenPlay("animation.magma_serpent.emerge")
+            .thenLoop("animation.magma_serpent.head_idle");
     private static final int LIFETIME = 110;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -122,7 +123,7 @@ public class MagmaDecoy extends Mob implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "main", 5, state -> state.setAndContinue(IDLE)));
+        controllers.add(new AnimationController<>(this, "main", 5, state -> state.setAndContinue(EMERGE)));
     }
 
     @Override
