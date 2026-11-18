@@ -253,9 +253,9 @@ public class SugarGameTests {
             }
             SugarMod.LOGGER.info("Puzle del eco: {} -> {}", before, EchoPuzzle.describe(gong));
         };
-        helper.runAfterDelay(90, play);
-        helper.runAfterDelay(200, play);
-        helper.runAfterDelay(330, play);
+        helper.runAfterDelay(90, () -> play.run());
+        helper.runAfterDelay(200, () -> play.run());
+        helper.runAfterDelay(330, () -> play.run());
         helper.runAfterDelay(340, () -> {
             helper.assertTrue(EchoPuzzle.isSolved(gong), "El puzle de los tambores no se ha resuelto (" + EchoPuzzle.describe(gong) + ")");
             BlockPos door = TempleService.positionsOf(level, data, EventDoorBlock.class).stream()
