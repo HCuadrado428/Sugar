@@ -1,6 +1,7 @@
 package com.sugar.registry;
 
 import com.sugar.SugarMod;
+import com.sugar.item.AshBombItem;
 import com.sugar.item.ObsidianHammerItem;
 import com.sugar.item.TrophyItem;
 import net.minecraft.world.item.BlockItem;
@@ -29,6 +30,15 @@ public final class ModItems {
             () -> new ObsidianHammerItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).fireResistant()));
     public static final RegistryObject<Item> SERPENT_SCALE = ITEMS.register("serpent_scale",
             () -> new TrophyItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC).fireResistant(), "item.sugar.serpent_scale.desc"));
+
+    public static final RegistryObject<Item> BOMB_BUSH = blockItem("bomb_bush", ModBlocks.BOMB_BUSH);
+    public static final RegistryObject<Item> ASH_STATUE = blockItem("ash_statue", ModBlocks.ASH_STATUE);
+    public static final RegistryObject<Item> FIRE_GEYSER = blockItem("fire_geyser", ModBlocks.FIRE_GEYSER);
+
+    public static final RegistryObject<Item> ASH_BOMB = ITEMS.register("ash_bomb",
+            () -> new AshBombItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> ASH_FANG = ITEMS.register("ash_fang",
+            () -> new TrophyItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC).fireResistant(), "item.sugar.ash_fang.desc"));
 
     private static RegistryObject<Item> blockItem(String name, RegistryObject<Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().rarity(Rarity.EPIC)));

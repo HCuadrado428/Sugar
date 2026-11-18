@@ -17,5 +17,15 @@
   "entity.sugar.magma_serpent": "Sierpe de Magma",
   "entity.sugar.magma_decoy": "Cabeza Señuelo",
   "entity.sugar.magma_bolt": "Bola de Magma",
-  "entity.sugar.falling_rock": "Roca"
+  "entity.sugar.falling_rock": "Roca",
+  "block.sugar.bomb_bush": "Mata de Pólvora",
+  "block.sugar.ash_statue": "Estatua Agrietada",
+  "block.sugar.fire_geyser": "Géiser de Fuego",
+  "item.sugar.ash_bomb": "Bomba de Ceniza",
+  "item.sugar.ash_bomb.desc": "Clic derecho para lanzarla. Rompe estatuas y la Bestia se la traga al inhalar",
+  "item.sugar.ash_fang": "Colmillo de Ceniza",
+  "item.sugar.ash_fang.desc": "Trofeo: Las Fauces de Ceniza",
+  "entity.sugar.ash_beast": "Gran Bestia de Ceniza",
+  "entity.sugar.ash_hatchling": "Cría de Ceniza",
+  "entity.sugar.ash_bomb": "Bomba de Ceniza"
 }

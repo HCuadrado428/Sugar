@@ -8,6 +8,7 @@ import com.sugar.registry.ModEntities;
 import com.sugar.registry.ModItems;
 import com.sugar.temple.TempleRegistry;
 import com.sugar.temple.TempleType;
+import com.sugar.temple.gen.AshTempleGenerator;
 import com.sugar.temple.gen.VolcanoTempleGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -33,6 +34,8 @@ public class SugarMod {
 
         TempleRegistry.registerBoss(TempleType.VOLCAN, ModEntities.MAGMA_SERPENT);
         TempleRegistry.registerGenerator(TempleType.VOLCAN, new VolcanoTempleGenerator());
+        TempleRegistry.registerBoss(TempleType.CENIZA, ModEntities.ASH_BEAST);
+        TempleRegistry.registerGenerator(TempleType.CENIZA, new AshTempleGenerator());
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SugarConfig.SPEC);
     }

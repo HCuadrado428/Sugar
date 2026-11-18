@@ -17,5 +17,15 @@
   "entity.sugar.magma_serpent": "Magma Serpent",
   "entity.sugar.magma_decoy": "Decoy Head",
   "entity.sugar.magma_bolt": "Magma Bolt",
-  "entity.sugar.falling_rock": "Rock"
+  "entity.sugar.falling_rock": "Rock",
+  "block.sugar.bomb_bush": "Powder Bush",
+  "block.sugar.ash_statue": "Cracked Statue",
+  "block.sugar.fire_geyser": "Fire Geyser",
+  "item.sugar.ash_bomb": "Ash Bomb",
+  "item.sugar.ash_bomb.desc": "Right click to throw. Breaks statues; the Beast swallows it while inhaling",
+  "item.sugar.ash_fang": "Ash Fang",
+  "item.sugar.ash_fang.desc": "Trophy: The Ash Maw",
+  "entity.sugar.ash_beast": "Great Ash Beast",
+  "entity.sugar.ash_hatchling": "Ash Hatchling",
+  "entity.sugar.ash_bomb": "Ash Bomb"
 }

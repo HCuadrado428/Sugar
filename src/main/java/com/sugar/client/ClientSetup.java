@@ -17,6 +17,9 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModEntities.MAGMA_DECOY.get(), MagmaDecoyRenderer::new);
         event.registerEntityRenderer(ModEntities.MAGMA_BOLT.get(), ctx -> new ThrownItemRenderer<>(ctx, 2.0F, true));
         event.registerEntityRenderer(ModEntities.FALLING_ROCK.get(), FallingRockRenderer::new);
+        event.registerEntityRenderer(ModEntities.ASH_BEAST.get(), AshBeastRenderer::new);
+        event.registerEntityRenderer(ModEntities.ASH_HATCHLING.get(), AshHatchlingRenderer::new);
+        event.registerEntityRenderer(ModEntities.ASH_BOMB.get(), ThrownItemRenderer::new);
     }
 
     private ClientSetup() {}

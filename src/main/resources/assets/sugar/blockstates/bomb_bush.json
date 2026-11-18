@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "grown=true": {
+      "model": "sugar:block/bomb_bush"
+    },
+    "grown=false": {
+      "model": "sugar:block/bomb_bush_empty"
+    }
+  }
+}

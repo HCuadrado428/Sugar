@@ -1,6 +1,9 @@
 package com.sugar.registry;
 
 import com.sugar.SugarMod;
+import com.sugar.entity.AshBeast;
+import com.sugar.entity.AshBomb;
+import com.sugar.entity.AshHatchling;
 import com.sugar.entity.FallingRock;
 import com.sugar.entity.MagmaBolt;
 import com.sugar.entity.MagmaDecoy;
@@ -33,6 +36,21 @@ public final class ModEntities {
             () -> EntityType.Builder.<FallingRock>of(FallingRock::new, MobCategory.MISC)
                     .sized(0.98F, 0.98F).clientTrackingRange(8).updateInterval(1)
                     .build(SugarMod.id("falling_rock").toString()));
+
+    public static final RegistryObject<EntityType<AshBeast>> ASH_BEAST = ENTITIES.register("ash_beast",
+            () -> EntityType.Builder.of(AshBeast::new, MobCategory.MONSTER)
+                    .sized(3.4F, 3.0F).fireImmune().clientTrackingRange(12).updateInterval(1)
+                    .build(SugarMod.id("ash_beast").toString()));
+
+    public static final RegistryObject<EntityType<AshHatchling>> ASH_HATCHLING = ENTITIES.register("ash_hatchling",
+            () -> EntityType.Builder.of(AshHatchling::new, MobCategory.MONSTER)
+                    .sized(0.9F, 0.8F).fireImmune().clientTrackingRange(8)
+                    .build(SugarMod.id("ash_hatchling").toString()));
+
+    public static final RegistryObject<EntityType<AshBomb>> ASH_BOMB = ENTITIES.register("ash_bomb",
+            () -> EntityType.Builder.<AshBomb>of(AshBomb::new, MobCategory.MISC)
+                    .sized(0.4F, 0.4F).clientTrackingRange(8).updateInterval(2)
+                    .build(SugarMod.id("ash_bomb").toString()));
 
     private ModEntities() {}
 }

@@ -1,7 +1,10 @@
 package com.sugar.registry;
 
 import com.sugar.SugarMod;
+import com.sugar.block.AshStatueBlock;
+import com.sugar.block.BombBushBlock;
 import com.sugar.block.BossAltarBlock;
+import com.sugar.block.FireGeyserBlock;
 import com.sugar.block.CheckpointBlock;
 import com.sugar.block.CrumblingBlock;
 import com.sugar.block.EventDoorBlock;
@@ -74,6 +77,18 @@ public final class ModBlocks {
 
     public static final RegistryObject<Block> SUPPLY_CRATE = BLOCKS.register("supply_crate",
             () -> new SupplyCrateBlock(eventBlock(MapColor.WOOD).sound(SoundType.WOOD)));
+
+    // ---------- Las Fauces de Ceniza ----------
+
+    public static final RegistryObject<Block> BOMB_BUSH = BLOCKS.register("bomb_bush",
+            () -> new BombBushBlock(eventBlock(MapColor.COLOR_ORANGE).sound(SoundType.AZALEA).noOcclusion().noCollission()
+                    .lightLevel(s -> s.getValue(BombBushBlock.GROWN) ? 6 : 0)));
+
+    public static final RegistryObject<Block> ASH_STATUE = BLOCKS.register("ash_statue",
+            () -> new AshStatueBlock(eventBlock(MapColor.COLOR_GRAY).sound(SoundType.DEEPSLATE_BRICKS).noOcclusion()));
+
+    public static final RegistryObject<Block> FIRE_GEYSER = BLOCKS.register("fire_geyser",
+            () -> new FireGeyserBlock(eventBlock(MapColor.COLOR_BLACK).sound(SoundType.BASALT).lightLevel(s -> 7)));
 
     private ModBlocks() {}
 }
