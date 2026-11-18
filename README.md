@@ -6,7 +6,7 @@ Mod de bosses de evento para SMP (Forge 1.20.1 + GeckoLib). Tres templos con rec
 |---|---|---|
 | Corazón del Volcán (`volcan`) | Sierpe de Magma | ✅ Listo para probar |
 | Las Fauces de Ceniza (`ceniza`) | Gran Bestia de Ceniza | ✅ Listo para probar |
-| Santuario del Eco (`eco`) | Tamborilero Sin Cuerpo | Fase 4 |
+| Santuario del Eco (`eco`) | Tamborilero Sin Cuerpo | ✅ Listo para probar |
 
 ## Descargar el .jar
 
@@ -69,6 +69,28 @@ Templo por defecto: `/eventtemple place ceniza` (~125 × 50 bloques hacia el est
 Por debajo del 40% de vida, las grietas entran en erupción y rueda más a menudo.
 
 Bloques nuevos: **Mata de Pólvora**, **Estatua Agrietada**, **Géiser de Fuego** (fase 0-3 con shift + clic derecho en creativo; cada fase retrasa la erupción 1 s).
+
+## Evento: Santuario del Eco
+
+Templo por defecto: `/eventtemple place eco` (~140 × 52 bloques hacia el este).
+
+1. **Vestíbulo**: 6 **Atriles de la Lente**. Cada atril da UNA **Lente del Eco** por evento; llevarla en una mano deja ver lo oculto. Puerta canal 0 (`/event start eco`).
+2. **Puente invisible**: un abismo cruzado por **Plataformas Ocultas** que solo ve quien lleva la lente; esa persona guía al resto. Si caes, hay agua abajo y una escalera para volver al principio. Descanso con checkpoint a mitad de camino.
+3. **Sala de los Tambores**: tocad el **Gong** y los tambores tocarán un ritmo; repetidlo golpeando los **Tambores del Eco** en el mismo orden (cada nota está en dos tambores, uno a cada lado). Tres rondas (3, 4 y 5 golpes). Un fallo reinicia el ritmo. Al terminar se abre la puerta canal 1.
+4. **Antesala**: checkpoint, 4 cofres y 2 atriles más. Puerta canal 2 para el admin.
+5. **Gran Tambor**: arena circular sobre el abismo (si caes, agua y escalera hasta el puente). `/eventboss summon eco`.
+
+**Tamborilero Sin Cuerpo**: una máscara que flota invisible sobre el tambor (solo se ve con la lente) y dos manos enormes.
+- **Presentación**: todo se oscurece y suenan tambores cada vez más rápido; las manos trepan desde el abismo y golpean el tambor, la máscara sale, abre el ojo, se ríe y se desvanece.
+- **Golpe**: una mano sube sobre alguien; su sombra marca dónde caerá. Después se queda unos segundos en el suelo.
+- **Redoble**: las manos golpean el tambor por turnos y todo el que esté apoyado sale botando. Saltad justo antes del golpe.
+- **Agarre**: atrapa a un jugador, lo aprieta y lo lanza. Si los demás golpean la mano, lo suelta.
+- **Barrido**: arrastra la mano a ras de suelo en arco; saltad por encima.
+- **Palmada** (por debajo del 40% de vida): las dos manos se cierran de golpe sobre alguien.
+
+Golpear una mano la va aturdiendo (la barra sale en pantalla); al llenarse cae al suelo unos 7 s. **Si las dos manos están en el suelo a la vez, la máscara cae, se ve sin lente y recibe todo el daño** durante unos 8 s; luego se sacude, se ríe y vuelve a esconderse. Oculta solo recibe el 25% del daño (flechas de quien lleve la lente).
+
+Bloques nuevos: **Tambor del Eco** (nota 0-3 con shift + clic derecho en creativo), **Gong del Eco**, **Atril de la Lente**, **Plataforma Oculta** (en creativo se ve siempre).
 
 ## Montar vuestro propio templo
 

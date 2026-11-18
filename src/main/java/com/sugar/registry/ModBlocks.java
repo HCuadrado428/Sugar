@@ -7,6 +7,10 @@ import com.sugar.block.BossAltarBlock;
 import com.sugar.block.FireGeyserBlock;
 import com.sugar.block.CheckpointBlock;
 import com.sugar.block.CrumblingBlock;
+import com.sugar.block.EchoDrumBlock;
+import com.sugar.block.EchoGuideBlock;
+import com.sugar.block.EchoPlatformBlock;
+import com.sugar.block.LensPedestalBlock;
 import com.sugar.block.EventDoorBlock;
 import com.sugar.block.EventSwitchBlock;
 import com.sugar.block.MagmaRiserBlock;
@@ -89,6 +93,26 @@ public final class ModBlocks {
 
     public static final RegistryObject<Block> FIRE_GEYSER = BLOCKS.register("fire_geyser",
             () -> new FireGeyserBlock(eventBlock(MapColor.COLOR_BLACK).sound(SoundType.BASALT).lightLevel(s -> 7)));
+
+    // ---------- Santuario del Eco ----------
+
+    public static final RegistryObject<Block> ECHO_DRUM = BLOCKS.register("echo_drum",
+            () -> new EchoDrumBlock(eventBlock(MapColor.COLOR_BROWN).sound(SoundType.WOOD)));
+
+    public static final RegistryObject<Block> ECHO_GONG = BLOCKS.register("echo_gong",
+            () -> new EchoGuideBlock(eventBlock(MapColor.GOLD).sound(SoundType.METAL).lightLevel(s -> 6)));
+
+    public static final RegistryObject<Block> LENS_PEDESTAL = BLOCKS.register("lens_pedestal",
+            () -> new LensPedestalBlock(eventBlock(MapColor.COLOR_CYAN).sound(SoundType.AMETHYST).noOcclusion()
+                    .lightLevel(s -> s.getValue(LensPedestalBlock.HAS_LENS) ? 10 : 2)));
+
+    public static final RegistryObject<Block> ECHO_PLATFORM = BLOCKS.register("echo_platform",
+            () -> new EchoPlatformBlock(eventBlock(MapColor.NONE).sound(SoundType.AMETHYST).noOcclusion()
+                    .isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false)));
+
+    /** Solo para dibujar la plataforma oculta cuando se lleva la lente (no tiene objeto). */
+    public static final RegistryObject<Block> ECHO_PLATFORM_SHOWN = BLOCKS.register("echo_platform_shown",
+            () -> new Block(BlockBehaviour.Properties.of().noOcclusion().noLootTable().strength(-1.0F, 3600000.0F)));
 
     private ModBlocks() {}
 }

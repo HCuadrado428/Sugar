@@ -27,5 +27,16 @@
   "item.sugar.ash_fang.desc": "Trophy: The Ash Maw",
   "entity.sugar.ash_beast": "Great Ash Beast",
   "entity.sugar.ash_hatchling": "Ash Hatchling",
-  "entity.sugar.ash_bomb": "Ash Bomb"
+  "entity.sugar.ash_bomb": "Ash Bomb",
+  "block.sugar.echo_drum": "Echo Drum",
+  "block.sugar.echo_gong": "Echo Gong",
+  "block.sugar.lens_pedestal": "Lens Pedestal",
+  "block.sugar.echo_platform": "Hidden Platform",
+  "block.sugar.echo_platform_shown": "Hidden Platform",
+  "item.sugar.echo_lens": "Echo Lens",
+  "item.sugar.echo_lens.desc": "Hold it to see what is hidden: bridges and the Drummer",
+  "item.sugar.echo_eye": "Echo Eye",
+  "item.sugar.echo_eye.desc": "Trophy: Sanctuary of the Echo",
+  "entity.sugar.echo_drummer": "Bodiless Drummer",
+  "entity.sugar.drummer_hand": "Drummer's Hand"
 }

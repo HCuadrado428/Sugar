@@ -3,6 +3,14 @@ package com.sugar.test;
 import com.sugar.SugarMod;
 import com.sugar.block.AshStatueBlock;
 import com.sugar.block.BombBushBlock;
+import com.sugar.block.EchoDrumBlock;
+import com.sugar.block.EchoGuideBlock;
+import com.sugar.block.LensPedestalBlock;
+import com.sugar.block.EchoPlatformBlock;
+import com.sugar.entity.DrummerHand;
+import com.sugar.entity.EchoDrummer;
+import com.sugar.temple.EchoPuzzle;
+import com.sugar.temple.gen.EchoTempleGenerator;
 import com.sugar.block.EventDoorBlock;
 import com.sugar.block.FireGeyserBlock;
 import com.sugar.block.EventSwitchBlock;
@@ -181,6 +189,116 @@ public class SugarGameTests {
             for (int cx = acx - 2; cx <= acx + 2; cx++)
                 for (int cz = acz - 2; cz <= acz + 2; cz++)
                     level.setChunkForced(cx, cz, false);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 400)
+    public static void drummerRunsWithoutTemple(GameTestHelper helper) {
+        EchoDrummer drummer = helper.spawn(ModEntities.ECHO_DRUMMER.get(), new BlockPos(2, 2, 2));
+        helper.runAfterDelay(200, () -> {
+            helper.assertTrue(drummer.isAlive(), "El Tamborilero ha desaparecido");
+            helper.assertTrue(drummer.hand(true) != null && drummer.hand(false) != null, "No tiene las dos manos");
+            drummer.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 900)
+    public static void echoTempleFullFlow(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(6000, 20, -3000);
+        TempleGenerator.Result result = new EchoTempleGenerator().generate(level, feet);
+        TempleSavedData saved = TempleSavedData.get(level.getServer());
+        TempleData data = saved.define(TempleType.ECO, level.dimension(), result.zone(), result.lobby());
+        TempleService.scan(level, data);
+
+        helper.assertTrue(data.altar != null, "Falta el altar");
+        int drums = TempleService.positionsOf(level, data, EchoDrumBlock.class).size();
+        int gongs = TempleService.positionsOf(level, data, EchoGuideBlock.class).size();
+        int pedestals = TempleService.positionsOf(level, data, LensPedestalBlock.class).size();
+        int doors = TempleService.positionsOf(level, data, EventDoorBlock.class).size();
+        int crates = TempleService.positionsOf(level, data, SupplyCrateBlock.class).size();
+        helper.assertTrue(drums == 8, "Tambores: " + drums);
+        helper.assertTrue(gongs == 1, "Gongs: " + gongs);
+        helper.assertTrue(pedestals == 8, "Atriles: " + pedestals);
+        helper.assertTrue(doors == 27, "Puertas: " + doors);
+        helper.assertTrue(crates == 4, "Cofres: " + crates);
+        int platforms = 0;
+        for (BlockPos p : BlockPos.betweenClosed(feet.offset(-6, -1, -7), feet.offset(60, -1, 10))) {
+            if (level.getBlockState(p).getBlock() instanceof EchoPlatformBlock) platforms++;
+        }
+        helper.assertTrue(platforms > 40, "Puente invisible: " + platforms);
+
+        BlockPos gong = TempleService.positionsOf(level, data, EchoGuideBlock.class).get(0);
+        java.util.List<int[]> forced = new java.util.ArrayList<>();
+        for (BlockPos c : new BlockPos[]{gong, data.altar}) {
+            for (int cx = (c.getX() >> 4) - 2; cx <= (c.getX() >> 4) + 2; cx++)
+                for (int cz = (c.getZ() >> 4) - 2; cz <= (c.getZ() >> 4) + 2; cz++) {
+                    level.setChunkForced(cx, cz, true);
+                    forced.add(new int[]{cx, cz});
+                }
+        }
+        TempleService.start(level.getServer(), data);
+        EchoPuzzle.start(level, gong, (EchoGuideBlock) level.getBlockState(gong).getBlock());
+
+        // Simón dice: el grupo repite cada ritmo en cuanto termina de sonar
+        Runnable play = () -> {
+            helper.assertTrue(EchoPuzzle.isWaitingInput(gong), "El puzle no espera a los jugadores");
+            for (int note : EchoPuzzle.currentSequence(gong)) {
+                BlockPos drum = TempleService.positionsOf(level, data, EchoDrumBlock.class).stream()
+                        .filter(p -> level.getBlockState(p).getValue(EchoDrumBlock.NOTE) == note).findFirst().orElseThrow();
+                EchoPuzzle.drumHit(level, drum, note, null);
+            }
+        };
+        helper.runAfterDelay(90, play);
+        helper.runAfterDelay(200, play);
+        helper.runAfterDelay(330, play);
+        helper.runAfterDelay(340, () -> {
+            helper.assertTrue(EchoPuzzle.isSolved(gong), "El puzle de los tambores no se ha resuelto");
+            BlockPos door = TempleService.positionsOf(level, data, EventDoorBlock.class).stream()
+                    .filter(p -> level.getBlockState(p).getValue(EventDoorBlock.CHANNEL) == EchoPuzzle.CHANNEL).findFirst().orElseThrow();
+            helper.assertTrue(level.getBlockState(door).getValue(EventDoorBlock.OPEN), "La puerta del canal 1 no se ha abierto");
+        });
+
+        EchoDrummer[] boss = new EchoDrummer[1];
+        helper.runAfterDelay(345, () -> {
+            BlockPos spawn = data.altar.above();
+            EchoDrummer b = ModEntities.ECHO_DRUMMER.get().create(level);
+            helper.assertTrue(b != null, "No se pudo crear el Tamborilero");
+            b.moveTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0.0F, 0.0F);
+            b.finalizeSpawn(level, level.getCurrentDifficultyAt(spawn), MobSpawnType.EVENT, null, null);
+            b.bindTemple(TempleType.ECO);
+            b.rescale();
+            level.addFreshEntity(b);
+            b.beginIntro();
+            data.bossId = b.getUUID();
+            boss[0] = b;
+        });
+        helper.runAfterDelay(560, () -> {
+            EchoDrummer b = boss[0];
+            helper.assertTrue(!b.inIntro(), "La presentación del Tamborilero no ha terminado (fase " + b.phase() + ")");
+            helper.assertTrue(b.isAlive(), "El Tamborilero ha desaparecido (" + b.getRemovalReason() + ")");
+            DrummerHand l = b.hand(true), r = b.hand(false);
+            helper.assertTrue(l != null && r != null, "Faltan manos");
+            l.debugStun();
+            r.debugStun();
+            helper.assertTrue(b.isExposed(), "Con las dos manos en el suelo la máscara no cae (fase " + b.phase() + ")");
+        });
+        helper.runAfterDelay(590, () -> {
+            EchoDrummer b = boss[0];
+            float before = b.getHealth();
+            b.hurt(level.damageSources().generic(), 20.0F);
+            helper.assertTrue(b.getHealth() < before, "La máscara expuesta no recibe daño");
+            TempleService.reset(level.getServer(), data);
+            helper.assertTrue(!b.isAlive(), "El reset no ha quitado al Tamborilero");
+            helper.assertTrue(!EchoPuzzle.isSolved(gong), "El reset no reinicia el puzle");
+        });
+        helper.runAfterDelay(660, () -> {
+            int hands = level.getEntitiesOfClass(DrummerHand.class, new net.minecraft.world.phys.AABB(data.altar).inflate(40)).size();
+            helper.assertTrue(hands == 0, "Quedan manos sueltas tras el reset: " + hands);
+            saved.remove(TempleType.ECO);
+            for (int[] c : forced) level.setChunkForced(c[0], c[1], false);
             helper.succeed();
         });
     }

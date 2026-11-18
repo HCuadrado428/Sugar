@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sugar:block/echo_drum_top_2",
+    "bottom": "sugar:block/echo_drum_bottom",
+    "side": "sugar:block/echo_drum_side"
+  }
+}

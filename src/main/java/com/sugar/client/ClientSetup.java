@@ -1,6 +1,7 @@
 package com.sugar.client;
 
 import com.sugar.SugarMod;
+import com.sugar.registry.ModBlockEntities;
 import com.sugar.registry.ModEntities;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,6 +21,9 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModEntities.ASH_BEAST.get(), AshBeastRenderer::new);
         event.registerEntityRenderer(ModEntities.ASH_HATCHLING.get(), AshHatchlingRenderer::new);
         event.registerEntityRenderer(ModEntities.ASH_BOMB.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(ModEntities.ECHO_DRUMMER.get(), EchoDrummerRenderer::new);
+        event.registerEntityRenderer(ModEntities.DRUMMER_HAND.get(), DrummerHandRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ECHO_PLATFORM.get(), EchoPlatformRenderer::new);
     }
 
     private ClientSetup() {}

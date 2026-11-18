@@ -19,6 +19,8 @@ public final class ModBusEvents {
         event.put(ModEntities.MAGMA_DECOY.get(), MagmaDecoy.createAttributes().build());
         event.put(ModEntities.ASH_BEAST.get(), AshBeast.createAttributes().build());
         event.put(ModEntities.ASH_HATCHLING.get(), AshHatchling.createAttributes().build());
+        event.put(ModEntities.ECHO_DRUMMER.get(), com.sugar.entity.EchoDrummer.createAttributes().build());
+        event.put(ModEntities.DRUMMER_HAND.get(), com.sugar.entity.DrummerHand.createAttributes().build());
     }
 
     private ModBusEvents() {}

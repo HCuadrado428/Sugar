@@ -27,5 +27,16 @@
   "item.sugar.ash_fang.desc": "Trofeo: Las Fauces de Ceniza",
   "entity.sugar.ash_beast": "Gran Bestia de Ceniza",
   "entity.sugar.ash_hatchling": "Cría de Ceniza",
-  "entity.sugar.ash_bomb": "Bomba de Ceniza"
+  "entity.sugar.ash_bomb": "Bomba de Ceniza",
+  "block.sugar.echo_drum": "Tambor del Eco",
+  "block.sugar.echo_gong": "Gong del Eco",
+  "block.sugar.lens_pedestal": "Atril de la Lente",
+  "block.sugar.echo_platform": "Plataforma Oculta",
+  "block.sugar.echo_platform_shown": "Plataforma Oculta",
+  "item.sugar.echo_lens": "Lente del Eco",
+  "item.sugar.echo_lens.desc": "Llévala en una mano para ver lo oculto: puentes y al Tamborilero",
+  "item.sugar.echo_eye": "Ojo del Eco",
+  "item.sugar.echo_eye.desc": "Trofeo: Santuario del Eco",
+  "entity.sugar.echo_drummer": "Tamborilero Sin Cuerpo",
+  "entity.sugar.drummer_hand": "Mano del Tamborilero"
 }

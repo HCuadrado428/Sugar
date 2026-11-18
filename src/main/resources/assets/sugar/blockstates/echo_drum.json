@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "note=0": {
+      "model": "sugar:block/echo_drum_0"
+    },
+    "note=1": {
+      "model": "sugar:block/echo_drum_1"
+    },
+    "note=2": {
+      "model": "sugar:block/echo_drum_2"
+    },
+    "note=3": {
+      "model": "sugar:block/echo_drum_3"
+    }
+  }
+}

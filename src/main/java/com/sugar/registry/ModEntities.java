@@ -4,6 +4,8 @@ import com.sugar.SugarMod;
 import com.sugar.entity.AshBeast;
 import com.sugar.entity.AshBomb;
 import com.sugar.entity.AshHatchling;
+import com.sugar.entity.DrummerHand;
+import com.sugar.entity.EchoDrummer;
 import com.sugar.entity.FallingRock;
 import com.sugar.entity.MagmaBolt;
 import com.sugar.entity.MagmaDecoy;
@@ -51,6 +53,16 @@ public final class ModEntities {
             () -> EntityType.Builder.<AshBomb>of(AshBomb::new, MobCategory.MISC)
                     .sized(0.4F, 0.4F).clientTrackingRange(8).updateInterval(2)
                     .build(SugarMod.id("ash_bomb").toString()));
+
+    public static final RegistryObject<EntityType<EchoDrummer>> ECHO_DRUMMER = ENTITIES.register("echo_drummer",
+            () -> EntityType.Builder.of(EchoDrummer::new, MobCategory.MONSTER)
+                    .sized(2.8F, 4.0F).fireImmune().clientTrackingRange(12).updateInterval(1)
+                    .build(SugarMod.id("echo_drummer").toString()));
+
+    public static final RegistryObject<EntityType<DrummerHand>> DRUMMER_HAND = ENTITIES.register("drummer_hand",
+            () -> EntityType.Builder.of(DrummerHand::new, MobCategory.MISC)
+                    .sized(2.6F, 1.3F).fireImmune().clientTrackingRange(12).updateInterval(1)
+                    .build(SugarMod.id("drummer_hand").toString()));
 
     private ModEntities() {}
 }

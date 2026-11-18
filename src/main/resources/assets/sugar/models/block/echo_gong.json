@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "sugar:block/echo_gong_top",
+    "side": "sugar:block/echo_gong_side"
+  }
+}

@@ -2,6 +2,7 @@ package com.sugar.registry;
 
 import com.sugar.SugarMod;
 import com.sugar.item.AshBombItem;
+import com.sugar.item.EchoLensItem;
 import com.sugar.item.ObsidianHammerItem;
 import com.sugar.item.TrophyItem;
 import net.minecraft.world.item.BlockItem;
@@ -39,6 +40,16 @@ public final class ModItems {
             () -> new AshBombItem(new Item.Properties().stacksTo(16).rarity(Rarity.UNCOMMON)));
     public static final RegistryObject<Item> ASH_FANG = ITEMS.register("ash_fang",
             () -> new TrophyItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC).fireResistant(), "item.sugar.ash_fang.desc"));
+
+    public static final RegistryObject<Item> ECHO_DRUM = blockItem("echo_drum", ModBlocks.ECHO_DRUM);
+    public static final RegistryObject<Item> ECHO_GONG = blockItem("echo_gong", ModBlocks.ECHO_GONG);
+    public static final RegistryObject<Item> LENS_PEDESTAL = blockItem("lens_pedestal", ModBlocks.LENS_PEDESTAL);
+    public static final RegistryObject<Item> ECHO_PLATFORM = blockItem("echo_platform", ModBlocks.ECHO_PLATFORM);
+
+    public static final RegistryObject<Item> ECHO_LENS = ITEMS.register("echo_lens",
+            () -> new EchoLensItem(new Item.Properties().stacksTo(1).rarity(Rarity.RARE)));
+    public static final RegistryObject<Item> ECHO_EYE = ITEMS.register("echo_eye",
+            () -> new TrophyItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), "item.sugar.echo_eye.desc"));
 
     private static RegistryObject<Item> blockItem(String name, RegistryObject<Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().rarity(Rarity.EPIC)));

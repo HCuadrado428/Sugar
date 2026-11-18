@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "has_lens=true": {
+      "model": "sugar:block/lens_pedestal"
+    },
+    "has_lens=false": {
+      "model": "sugar:block/lens_pedestal_empty"
+    }
+  }
+}
