@@ -2,5 +2,20 @@
   "itemGroup.sugar": "Sugar",
   "block.sugar.checkpoint_stone": "Piedra de Control",
   "block.sugar.event_door": "Puerta de Evento",
-  "block.sugar.boss_altar": "Altar del Jefe"
+  "block.sugar.boss_altar": "Altar del Jefe",
+  "block.sugar.crumbling_basalt": "Basalto Inestable",
+  "block.sugar.rising_magma": "Magma del Templo",
+  "block.sugar.magma_riser": "Fuente de Magma",
+  "block.sugar.magma_vent": "Respiradero de Magma",
+  "block.sugar.rockfall": "Grieta del Techo",
+  "block.sugar.event_switch": "Sello de Obsidiana",
+  "block.sugar.supply_crate": "Cofre de Suministros",
+  "item.sugar.obsidian_hammer": "Martillo de Obsidiana",
+  "item.sugar.obsidian_hammer.desc": "Golpea la cabeza de la Sierpe para aturdirla",
+  "item.sugar.serpent_scale": "Escama de la Sierpe",
+  "item.sugar.serpent_scale.desc": "Trofeo: Corazón del Volcán",
+  "entity.sugar.magma_serpent": "Sierpe de Magma",
+  "entity.sugar.magma_decoy": "Cabeza Señuelo",
+  "entity.sugar.magma_bolt": "Bola de Magma",
+  "entity.sugar.falling_rock": "Roca"
 }

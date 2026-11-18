@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sugar:block/magma_vent_top",
+    "bottom": "sugar:block/magma_vent_side",
+    "side": "sugar:block/magma_vent_side"
+  }
+}

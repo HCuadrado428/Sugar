@@ -74,6 +74,7 @@ public final class TempleService {
     public static void start(MinecraftServer server, TempleData data) {
         data.active = true;
         data.checkpoints.clear();
+        data.claimedSupplies.clear();
         TempleSavedData.get(server).setDirty();
         setDoors(server, data, 0, true);
 
@@ -119,7 +120,22 @@ public final class TempleService {
         }
         data.active = false;
         data.checkpoints.clear();
+        data.claimedSupplies.clear();
         TempleSavedData.get(server).setDirty();
+    }
+
+    /** Posiciones registradas cuyo bloque actual es del tipo indicado. */
+    public static List<BlockPos> positionsOf(ServerLevel level, TempleData data, Class<?> blockClass) {
+        List<BlockPos> list = new ArrayList<>();
+        for (BlockPos pos : data.blocks) {
+            if (blockClass.isInstance(level.getBlockState(pos).getBlock())) list.add(pos);
+        }
+        return list;
+    }
+
+    /** Mensaje en la barra de acción para todos los jugadores dentro del templo. */
+    public static void actionbar(ServerLevel level, TempleData data, Component message) {
+        for (ServerPlayer p : playersInside(level, data)) p.displayClientMessage(message, true);
     }
 
     public static int setDoors(MinecraftServer server, TempleData data, int channel, boolean open) {

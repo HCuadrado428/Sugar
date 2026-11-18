@@ -20,8 +20,8 @@ public final class SugarConfig {
 
         b.comment("Escalado de los bosses según los jugadores presentes").push("escalado");
         HEALTH_PER_PLAYER = b
-                .comment("Vida efectiva extra por cada jugador después del primero (0.08 = +8%)")
-                .defineInRange("vidaPorJugador", 0.08, 0.0, 1.0);
+                .comment("Vida efectiva extra por cada jugador después del primero (0.5 = +50% de la vida base por jugador)")
+                .defineInRange("vidaPorJugador", 0.5, 0.0, 5.0);
         DAMAGE_PER_PLAYER = b
                 .comment("Daño extra del boss por cada jugador después del primero (0.02 = +2%)")
                 .defineInRange("danoPorJugador", 0.02, 0.0, 1.0);

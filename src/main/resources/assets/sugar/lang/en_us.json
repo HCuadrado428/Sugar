@@ -2,5 +2,20 @@
   "itemGroup.sugar": "Sugar",
   "block.sugar.checkpoint_stone": "Checkpoint Stone",
   "block.sugar.event_door": "Event Door",
-  "block.sugar.boss_altar": "Boss Altar"
+  "block.sugar.boss_altar": "Boss Altar",
+  "block.sugar.crumbling_basalt": "Crumbling Basalt",
+  "block.sugar.rising_magma": "Temple Magma",
+  "block.sugar.magma_riser": "Magma Source",
+  "block.sugar.magma_vent": "Magma Vent",
+  "block.sugar.rockfall": "Ceiling Crack",
+  "block.sugar.event_switch": "Obsidian Seal",
+  "block.sugar.supply_crate": "Supply Crate",
+  "item.sugar.obsidian_hammer": "Obsidian Hammer",
+  "item.sugar.obsidian_hammer.desc": "Hit the Serpent's head to stun it",
+  "item.sugar.serpent_scale": "Serpent Scale",
+  "item.sugar.serpent_scale.desc": "Trophy: Heart of the Volcano",
+  "entity.sugar.magma_serpent": "Magma Serpent",
+  "entity.sugar.magma_decoy": "Decoy Head",
+  "entity.sugar.magma_bolt": "Magma Bolt",
+  "entity.sugar.falling_rock": "Rock"
 }

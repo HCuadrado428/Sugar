@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "active": "false"
+      },
+      "apply": {
+        "model": "sugar:block/event_switch_off"
+      }
+    },
+    {
+      "when": {
+        "active": "true"
+      },
+      "apply": {
+        "model": "sugar:block/event_switch_on"
+      }
+    }
+  ]
+}

@@ -181,6 +181,11 @@ public abstract class SugarBoss extends Monster {
     }
 
     @Override
+    protected boolean shouldDespawnInPeaceful() {
+        return false;
+    }
+
+    @Override
     public boolean canChangeDimensions() {
         return false;
     }

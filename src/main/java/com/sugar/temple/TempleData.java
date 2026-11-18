@@ -29,6 +29,7 @@ public class TempleData {
     @Nullable public UUID bossId;
     public final Map<UUID, BlockPos> checkpoints = new HashMap<>();
     public final Set<BlockPos> blocks = new HashSet<>();
+    public final Set<UUID> claimedSupplies = new HashSet<>();
 
     public TempleData(TempleType type, ResourceKey<Level> dimension, BoundingBox zone, BlockPos lobby) {
         this.type = type;
@@ -61,6 +62,14 @@ public class TempleData {
         tag.put("checkpoints", cps);
 
         tag.putLongArray("blocks", blocks.stream().mapToLong(BlockPos::asLong).toArray());
+
+        ListTag claimed = new ListTag();
+        claimedSupplies.forEach(uuid -> {
+            CompoundTag c = new CompoundTag();
+            c.putUUID("player", uuid);
+            claimed.add(c);
+        });
+        tag.put("claimed", claimed);
         return tag;
     }
 
@@ -84,6 +93,10 @@ public class TempleData {
         }
         for (long l : tag.getLongArray("blocks")) {
             data.blocks.add(BlockPos.of(l));
+        }
+        ListTag claimed = tag.getList("claimed", Tag.TAG_COMPOUND);
+        for (int i = 0; i < claimed.size(); i++) {
+            data.claimedSupplies.add(claimed.getCompound(i).getUUID("player"));
         }
         return data;
     }
