@@ -218,6 +218,13 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                 p.hurtMarked = true;
             }
         }
+        if (timer == 91) {                    // resopla
+            Vec3 n = position().add(forward().scale(4.2)).add(0, 1.6, 0);
+            Vec3 f = forward();
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, n.x, n.y, n.z, 0, f.x, 0.2, f.z, 0.25);
+            level.sendParticles(ParticleTypes.SMOKE, n.x, n.y, n.z, 12, 0.3, 0.1, 0.3, 0.05);
+            level.playSound(null, blockPosition(), SoundEvents.RAVAGER_STEP, SoundSource.HOSTILE, 2.0F, 0.5F);
+        }
         if (timer > 80 && target != null) turnTo(target.getX() - getX(), target.getZ() - getZ(), 4);
         if (timer >= INTRO_TIME) {
             setIntro(false);

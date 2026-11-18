@@ -63,7 +63,7 @@ import java.util.Optional;
 public class MagmaSerpent extends SugarBoss implements GeoEntity {
     public static final int BURROWED = 0, EMERGING = 1, HEAD = 2, SUBMERGING = 3,
             STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7, INTRO = 8;
-    private static final int INTRO_RISE = 60, INTRO_LAP = 110, INTRO_TOTAL = INTRO_RISE + INTRO_LAP + 40;
+    private static final int INTRO_RISE = 18 + 48, INTRO_LAP = 110, INTRO_TOTAL = INTRO_RISE + INTRO_LAP + 40;   // 48 ticks = animación "intro"
 
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(MagmaSerpent.class, EntityDataSerializers.INT);
 
