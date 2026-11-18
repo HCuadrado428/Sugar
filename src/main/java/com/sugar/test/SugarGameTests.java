@@ -83,9 +83,11 @@ public class SugarGameTests {
         boss.bindTemple(TempleType.VOLCAN);
         boss.rescale();
         level.addFreshEntity(boss);
+        boss.beginIntro();
         data.bossId = boss.getUUID();
 
         helper.runAfterDelay(400, () -> {
+            helper.assertTrue(!boss.inIntro(), "La presentación de la Sierpe no ha terminado (fase " + boss.phase() + ")");
             helper.assertTrue(boss.isAlive(), "La Sierpe ha desaparecido durante el evento (motivo: "
                     + boss.getRemovalReason() + ", fase " + boss.phase() + ", pos " + boss.blockPosition().toShortString() + ")");
             helper.assertTrue(boss.tickCount > 300, "La Sierpe no se actualiza");
@@ -167,9 +169,11 @@ public class SugarGameTests {
         boss.bindTemple(TempleType.CENIZA);
         boss.rescale();
         level.addFreshEntity(boss);
+        boss.beginIntro();
         data.bossId = boss.getUUID();
 
         helper.runAfterDelay(400, () -> {
+            helper.assertTrue(!boss.inIntro(), "La presentación de la Bestia no ha terminado (fase " + boss.phase() + ")");
             helper.assertTrue(boss.isAlive(), "La Bestia ha desaparecido (" + boss.getRemovalReason() + ")");
             TempleService.reset(level.getServer(), data);
             helper.assertTrue(!boss.isAlive(), "El reset no ha quitado a la Bestia");

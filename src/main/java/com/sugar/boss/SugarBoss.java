@@ -10,7 +10,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -28,6 +35,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +50,9 @@ import java.util.UUID;
  */
 public abstract class SugarBoss extends Monster {
     private static final UUID DAMAGE_SCALING_ID = UUID.fromString("5b0f6c2e-7d4a-4c8e-9a41-3f1d2e6b8c01");
+    private static final EntityDataAccessor<Boolean> INTRO = SynchedEntityData.defineId(SugarBoss.class, EntityDataSerializers.BOOLEAN);
+    /** Progreso de la presentación (0-1): rellena la barra de jefe mientras dura. */
+    protected float introProgress = 1.0F;
 
     private final ServerBossEvent bossEvent;
     private final Map<UUID, Float> damageByPlayer = new HashMap<>();
@@ -71,6 +82,45 @@ public abstract class SugarBoss extends Monster {
     }
 
     protected abstract BossEvent.BossBarColor barColor();
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(INTRO, false);
+    }
+
+    // ---------- Presentación ----------
+
+    /** Arranca la presentación del jefe (la llama /eventboss summon). Cada jefe la redefine. */
+    public void beginIntro() {}
+
+    public boolean inIntro() {
+        return entityData.get(INTRO);
+    }
+
+    protected void setIntro(boolean intro) {
+        entityData.set(INTRO, intro);
+        introProgress = intro ? 0.0F : 1.0F;
+    }
+
+    /** Título grande en pantalla para todos los jugadores del templo (o cercanos). */
+    protected void announce(Component title, Component subtitle) {
+        if (!(level() instanceof ServerLevel level)) return;
+        List<ServerPlayer> players = templeData().map(d -> TempleService.playersInside(level, d))
+                .orElseGet(() -> level.getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(64)));
+        for (ServerPlayer p : players) {
+            p.connection.send(new ClientboundSetTitlesAnimationPacket(10, 60, 20));
+            p.connection.send(new ClientboundSetTitleTextPacket(title));
+            p.connection.send(new ClientboundSetSubtitleTextPacket(subtitle));
+        }
+    }
+
+    protected void announceBoss() {
+        TempleType t = temple;
+        Component title = (t != null ? t.bossDisplayName() : getDisplayName()).copy().withStyle(ChatFormatting.BOLD);
+        Component subtitle = t != null ? Component.literal("— ").append(t.displayName()).append(" —") : Component.empty();
+        announce(title, subtitle);
+    }
 
     /** Tabla de botín base: data/sugar/loot_tables/bosses/<id>_participante.json y <id>_mvp.json */
     public ResourceLocation rewardTable() {
@@ -144,6 +194,7 @@ public abstract class SugarBoss extends Monster {
     public boolean hurt(DamageSource source, float amount) {
         if (level().isClientSide) return super.hurt(source, amount);
         if (source.is(DamageTypeTags.IS_FALL) || source.is(DamageTypeTags.IS_DROWNING)) return false;
+        if (inIntro() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;   // invulnerable durante la presentación
 
         float before = getHealth();
         boolean result = super.hurt(source, amount / healthScale);
@@ -201,7 +252,7 @@ public abstract class SugarBoss extends Monster {
     protected void customServerAiStep() {
         super.customServerAiStep();
         if (!scaledOnce || tickCount % 200 == 0) rescale();
-        bossEvent.setProgress(getHealth() / getMaxHealth());
+        bossEvent.setProgress(inIntro() ? Math.max(0.0F, Math.min(1.0F, introProgress)) : getHealth() / getMaxHealth());
     }
 
     @Override
@@ -248,5 +299,6 @@ public abstract class SugarBoss extends Monster {
             damageByPlayer.put(c.getUUID("Player"), c.getFloat("Damage"));
         }
         if (hasCustomName()) bossEvent.setName(getDisplayName());
+        setIntro(false);
     }
 }

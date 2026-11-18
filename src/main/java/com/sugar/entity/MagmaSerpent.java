@@ -62,7 +62,8 @@ import java.util.Optional;
  */
 public class MagmaSerpent extends SugarBoss implements GeoEntity {
     public static final int BURROWED = 0, EMERGING = 1, HEAD = 2, SUBMERGING = 3,
-            STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7;
+            STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7, INTRO = 8;
+    private static final int INTRO_RISE = 60, INTRO_LAP = 110, INTRO_TOTAL = INTRO_RISE + INTRO_LAP + 40;
 
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(MagmaSerpent.class, EntityDataSerializers.INT);
 
@@ -83,6 +84,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final float FIRE_T0 = 0.62F, FIRE_T1 = 2.8F;
     private static final double MOUTH_UP = 3.0, MOUTH_FORWARD = 2.0;     // posición de la boca en la pose de ataque
     private static final RawAnimation ANIM_DEATH = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.death");
+    private static final RawAnimation ANIM_INTRO = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.intro");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -97,6 +99,8 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private float breathPitch;
     private float breathSweep;
     private double takeoffY;
+    private boolean introLap;
+    private int introTicks;
 
     public MagmaSerpent(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -134,6 +138,61 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         setInvisible(phase == BURROWED);
     }
 
+    // ---------- Presentación ----------
+
+    /** El volcán retumba, revienta el altar, se alza rugiendo, da una vuelta volando y se zambulle. */
+    @Override
+    public void beginIntro() {
+        setIntro(true);
+        introTicks = 0;
+        introLap = false;
+        Vec3 c = center();
+        setPos(c.x, c.y - 6.0, c.z);
+        setPhase(INTRO);
+        setInvisible(false);
+    }
+
+    private void introTick(ServerLevel level) {
+        Vec3 c = center();
+        if (timer == 1) {
+            announceBoss();
+            level.playSound(null, BlockPos.containing(c), SoundEvents.WARDEN_EMERGE, SoundSource.HOSTILE, 4.0F, 0.6F);
+        }
+        // Retumbar: chorros de fuego en los respiraderos (solo partículas, no hacen daño)
+        if (timer < 40 && timer % 4 == 0) {
+            for (BlockPos v : vents(level)) {
+                level.sendParticles(ParticleTypes.FLAME, v.getX() + 0.5, v.getY() + 1.2, v.getZ() + 0.5, 0, 0, 1, 0, 0.5 + random.nextDouble() * 0.3);
+                level.sendParticles(ParticleTypes.LAVA, v.getX() + 0.5, v.getY() + 1.1, v.getZ() + 0.5, 1, 0.2, 0.1, 0.2, 0);
+            }
+            level.playSound(null, BlockPos.containing(c), SoundEvents.LAVA_POP, SoundSource.HOSTILE, 3.0F, 0.5F);
+        }
+        // Revienta el altar y sale con impulso
+        if (timer == 18) {
+            triggerAnim("main", "intro");
+            level.playSound(null, BlockPos.containing(c), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3.0F, 0.6F);
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BASALT.defaultBlockState()), c.x, c.y + 0.5, c.z, 80, 1.5, 0.4, 1.5, 0.2);
+            level.sendParticles(ParticleTypes.LAVA, c.x, c.y + 0.5, c.z, 30, 1.2, 0.5, 1.2, 0);
+        }
+        if (timer >= 18 && timer <= 40) {
+            double u = backOut(Math.min(1.0, (timer - 18) / 22.0));
+            setPos(c.x, c.y - 6.0 + 6.0 * u, c.z);
+        }
+        // Ruge y escupe una columna de fuego hacia el cielo
+        if (timer == 38) level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 6.0F, 0.6F);
+        if (timer >= 38 && timer <= 52) {
+            Vec3 m = position().add(0, 6.2, 0);
+            for (int i = 0; i < 6; i++) {
+                level.sendParticles(ParticleTypes.FLAME, m.x, m.y, m.z, 0, (random.nextDouble() - 0.5) * 0.3, 1.0, (random.nextDouble() - 0.5) * 0.3, 0.7);
+            }
+        }
+        if (timer >= INTRO_RISE) {
+            Vec3 cc = center();
+            flyAngle = Math.atan2(getZ() - cc.z, getX() - cc.x);
+            introLap = true;
+            setPhase(FLYING);
+        }
+    }
+
     // ---------- Lógica ----------
 
     @Override
@@ -145,9 +204,12 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         timer++;
         if (hintCooldown > 0) hintCooldown--;
 
+        if (inIntro()) introProgress = Math.min(1.0F, ++introTicks / (float) INTRO_TOTAL);
         switch (phase()) {
+            case INTRO -> introTick(level);
             case BURROWED -> {
                 if (vent != null) setPos(vent.getX() + 0.5, vent.getY() - 5.0, vent.getZ() + 0.5);
+                if (introLap) { introLap = false; setIntro(false); }        // fin de la presentación: empieza el combate
                 if (timer >= 50) emerge(level);
             }
             case EMERGING -> {
@@ -194,8 +256,11 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 double radius = flyRadius();
                 flyAngle += 0.6 / Math.max(6.0, radius);
                 moveToward(new Vec3(c.x + Math.cos(flyAngle) * radius, flyHeight(), c.z + Math.sin(flyAngle) * radius), 0.7);
-                if (timer % (enraged ? 7 : 12) == 0) dropBolt(level);
-                if (timer >= 220) {
+                if (!introLap && timer % (enraged ? 7 : 12) == 0) dropBolt(level);
+                if (introLap && timer >= INTRO_LAP) {
+                    vent = pickVent(level, null);
+                    setPhase(DIVING);
+                } else if (timer >= 220) {
                     vent = pickVent(level, null);
                     setPhase(DIVING);
                 }
@@ -208,7 +273,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             default -> setPhase(BURROWED);
         }
 
-        if (phase() != BURROWED && tickCount % (enraged ? 40 : 80) == 0) rockRain(level);
+        if (phase() != BURROWED && !inIntro() && tickCount % (enraged ? 40 : 80) == 0) rockRain(level);
         if (!enraged && getHealth() / getMaxHealth() < 0.4F) enrage(level);
     }
 
@@ -393,6 +458,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     public boolean hurt(DamageSource source, float amount) {
         if (level().isClientSide) return false;
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(source, amount);
+        if (inIntro()) return false;
 
         int phase = phase();
         if (phase == HEAD) {
@@ -606,11 +672,12 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         controllers.add(new AnimationController<>(this, "main", 8, state -> {
             if (isDeadOrDying()) return state.setAndContinue(ANIM_DEATH);
             return switch (phase()) {
+                case INTRO -> state.setAndContinue(ANIM_INTRO);
                 case STUNNED -> state.setAndContinue(ANIM_STUNNED);
                 case TAKEOFF, FLYING, DIVING -> state.setAndContinue(ANIM_FLY);
                 default -> state.setAndContinue(ANIM_HEAD);
             };
-        }).triggerableAnim("emerge", ANIM_EMERGE).triggerableAnim("breath", ANIM_BREATH));
+        }).triggerableAnim("emerge", ANIM_EMERGE).triggerableAnim("breath", ANIM_BREATH).triggerableAnim("intro", ANIM_INTRO));
     }
 
     @Override

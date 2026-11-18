@@ -63,7 +63,8 @@ import java.util.UUID;
  * Por debajo del 40%: las grietas entran en erupción y rueda más a menudo.
  */
 public class AshBeast extends SugarBoss implements GeoEntity {
-    public static final int STALK = 0, INHALE = 1, FIRE = 2, STUNNED = 3, CURL = 4, ROLLING = 5, UNCURL = 6, ROAR = 7, STOMP = 8;
+    public static final int STALK = 0, INHALE = 1, FIRE = 2, STUNNED = 3, CURL = 4, ROLLING = 5, UNCURL = 6, ROAR = 7, STOMP = 8, INTRO = 9;
+    private static final int INTRO_TIME = 120;
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(AshBeast.class, EntityDataSerializers.INT);
 
     private static final String P = "animation.ash_beast.";
@@ -78,6 +79,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     private static final RawAnimation A_ROAR = RawAnimation.begin().thenPlay(P + "roar");
     private static final RawAnimation A_STOMP = RawAnimation.begin().thenPlay(P + "stomp");
     private static final RawAnimation A_DEATH = RawAnimation.begin().thenPlayAndHold(P + "death");
+    private static final RawAnimation A_INTRO = RawAnimation.begin().thenPlayAndHold(P + "intro");
 
     // Posición de la boca medida en el modelo (bloques): al inhalar y al escupir fuego
     private static final double MOUTH_UP = 2.9, MOUTH_FWD = 3.9, FIRE_UP = 1.0, FIRE_FWD = 3.5;
@@ -170,6 +172,59 @@ public class AshBeast extends SugarBoss implements GeoEntity {
         return best;
     }
 
+    // ---------- Presentación ----------
+
+    /** Dormida en bola, tiembla, se abre soltando ceniza, ruge alzada y da un pisotón que aparta a todos. */
+    @Override
+    public void beginIntro() {
+        setIntro(true);
+        setPhase(INTRO);
+    }
+
+    private void introTick(ServerLevel level, @Nullable ServerPlayer target) {
+        introProgress = timer / (float) INTRO_TIME;
+        getNavigation().stop();
+        if (timer == 1) {
+            announceBoss();
+            level.playSound(null, blockPosition(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, 4.0F, 0.5F);
+        }
+        if (timer < 30) {
+            if (timer % 3 == 0) {
+                level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 1.5, getZ(), 3, 1.0, 0.6, 1.0, 0.01);
+                level.sendParticles(ParticleTypes.LAVA, getX(), getY() + 1.5, getZ(), 1, 0.8, 0.5, 0.8, 0);
+            }
+            if (timer % 10 == 0) level.playSound(null, blockPosition(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, 4.0F, 0.5F);
+        }
+        if (timer == 30) {                    // se abre de golpe
+            level.playSound(null, blockPosition(), SoundEvents.BASALT_BREAK, SoundSource.HOSTILE, 3.0F, 0.5F);
+            level.sendParticles(ParticleTypes.WHITE_ASH, getX(), getY() + 1.5, getZ(), 200, 3.0, 1.5, 3.0, 0.05);
+            level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, getX(), getY() + 1.0, getZ(), 30, 2.0, 0.5, 2.0, 0.02);
+        }
+        if (timer == 54) {                    // ruge alzada
+            level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 6.0F, 0.45F);
+            Vec3 m = mouthPos();
+            level.sendParticles(ParticleTypes.FLAME, m.x, m.y + 1, m.z, 40, 0.6, 0.6, 0.6, 0.08);
+        }
+        if (timer == 80) {                    // pisotón: aparta a todos, sin daño
+            level.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3.0F, 0.5F);
+            for (int i = 0; i < 36; i++) {
+                double a = Math.PI * 2 * i / 36;
+                level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BASALT.defaultBlockState()),
+                        getX() + Math.cos(a) * 3, getY() + 0.1, getZ() + Math.sin(a) * 3, 4, 0.3, 0.05, 0.3, 0.2);
+            }
+            for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(10, 2, 10), q -> !q.isSpectator())) {
+                Vec3 away = p.position().subtract(position()).multiply(1, 0, 1).normalize();
+                p.push(away.x * 1.1, 0.45, away.z * 1.1);
+                p.hurtMarked = true;
+            }
+        }
+        if (timer > 80 && target != null) turnTo(target.getX() - getX(), target.getZ() - getZ(), 4);
+        if (timer >= INTRO_TIME) {
+            setIntro(false);
+            setPhase(STALK);
+        }
+    }
+
     // ---------- Lógica ----------
 
     @Override
@@ -182,6 +237,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
         ServerPlayer target = nearest(level);
 
         switch (phase()) {
+            case INTRO -> introTick(level, target);
             case STALK -> stalk(level, target);
             case INHALE -> inhale(level, target);
             case FIRE -> fire(level);
@@ -218,7 +274,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
             }
             default -> setPhase(STALK);
         }
-        if (!enraged && getHealth() / getMaxHealth() < 0.4F) enrage(level);
+        if (!enraged && !inIntro() && getHealth() / getMaxHealth() < 0.4F) enrage(level);
     }
 
     private void stalk(ServerLevel level, @Nullable ServerPlayer target) {
@@ -432,6 +488,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     public boolean hurt(DamageSource source, float amount) {
         if (level().isClientSide) return false;
         if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(source, amount);
+        if (inIntro()) return false;
         int p = phase();
         if (p == ROLLING || p == CURL) {
             if (source.getEntity() instanceof ServerPlayer) level().playSound(null, blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, 0.8F, 1.4F);
@@ -534,6 +591,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
         controllers.add(new AnimationController<>(this, "main", 6, state -> {
             if (isDeadOrDying()) return state.setAndContinue(A_DEATH);
             return switch (phase()) {
+                case INTRO -> state.setAndContinue(A_INTRO);
                 case INHALE -> state.setAndContinue(A_INHALE);
                 case FIRE -> state.setAndContinue(A_FIRE);
                 case STUNNED -> state.setAndContinue(A_STUN);

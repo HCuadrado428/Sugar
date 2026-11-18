@@ -171,6 +171,7 @@ public final class SugarCommands {
         boss.bindTemple(data.type);
         boss.rescale();
         level.addFreshEntity(boss);
+        boss.beginIntro();
 
         data.bossId = boss.getUUID();
         TempleSavedData.get(c.getSource().getServer()).setDirty();
