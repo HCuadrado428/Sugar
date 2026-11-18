@@ -666,7 +666,7 @@
      "name": "jaw",
      "pivot": [
       0,
-      80,
+      76,
       -4
      ],
      "parent": "head",

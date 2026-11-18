@@ -80,7 +80,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     private static final RawAnimation A_DEATH = RawAnimation.begin().thenPlayAndHold(P + "death");
 
     // Posición de la boca medida en el modelo (bloques): al inhalar y al escupir fuego
-    private static final double MOUTH_UP = 2.8, MOUTH_FWD = 3.6, FIRE_UP = 0.8, FIRE_FWD = 3.0;
+    private static final double MOUTH_UP = 2.9, MOUTH_FWD = 3.9, FIRE_UP = 1.0, FIRE_FWD = 3.5;
     private static final int INHALE_TIME = 60, FIRE_TIME = 36, STUN_TIME = 160, CURL_TIME = 12, ROLL_TIME = 120,
             UNCURL_TIME = 26, ROAR_TIME = 40, STOMP_TIME = 20;
     private static final int MAX_HATCHLINGS = 12;
@@ -187,12 +187,12 @@ public class AshBeast extends SugarBoss implements GeoEntity {
             case FIRE -> fire(level);
             case STUNNED -> {
                 if (timer % 10 == 0) {
-                    Vec3 h = position().add(forward().scale(2.5)).add(0, 1.2, 0);
+                    Vec3 h = position().add(forward().scale(3.0)).add(0, 1.4, 0);
                     level.sendParticles(ParticleTypes.LARGE_SMOKE, h.x, h.y, h.z, 3, 0.3, 0.2, 0.3, 0.02);
                 }
                 for (int k = 0; k < 3; k++) {
                     double a = timer * 0.35 + k * Math.PI * 2 / 3;
-                    Vec3 h = position().add(forward().scale(2.5));
+                    Vec3 h = position().add(forward().scale(3.0));
                     level.sendParticles(ParticleTypes.CRIT, h.x + Math.cos(a), h.y + 2.0, h.z + Math.sin(a), 1, 0, 0, 0, 0);
                 }
                 if (timer >= STUN_TIME) setPhase(STALK);
