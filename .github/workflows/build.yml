@@ -25,6 +25,10 @@ jobs:
           chmod +x gradlew
           ./gradlew build --no-daemon --stacktrace
 
+      - name: Descargar recursos de Minecraft (con reintentos)
+        run: |
+          for i in 1 2 3 4; do ./gradlew downloadAssets --no-daemon && break; sleep 10; done
+
       - name: Pruebas en servidor
         run: ./gradlew runGameTestServer --no-daemon 2>&1 | tee gametest.log; grep -q "required tests passed" gametest.log
 
