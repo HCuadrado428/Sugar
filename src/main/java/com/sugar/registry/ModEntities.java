@@ -56,7 +56,7 @@ public final class ModEntities {
 
     public static final RegistryObject<EntityType<EchoDrummer>> ECHO_DRUMMER = ENTITIES.register("echo_drummer",
             () -> EntityType.Builder.of(EchoDrummer::new, MobCategory.MONSTER)
-                    .sized(2.8F, 4.0F).fireImmune().clientTrackingRange(12).updateInterval(1)
+                    .sized(3.0F, 4.4F).fireImmune().clientTrackingRange(12).updateInterval(1)
                     .build(SugarMod.id("echo_drummer").toString()));
 
     public static final RegistryObject<EntityType<DrummerHand>> DRUMMER_HAND = ENTITIES.register("drummer_hand",

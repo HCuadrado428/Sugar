@@ -57,7 +57,7 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
     public static final int INTRO = 0, HIDDEN = 1, EXPOSE = 2, EXPOSED = 3, RETREAT = 4, LAUGH = 5;
     public static final int ARENA_R = 15;
     private static final int INTRO_TOTAL = 150, INTRO_REVEAL = 70, EXPOSE_TIME = 16, EXPOSED_TIME = 160, RETREAT_TIME = 26, LAUGH_TIME = 32;
-    private static final double HOVER_H = 6.0, EXPOSED_H = 2.2;
+    private static final double HOVER_H = 6.0, EXPOSED_H = 0.6;
     private static final int[] INTRO_DRUMS = {4, 24, 40, 52, 61, 68, 73, 77, 80, 83, 85, 87, 89};
 
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(EchoDrummer.class, EntityDataSerializers.INT);
