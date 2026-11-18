@@ -25,6 +25,9 @@ jobs:
           chmod +x gradlew
           ./gradlew build --no-daemon --stacktrace
 
+      - name: Pruebas en servidor
+        run: ./gradlew runGameTestServer --no-daemon 2>&1 | tee gametest.log; grep -q "required tests passed" gametest.log
+
       - name: Subir .jar
         uses: actions/upload-artifact@v4
         with:
