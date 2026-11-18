@@ -8,6 +8,7 @@ import com.sugar.temple.TempleData;
 import com.sugar.temple.TempleService;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -27,7 +28,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -47,7 +51,8 @@ import java.util.Optional;
  *
  * Ciclo:
  *  ENTERRADA → (elige respiradero) EMERGIENDO → ASOMADA: solo la aturde el Martillo de Obsidiana
- *  (más golpes cuantos más jugadores). Si nadie la aturde, escupe magma y vuelve a hundirse.
+ *  (más golpes cuantos más jugadores). Mientras está asomada lanza un chorro de fuego que barre
+ *  la arena de lado a lado; si nadie la aturde, vuelve a hundirse.
  *  ATURDIDA: recibe todo el daño durante 8 s → DESPEGUE → VUELO en círculos lanzando magma
  *  → PICADO hacia un respiradero → ENTERRADA.
  *  Con muchos jugadores asoman además cabezas señuelo en otros respiraderos.
@@ -60,10 +65,16 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(MagmaSerpent.class, EntityDataSerializers.INT);
 
     private static final RawAnimation ANIM_HEAD = RawAnimation.begin().thenLoop("animation.magma_serpent.head_idle");
-    private static final RawAnimation ANIM_STUNNED = RawAnimation.begin().thenLoop("animation.magma_serpent.stunned");
+    private static final RawAnimation ANIM_STUNNED = RawAnimation.begin()
+            .thenPlay("animation.magma_serpent.stun_hit").thenLoop("animation.magma_serpent.stunned");
     private static final RawAnimation ANIM_FLY = RawAnimation.begin().thenLoop("animation.magma_serpent.fly");
     private static final RawAnimation ANIM_EMERGE = RawAnimation.begin().thenPlay("animation.magma_serpent.emerge");
-    private static final RawAnimation ANIM_SPIT = RawAnimation.begin().thenPlay("animation.magma_serpent.spit");
+    private static final RawAnimation ANIM_BREATH = RawAnimation.begin().thenPlay("animation.magma_serpent.breath");
+
+    // Lanzallamas (sincronizado con la animación "breath": coge aire 0,5 s y escupe fuego hasta los 2,8 s)
+    private static final int BREATH_START = 10, FIRE_START = 20, FIRE_END = 66, HEAD_TIME = 100;
+    private static final double BREATH_RANGE = 13.0, BREATH_ANGLE = Math.toRadians(20);
+    private static final double MOUTH_UP = 3.0, MOUTH_FORWARD = 2.0;     // posición de la boca en la pose de ataque
     private static final RawAnimation ANIM_DEATH = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.death");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -75,6 +86,9 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     @Nullable private BlockPos home;
     @Nullable private BlockPos vent;
     private double flyAngle;
+    private float breathYaw;
+    private float breathPitch;
+    private float breathSweep;
 
     public MagmaSerpent(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -133,19 +147,17 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 if (timer >= 20) setPhase(HEAD);
             }
             case HEAD -> {
-                faceNearestPlayer();
-                if (timer == 13 || timer == 43) triggerAnim("main", "spit");   // coge aire y lanza la cabeza
-                if (timer == 25 || timer == 55) spit(level);
-                if (timer >= 90) setPhase(SUBMERGING);
+                if (timer < BREATH_START) faceNearestPlayer();
+                if (timer == BREATH_START) startBreath(level);
+                if (timer >= FIRE_START && timer <= FIRE_END) breathTick(level, (timer - FIRE_START) / (float) (FIRE_END - FIRE_START));
+                if (timer >= HEAD_TIME) setPhase(SUBMERGING);
             }
             case SUBMERGING -> {
                 moveToward(ventTop().add(0, -6.0, 0), 0.35);
                 if (timer >= 20) setPhase(BURROWED);
             }
             case STUNNED -> {
-                if (timer % 10 == 0) {
-                    level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 4.5, getZ(), 6, 0.6, 0.3, 0.6, 0.01);
-                }
+                stunnedEffects(level);
                 if (timer >= 160) setPhase(TAKEOFF);
             }
             case TAKEOFF -> {
@@ -230,15 +242,91 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 p -> p.isAlive() && !p.isSpectator() && !p.isCreative());
     }
 
-    private void spit(ServerLevel level) {
-        List<ServerPlayer> players = new ArrayList<>(targets(level));
-        if (players.isEmpty()) return;
-        Collections.shuffle(players);
-        Vec3 mouth = position().add(0, 4.2, 0).add(getLookAngle().scale(1.5));
-        for (int i = 0; i < Math.min(3, players.size()); i++) {
-            MagmaBolt.shoot(level, this, mouth, players.get(i).getEyePosition(), scaledDamage(6.0F));
+    private Vec3 forward(float yawDeg) {
+        double r = Math.toRadians(yawDeg);
+        return new Vec3(-Math.sin(r), 0, Math.cos(r));
+    }
+
+    private Vec3 mouth(float yawDeg) {
+        return position().add(0, MOUTH_UP, 0).add(forward(yawDeg).scale(MOUTH_FORWARD));
+    }
+
+    private void startBreath(ServerLevel level) {
+        triggerAnim("main", "breath");
+        List<ServerPlayer> players = targets(level);
+        ServerPlayer target = players.isEmpty() ? null : players.get(random.nextInt(players.size()));
+        if (target != null) face(target.getX() - getX(), target.getZ() - getZ());
+        breathYaw = getYRot();
+        breathSweep = (enraged ? 60.0F : 40.0F) * (random.nextBoolean() ? 1 : -1);
+        if (target != null) {
+            Vec3 m = mouth(breathYaw);
+            double dy = m.y - (target.getY() + 1.0);
+            double dh = Math.sqrt(Math.pow(target.getX() - m.x, 2) + Math.pow(target.getZ() - m.z, 2));
+            breathPitch = (float) Math.max(0, Math.min(50, Math.toDegrees(Math.atan2(dy, Math.max(1, dh)))));
+        } else {
+            breathPitch = 15;
         }
-        level.playSound(null, blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 2.0F, 0.6F);
+        level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 2.5F, 1.3F);
+    }
+
+    /** progress 0→1: barre de un lado a otro escupiendo fuego. */
+    private void breathTick(ServerLevel level, float progress) {
+        float yaw = breathYaw + breathSweep * (float) -Math.cos(Math.PI * progress);
+        setYRot(yaw);
+        yBodyRot = yaw;
+        yHeadRot = yaw;
+
+        double pitch = Math.toRadians(breathPitch);
+        Vec3 fwd = forward(yaw);
+        Vec3 dir = fwd.scale(Math.cos(pitch)).add(0, -Math.sin(pitch), 0).normalize();
+        Vec3 m = mouth(yaw);
+
+        // Chorro de llamas: partículas lanzadas en la dirección del aliento
+        for (int i = 0; i < 6; i++) {
+            Vec3 v = dir.add((random.nextDouble() - 0.5) * 0.18, (random.nextDouble() - 0.5) * 0.14, (random.nextDouble() - 0.5) * 0.18);
+            level.sendParticles(ParticleTypes.FLAME, m.x, m.y, m.z, 0, v.x, v.y, v.z, 0.75 + random.nextDouble() * 0.35);
+        }
+        if (timer % 2 == 0) {
+            Vec3 v = dir.add(0, 0.1, 0);
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, m.x, m.y, m.z, 0, v.x, v.y, v.z, 0.45);
+        }
+        if (timer % 3 == 0) {
+            Vec3 p = m.add(dir.scale(3 + random.nextDouble() * 8));
+            level.sendParticles(ParticleTypes.LAVA, p.x, p.y, p.z, 1, 0.3, 0.3, 0.3, 0.0);
+        }
+        if (timer % 6 == 0) level.playSound(null, BlockPos.containing(m), SoundEvents.FIRE_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.6F);
+        if (timer % 12 == 0) level.playSound(null, BlockPos.containing(m), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 2.0F, 0.5F);
+
+        // Daño en cono (cubrirse detrás de un bloque protege)
+        if (timer % 4 == 0) {
+            for (ServerPlayer p : targets(level)) {
+                Vec3 to = p.position().add(0, 1.0, 0).subtract(m);
+                double dist = to.length();
+                if (dist > BREATH_RANGE || dist < 0.01) continue;
+                double angle = Math.acos(Math.max(-1, Math.min(1, to.normalize().dot(dir))));
+                if (angle > BREATH_ANGLE + 0.15 / Math.max(1, dist)) continue;
+                HitResult hit = level.clip(new ClipContext(m, p.getEyePosition(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+                if (hit.getType() != HitResult.Type.MISS) continue;
+                p.hurt(damageSources().mobAttack(this), scaledDamage(2.0F));
+                p.setSecondsOnFire(5);
+            }
+        }
+    }
+
+    private void stunnedEffects(ServerLevel level) {
+        Vec3 fwd = forward(getYRot());
+        Vec3 head = position().add(fwd.scale(2.9)).add(0, 1.9, 0);
+        // Mareo: chispas girando sobre la cabeza
+        for (int k = 0; k < 3; k++) {
+            double a = timer * 0.35 + k * Math.PI * 2 / 3;
+            level.sendParticles(ParticleTypes.CRIT, head.x + Math.cos(a) * 0.9, head.y, head.z + Math.sin(a) * 0.9, 1, 0, 0, 0, 0);
+        }
+        // Humo por la nariz al respirar
+        if (timer % 15 == 0) {
+            Vec3 nose = position().add(fwd.scale(3.7)).add(0, 0.9, 0);
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, nose.x, nose.y, nose.z, 0, fwd.x, 0.15, fwd.z, 0.12);
+            level.sendParticles(ParticleTypes.SMOKE, nose.x, nose.y, nose.z, 4, 0.15, 0.05, 0.15, 0.01);
+        }
     }
 
     private void dropBolt(ServerLevel level) {
@@ -308,13 +396,40 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     @Override
     protected void tickDeath() {
         deathTime++;
-        if (level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.LAVA, getX(), getY() + 2.5, getZ(), 4, 1.0, 1.5, 1.0, 0.0);
-            sl.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 2.5, getZ(), 6, 1.0, 1.5, 1.0, 0.02);
-            if (deathTime >= 60) {
-                sl.broadcastEntityEvent(this, (byte) 60);
-                remove(RemovalReason.KILLED);
+        if (!(level() instanceof ServerLevel sl)) return;
+        Vec3 fwd = forward(getYRot());
+        BlockPos here = blockPosition();
+
+        if (deathTime == 1) {
+            sl.playSound(null, here, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 5.0F, 0.6F);
+        }
+        if (deathTime <= 38 && deathTime % 4 == 0) {          // se retuerce: estallidos de lava
+            Vec3 p = position().add((random.nextDouble() - 0.5) * 2, 1 + random.nextDouble() * 4, (random.nextDouble() - 0.5) * 2);
+            sl.sendParticles(ParticleTypes.LAVA, p.x, p.y, p.z, 6, 0.4, 0.4, 0.4, 0.0);
+            sl.sendParticles(ParticleTypes.FLAME, p.x, p.y, p.z, 12, 0.3, 0.3, 0.3, 0.05);
+            if (deathTime % 8 == 0) sl.playSound(null, here, SoundEvents.ENDER_DRAGON_HURT, SoundSource.HOSTILE, 3.0F, 0.6F + random.nextFloat() * 0.3F);
+        }
+        if (deathTime == 55) {                                 // la cabeza golpea el suelo
+            Vec3 h = position().add(fwd.scale(2.6)).add(0, 0.5, 0);
+            sl.playSound(null, here, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3.0F, 0.6F);
+            sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BASALT.defaultBlockState()), h.x, h.y, h.z, 60, 1.2, 0.3, 1.2, 0.15);
+            sl.sendParticles(ParticleTypes.LARGE_SMOKE, h.x, h.y, h.z, 20, 1.0, 0.3, 1.0, 0.03);
+        }
+        if (deathTime >= 60 && deathTime % 2 == 0) {           // se deshace en roca y lava
+            for (int i = 0; i < 3; i++) {
+                double t = random.nextDouble();
+                Vec3 p = position().add(fwd.scale(t * 2.8)).add(0, 0.4 + (1 - t) * 3.0, 0);
+                sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.MAGMA_BLOCK.defaultBlockState()), p.x, p.y, p.z, 8, 0.5, 0.4, 0.5, 0.05);
+                sl.sendParticles(ParticleTypes.SMOKE, p.x, p.y, p.z, 4, 0.4, 0.3, 0.4, 0.02);
             }
+            if (deathTime % 6 == 0) sl.playSound(null, here, SoundEvents.BASALT_BREAK, SoundSource.HOSTILE, 2.0F, 0.6F);
+        }
+        if (deathTime >= 80) {
+            sl.sendParticles(ParticleTypes.LAVA, getX(), getY() + 1.5, getZ(), 40, 1.5, 1.2, 1.5, 0.0);
+            sl.sendParticles(ParticleTypes.FLAME, getX(), getY() + 1.5, getZ(), 80, 1.5, 1.2, 1.5, 0.08);
+            sl.playSound(null, here, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 4.0F, 0.8F);
+            sl.broadcastEntityEvent(this, (byte) 60);
+            remove(RemovalReason.KILLED);
         }
     }
 
@@ -443,7 +558,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 case TAKEOFF, FLYING, DIVING -> state.setAndContinue(ANIM_FLY);
                 default -> state.setAndContinue(ANIM_HEAD);
             };
-        }).triggerableAnim("emerge", ANIM_EMERGE).triggerableAnim("spit", ANIM_SPIT));
+        }).triggerableAnim("emerge", ANIM_EMERGE).triggerableAnim("breath", ANIM_BREATH));
     }
 
     @Override
