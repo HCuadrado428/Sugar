@@ -62,7 +62,8 @@ import java.util.Optional;
  */
 public class MagmaSerpent extends SugarBoss implements GeoEntity {
     public static final int BURROWED = 0, EMERGING = 1, HEAD = 2, SUBMERGING = 3,
-            STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7, INTRO = 8;
+            STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7, INTRO = 8, WAKING = 9, PLUNGE = 10;
+    private static final int WAKE_TICKS = 28, PLUNGE_TICKS = 26;
     private static final int INTRO_RISE = 18 + 48, INTRO_LAP = 110, INTRO_TOTAL = INTRO_RISE + INTRO_LAP + 40;   // 48 ticks = animación "intro"
 
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(MagmaSerpent.class, EntityDataSerializers.INT);
@@ -85,6 +86,10 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final double MOUTH_UP = 3.0, MOUTH_FORWARD = 2.0;     // posición de la boca en la pose de ataque
     private static final RawAnimation ANIM_DEATH = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.death");
     private static final RawAnimation ANIM_INTRO = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.intro");
+    private static final RawAnimation ANIM_SUBMERGE = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.submerge");
+    private static final RawAnimation ANIM_WAKE = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.wake");
+    private static final RawAnimation ANIM_TAKEOFF = RawAnimation.begin().thenPlay("animation.magma_serpent.takeoff").thenLoop("animation.magma_serpent.fly");
+    private static final RawAnimation ANIM_DIVE = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.dive");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -99,6 +104,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private float breathPitch;
     private float breathSweep;
     private double takeoffY;
+    private double plungeY;
     private boolean introLap;
     private int introTicks;
 
@@ -231,18 +237,34 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 if (timer >= HEAD_TIME) setPhase(SUBMERGING);
             }
             case SUBMERGING -> {
-                // Se hunde acelerando
+                // Coge impulso y se hunde acelerando (animación "submerge")
                 double u = Math.min(1.0, timer / (double) SUBMERGE_TICKS);
                 Vec3 top = ventTop();
-                setPos(top.x, top.y - 6.0 * u * u * u, top.z);
+                double up = timer <= 5 ? 0.4 * Math.sin(Math.PI * timer / 10.0) : 0;
+                setPos(top.x, top.y + up - 6.0 * u * u * u, top.z);
+                if (timer == 10) lavaSplash(level, 1.0F);
                 if (timer >= SUBMERGE_TICKS) setPhase(BURROWED);
             }
             case STUNNED -> {
                 stunnedEffects(level);
-                if (timer >= 160) setPhase(TAKEOFF);
+                if (timer >= 160) setPhase(WAKING);
+            }
+            case WAKING -> {
+                // Espasmos, se incorpora y ruge enfadada (animación "wake")
+                if (timer <= 7 && timer % 2 == 0) {
+                    level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 2.0, getZ(), 3, 0.6, 0.4, 0.6, 0.02);
+                }
+                if (timer == 16) level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 3.0F, 0.9F);
+                if (timer >= WAKE_TICKS) setPhase(TAKEOFF);
             }
             case TAKEOFF -> {
                 if (timer == 1) takeoffY = getY();
+                if (timer == 11) {                 // aletazo de despegue: levanta ceniza
+                    level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 4.0F, 0.7F);
+                    level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 0.3, getZ(), 30, 2.5, 0.2, 2.5, 0.05);
+                    level.sendParticles(ParticleTypes.WHITE_ASH, getX(), getY() + 0.5, getZ(), 60, 3.0, 0.5, 3.0, 0.05);
+                }
+                if (timer == 24 || timer == 37) level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 3.0F, 0.8F);
                 double u = smooth(Math.min(1.0, timer / (double) TAKEOFF_TICKS));
                 setPos(getX(), takeoffY + (flyHeight() - takeoffY) * u, getZ());
                 if (timer >= TAKEOFF_TICKS) {
@@ -266,9 +288,22 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 }
             }
             case DIVING -> {
-                Vec3 target = ventTop();
+                // Picado hacia el respiradero (animación "dive": gira hasta quedar cabeza abajo)
+                Vec3 target = ventTop().add(0, 1.5, 0);
                 moveToward(target, 0.8);
-                if (position().distanceTo(target) < 1.0 || timer > 120) setPhase(SUBMERGING);
+                if (position().distanceTo(target) < 1.0 || timer > 120) {
+                    plungeY = getY();
+                    setPhase(PLUNGE);
+                }
+            }
+            case PLUNGE -> {
+                // Entra de cabeza; la cola es lo último en desaparecer
+                double u = Math.min(1.0, timer / (double) PLUNGE_TICKS);
+                Vec3 top = ventTop();
+                setPos(top.x, plungeY - 10.5 * u * u, top.z);
+                if (timer == 3) lavaSplash(level, 1.4F);
+                if (timer == 18) lavaSplash(level, 0.8F);
+                if (timer >= PLUNGE_TICKS) setPhase(BURROWED);
             }
             default -> setPhase(BURROWED);
         }
@@ -282,6 +317,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         setPos(vent.getX() + 0.5, vent.getY() - 5.0, vent.getZ() + 0.5);
         setPhase(EMERGING);
         triggerAnim("main", "emerge");
+        lavaSplash(level, 1.2F);
         level.playSound(null, vent, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 3.0F, 0.7F);
         level.sendParticles(ParticleTypes.LAVA, vent.getX() + 0.5, vent.getY() + 1.2, vent.getZ() + 0.5, 20, 0.6, 0.3, 0.6, 0.0);
 
@@ -298,6 +334,17 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 level.addFreshEntity(decoy);
             }
         }
+    }
+
+    /** Salpicadura de lava en el respiradero actual (al salir o al meterse). */
+    private void lavaSplash(ServerLevel level, float size) {
+        if (vent == null) return;
+        double x = vent.getX() + 0.5, y = vent.getY() + 1.1, z = vent.getZ() + 0.5;
+        level.sendParticles(ParticleTypes.LAVA, x, y, z, (int) (25 * size), 0.7 * size, 0.3, 0.7 * size, 0.0);
+        level.sendParticles(ParticleTypes.FLAME, x, y, z, (int) (30 * size), 0.9 * size, 0.4, 0.9 * size, 0.06);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, x, y + 0.3, z, (int) (12 * size), 0.6 * size, 0.4, 0.6 * size, 0.03);
+        level.playSound(null, vent, SoundEvents.BUCKET_EMPTY_LAVA, SoundSource.HOSTILE, 2.5F * size, 0.6F);
+        level.playSound(null, vent, SoundEvents.LAVA_POP, SoundSource.HOSTILE, 2.5F, 0.5F);
     }
 
     private void stun(ServerLevel level) {
@@ -481,7 +528,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             }
             return false;
         }
-        if (phase == STUNNED || phase == TAKEOFF || phase == FLYING) {
+        if (phase == STUNNED || phase == WAKING || phase == TAKEOFF || phase == FLYING) {
             return super.hurt(source, amount);
         }
         return false;
@@ -674,7 +721,11 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             return switch (phase()) {
                 case INTRO -> state.setAndContinue(ANIM_INTRO);
                 case STUNNED -> state.setAndContinue(ANIM_STUNNED);
-                case TAKEOFF, FLYING, DIVING -> state.setAndContinue(ANIM_FLY);
+                case WAKING -> state.setAndContinue(ANIM_WAKE);
+                case TAKEOFF -> state.setAndContinue(ANIM_TAKEOFF);
+                case FLYING -> state.setAndContinue(ANIM_FLY);
+                case DIVING, PLUNGE -> state.setAndContinue(ANIM_DIVE);
+                case SUBMERGING -> state.setAndContinue(ANIM_SUBMERGE);
                 default -> state.setAndContinue(ANIM_HEAD);
             };
         }).triggerableAnim("emerge", ANIM_EMERGE).triggerableAnim("breath", ANIM_BREATH).triggerableAnim("intro", ANIM_INTRO));
