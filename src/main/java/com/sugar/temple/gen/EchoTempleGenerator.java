@@ -168,14 +168,14 @@ public class EchoTempleGenerator implements TempleGenerator {
         }
         b.set(CX, 0, CZ, ModBlocks.BOSS_ALTAR.get());
         // Puente de entrada desde la antesala, con escalera desde el agua
-        b.fill(85, 0, 6, CX - R, 0, 8, Blocks.POLISHED_DEEPSLATE_BRICKS.defaultBlockState());
+        b.fill(85, 0, 6, CX - R, 0, 8, Blocks.DEEPSLATE_TILES.defaultBlockState());
         b.air(85, 1, 6, CX - R + 1, 3, 8);
         BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.EAST);
         for (int y = PIT + 1; y <= 0; y++) {
             b.set(CX - CAVE_R + 1, y, 10, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
             b.set(CX - CAVE_R + 2, y, 10, ladder);
         }
-        b.fill(CX - CAVE_R + 1, 0, 9, CX - CAVE_R + 3, 0, 9, Blocks.POLISHED_DEEPSLATE_BRICKS.defaultBlockState());
+        b.fill(CX - CAVE_R + 1, 0, 9, CX - CAVE_R + 3, 0, 9, Blocks.DEEPSLATE_TILES.defaultBlockState());
         // Luz: faroles de alma en la pared y cristales de sculk en la cúpula
         for (int i = 0; i < 12; i++) {
             double a = Math.PI * 2 * i / 12;
