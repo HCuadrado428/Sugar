@@ -14,6 +14,7 @@ public final class SugarConfig {
     public static final ForgeConfigSpec.BooleanValue PRESENCE_COUNTS;
     public static final ForgeConfigSpec.IntValue MVP_COUNT;
     public static final ForgeConfigSpec.BooleanValue RESPAWN_AT_CHECKPOINT;
+    public static final ForgeConfigSpec.BooleanValue INVERT_BREATH_SWEEP;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -49,6 +50,12 @@ public final class SugarConfig {
         RESPAWN_AT_CHECKPOINT = b
                 .comment("Reaparecer en el último checkpoint mientras el evento está activo")
                 .define("reaparecerEnCheckpoint", true);
+        b.pop();
+
+        b.comment("Ajustes de los bosses").push("bosses");
+        INVERT_BREATH_SWEEP = b
+                .comment("Si en el juego el fuego de la Sierpe va hacia el lado contrario al que gira su cabeza, pon esto a true")
+                .define("invertirBarridoLanzallamas", false);
         b.pop();
 
         SPEC = b.build();

@@ -1,5 +1,6 @@
 package com.sugar.entity;
 
+import com.sugar.SugarConfig;
 import com.sugar.block.MagmaVentBlock;
 import com.sugar.boss.SugarBoss;
 import com.sugar.registry.ModEntities;
@@ -76,7 +77,10 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final int BREATH_START = 14, FIRE_START = BREATH_START + 12, FIRE_END = BREATH_START + 56, HEAD_TIME = 104;
     private static final int EMERGE_TICKS = 22, SUBMERGE_TICKS = 20, TAKEOFF_TICKS = 40;
     private static final float TURN_SPEED = 7.0F;          // grados por tick al girar
-    private static final double BREATH_RANGE = 13.0, BREATH_ANGLE = Math.toRadians(20);
+    private static final double BREATH_RANGE = 15.0, BREATH_ANGLE = Math.toRadians(24);
+    // Barrido del cuello y la cabeza (igual que la animación "breath": 70° a cada lado, izquierda → derecha → izquierda)
+    private static final float SWEEP_DEG = 70.0F, ENRAGED_BODY_SWEEP = 25.0F;
+    private static final float FIRE_T0 = 0.62F, FIRE_T1 = 2.8F;
     private static final double MOUTH_UP = 3.0, MOUTH_FORWARD = 2.0;     // posición de la boca en la pose de ataque
     private static final RawAnimation ANIM_DEATH = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.death");
 
@@ -93,7 +97,6 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private float breathPitch;
     private float breathSweep;
     private double takeoffY;
-    private float breathFrom;
 
     public MagmaSerpent(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -158,8 +161,8 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             case HEAD -> {
                 if (timer < BREATH_START) faceNearestPlayer();
                 if (timer == BREATH_START) startBreath(level);
-                if (timer > BREATH_START && timer < FIRE_START) {      // mientras coge aire, gira hacia el inicio del barrido
-                    float yaw = Mth.approachDegrees(getYRot(), breathYaw - breathSweep, 9.0F);
+                if (timer > BREATH_START && timer < FIRE_START) {      // mientras coge aire, se encara al grupo
+                    float yaw = Mth.approachDegrees(getYRot(), breathYaw, 9.0F);
                     setYRot(yaw); yBodyRot = yaw; yHeadRot = yaw;
                 }
                 if (timer >= FIRE_START && timer <= FIRE_END) breathTick(level, (timer - FIRE_START) / (float) (FIRE_END - FIRE_START));
@@ -275,7 +278,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         ServerPlayer target = players.isEmpty() ? null : players.get(random.nextInt(players.size()));
         breathYaw = target == null ? getYRot()
                 : (float) Math.toDegrees(Math.atan2(target.getZ() - getZ(), target.getX() - getX())) - 90.0F;
-        breathSweep = (enraged ? 60.0F : 40.0F) * (random.nextBoolean() ? 1 : -1);
+        breathSweep = enraged ? ENRAGED_BODY_SWEEP * (random.nextBoolean() ? 1 : -1) : 0.0F;
         if (target != null) {
             Vec3 m = mouth(breathYaw);
             double dy = m.y - (target.getY() + 1.0);
@@ -287,18 +290,34 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 2.5F, 1.3F);
     }
 
-    /** progress 0→1: barre de un lado a otro escupiendo fuego. */
-    private void breathTick(ServerLevel level, float progress) {
-        // Empieza donde se quedó al coger aire y barre suavemente hasta el otro lado
-        float startYaw = progress == 0 ? getYRot() : breathFrom;
-        if (progress == 0) breathFrom = startYaw;
-        float endYaw = breathYaw + breathSweep;
-        float yaw = startYaw + Mth.wrapDegrees(endYaw - startYaw) * (float) smooth(progress);
-        setYRot(yaw);
-        yBodyRot = yaw;
-        yHeadRot = yaw;
+    /** Posición del barrido de la animación "breath" (-1..1) en el segundo t. */
+    private static float sweep(float t) {
+        if (t <= 0) return 0;
+        if (t < FIRE_T0) return (float) -smooth(t / FIRE_T0);
+        if (t <= FIRE_T1) return (float) -Math.cos(Math.PI * 2 * (t - FIRE_T0) / (FIRE_T1 - FIRE_T0));
+        if (t < FIRE_T1 + 0.3F) return (float) (-1 + smooth((t - FIRE_T1) / 0.3F));
+        return 0;
+    }
 
-        double pitch = Math.toRadians(breathPitch);
+    /** Cabeceo de la animación (grados, positivo = apunta más abajo). */
+    private static float nod(float t) {
+        if (t < FIRE_T0 || t > FIRE_T1) return 0;
+        return (float) (8.0 * Math.sin(Math.PI * 4 * (t - FIRE_T0) / (FIRE_T1 - FIRE_T0)));
+    }
+
+    /** Escupe fuego en la dirección de la cabeza, que barre de lado a lado mientras el cuerpo se queda quieto. */
+    private void breathTick(ServerLevel level, float progress) {
+        float t = (timer - BREATH_START) / 20.0F;                   // segundo de la animación
+        float bodyYaw = breathYaw + breathSweep * (float) Math.sin(Math.PI * progress);
+        setYRot(bodyYaw);
+        yBodyRot = bodyYaw;
+        yHeadRot = bodyYaw;
+
+        float sign = SugarConfig.INVERT_BREATH_SWEEP.get() ? -1.0F : 1.0F;
+        float yaw = bodyYaw + sign * SWEEP_DEG * sweep(t);          // hacia dónde mira la cabeza
+        float pitchDeg = breathPitch + sign * nod(t);
+
+        double pitch = Math.toRadians(Math.max(0, Math.min(60, pitchDeg)));
         Vec3 fwd = forward(yaw);
         Vec3 dir = fwd.scale(Math.cos(pitch)).add(0, -Math.sin(pitch), 0).normalize();
         Vec3 m = mouth(yaw);
