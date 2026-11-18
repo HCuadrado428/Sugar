@@ -63,7 +63,8 @@ import java.util.UUID;
  * Por debajo del 40%: las grietas entran en erupción y rueda más a menudo.
  */
 public class AshBeast extends SugarBoss implements GeoEntity {
-    public static final int STALK = 0, INHALE = 1, FIRE = 2, STUNNED = 3, CURL = 4, ROLLING = 5, UNCURL = 6, ROAR = 7, STOMP = 8, INTRO = 9;
+    public static final int STALK = 0, INHALE = 1, FIRE = 2, STUNNED = 3, CURL = 4, ROLLING = 5, UNCURL = 6, ROAR = 7, STOMP = 8, INTRO = 9, RECOVER = 10, FIRE_END = 11;
+    private static final int RECOVER_TIME = 38, FIRE_WINDUP = 12, FIRE_END_TIME = 16;
     private static final int INTRO_TIME = 120;
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(AshBeast.class, EntityDataSerializers.INT);
 
@@ -71,7 +72,9 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     private static final RawAnimation A_IDLE = RawAnimation.begin().thenLoop(P + "idle");
     private static final RawAnimation A_WALK = RawAnimation.begin().thenLoop(P + "walk");
     private static final RawAnimation A_INHALE = RawAnimation.begin().thenPlayAndHold(P + "inhale");
-    private static final RawAnimation A_FIRE = RawAnimation.begin().thenLoop(P + "breath");
+    private static final RawAnimation A_FIRE = RawAnimation.begin().thenPlay(P + "pre_fire").thenLoop(P + "breath");
+    private static final RawAnimation A_FIRE_END = RawAnimation.begin().thenPlayAndHold(P + "fire_end");
+    private static final RawAnimation A_GET_UP = RawAnimation.begin().thenPlayAndHold(P + "get_up");
     private static final RawAnimation A_STUN = RawAnimation.begin().thenPlay(P + "stun_hit").thenLoop(P + "stunned");
     private static final RawAnimation A_CURL = RawAnimation.begin().thenPlay(P + "roll_start").thenLoop(P + "roll");
     private static final RawAnimation A_ROLL = RawAnimation.begin().thenLoop(P + "roll");
@@ -258,7 +261,31 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                     Vec3 h = position().add(forward().scale(3.0));
                     level.sendParticles(ParticleTypes.CRIT, h.x + Math.cos(a), h.y + 2.0, h.z + Math.sin(a), 1, 0, 0, 0, 0);
                 }
-                if (timer >= STUN_TIME) setPhase(STALK);
+                if (timer >= STUN_TIME) setPhase(RECOVER);
+            }
+            case RECOVER -> {
+                // Se levanta: patas delanteras, traseras y se sacude como un perro (animación "get_up")
+                if (timer == 8) level.playSound(null, blockPosition(), SoundEvents.RAVAGER_STUNNED, SoundSource.HOSTILE, 2.0F, 0.8F);
+                if (timer == 14 || timer == 21) level.playSound(null, blockPosition(), SoundEvents.RAVAGER_STEP, SoundSource.HOSTILE, 2.5F, 0.6F);
+                if (timer >= 22 && timer <= 31 && timer % 2 == 0) {
+                    level.sendParticles(ParticleTypes.WHITE_ASH, getX(), getY() + 2.0, getZ(), 40, 1.8, 0.8, 1.8, 0.05);
+                    level.sendParticles(ParticleTypes.ASH, getX(), getY() + 2.0, getZ(), 20, 1.5, 0.6, 1.5, 0.03);
+                }
+                if (timer == 22) level.playSound(null, blockPosition(), SoundEvents.BASALT_STEP, SoundSource.HOSTILE, 2.0F, 0.6F);
+                if (timer == 33) {
+                    Vec3 n = position().add(forward().scale(4.2)).add(0, 1.6, 0);
+                    level.sendParticles(ParticleTypes.LARGE_SMOKE, n.x, n.y, n.z, 0, forward().x, 0.2, forward().z, 0.25);
+                }
+                if (target != null && timer > 24) turnTo(target.getX() - getX(), target.getZ() - getZ(), 5);
+                if (timer >= RECOVER_TIME) setPhase(STALK);
+            }
+            case FIRE_END -> {
+                // Cierra la boca, sacude la cabeza y echa humo (animación "fire_end")
+                if (timer == 6) {
+                    Vec3 n = position().add(forward().scale(4.2)).add(0, 1.4, 0);
+                    level.sendParticles(ParticleTypes.LARGE_SMOKE, n.x, n.y, n.z, 8, 0.3, 0.2, 0.3, 0.03);
+                }
+                if (timer >= FIRE_END_TIME) setPhase(STALK);
             }
             case CURL -> {
                 if (target != null) turnTo(target.getX() - getX(), target.getZ() - getZ(), 12);
@@ -363,6 +390,8 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     }
 
     private void fire(ServerLevel level) {
+        if (timer == 1) level.playSound(null, blockPosition(), SoundEvents.BLAZE_AMBIENT, SoundSource.HOSTILE, 2.5F, 0.4F);
+        if (timer < FIRE_WINDUP) return;            // coge aire y lanza la cabeza (animación "pre_fire")
         Vec3 fwd = forward();
         double sway = Math.toRadians(12) * Math.sin(Math.PI * 2 * timer / 32.0);   // la cabeza oscila al escupir
         Vec3 dir = new Vec3(fwd.x * Math.cos(sway) - fwd.z * Math.sin(sway), -0.08, fwd.x * Math.sin(sway) + fwd.z * Math.cos(sway)).normalize();
@@ -373,7 +402,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
         }
         if (timer % 2 == 0) level.sendParticles(ParticleTypes.LARGE_SMOKE, m.x, m.y, m.z, 0, dir.x, 0.15, dir.z, 0.35);
         if (timer % 8 == 0) level.playSound(null, blockPosition(), SoundEvents.FIRE_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.5F);
-        if (timer == 1) level.playSound(null, blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 3.0F, 0.4F);
+        if (timer == FIRE_WINDUP) level.playSound(null, blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 3.0F, 0.4F);
         if (timer % 4 == 0) {
             for (ServerPlayer p : targets(level)) {
                 Vec3 to = p.position().add(0, 0.8, 0).subtract(m);
@@ -386,7 +415,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                 p.setSecondsOnFire(4);
             }
         }
-        if (timer >= (enraged ? FIRE_TIME + 16 : FIRE_TIME)) setPhase(STALK);
+        if (timer >= FIRE_WINDUP + (enraged ? FIRE_TIME + 16 : FIRE_TIME)) setPhase(FIRE_END);
     }
 
     private void roll(ServerLevel level) {
@@ -501,7 +530,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
             if (source.getEntity() instanceof ServerPlayer) level().playSound(null, blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.HOSTILE, 0.8F, 1.4F);
             return false;
         }
-        if (p == STUNNED) return super.hurt(source, amount);
+        if (p == STUNNED || p == RECOVER) return super.hurt(source, amount);
         if (source.getEntity() instanceof ServerPlayer player && hintCooldown == 0 && !source.is(DamageTypeTags.IS_EXPLOSION)) {
             hintCooldown = 60;
             player.displayClientMessage(Component.literal("Su coraza es muy dura... ¡Métele una bomba en la boca cuando inhale!")
@@ -601,6 +630,8 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                 case INTRO -> state.setAndContinue(A_INTRO);
                 case INHALE -> state.setAndContinue(A_INHALE);
                 case FIRE -> state.setAndContinue(A_FIRE);
+                case FIRE_END -> state.setAndContinue(A_FIRE_END);
+                case RECOVER -> state.setAndContinue(A_GET_UP);
                 case STUNNED -> state.setAndContinue(A_STUN);
                 case CURL -> state.setAndContinue(A_CURL);
                 case ROLLING -> state.setAndContinue(A_ROLL);
