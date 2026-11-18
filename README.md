@@ -5,7 +5,7 @@ Mod de bosses de evento para SMP (Forge 1.20.1 + GeckoLib). Tres templos con rec
 | Templo (id) | Boss | Estado |
 |---|---|---|
 | Corazón del Volcán (`volcan`) | Sierpe de Magma | ✅ Listo para probar |
-| Las Fauces de Ceniza (`ceniza`) | Gran Bestia de Ceniza | Fase 3 |
+| Las Fauces de Ceniza (`ceniza`) | Gran Bestia de Ceniza | ✅ Listo para probar |
 | Santuario del Eco (`eco`) | Tamborilero Sin Cuerpo | Fase 4 |
 
 ## Descargar el .jar
@@ -50,6 +50,25 @@ Orden típico de un evento:
 /eventboss summon volcan
 /event reset volcan            (al terminar)
 ```
+
+## Evento: Las Fauces de Ceniza
+
+Templo por defecto: `/eventtemple place ceniza` (~125 × 50 bloques hacia el este).
+
+1. **Vestíbulo** → puerta canal 0 (`/event start ceniza`).
+2. **Paso de los géiseres**: pasarela sobre magma con filas de géiseres que se alternan y un tramo de basalto inestable.
+3. **Galería de estatuas**: tres muros de Estatuas Agrietadas; solo las rompen las Bombas de Ceniza (las dan las Matas de Pólvora, que rebrotan a los 10 s). Hay géiseres entre muro y muro.
+4. **Antesala**: checkpoint y 4 cofres (4 bombas, comida, manzana dorada, flechas). Puerta canal 2 para el admin.
+5. **Caverna**: cúpula con foso de lava junto a la pared, 6 matas de pólvora y 6 grietas. `/eventboss summon ceniza`.
+
+**Gran Bestia de Ceniza**: acecha a los jugadores y da pisotones (saltar los esquiva). Su coraza solo deja pasar el 20% del daño. Cada pocos segundos:
+- **Inhala** (3 s, avisa en pantalla): aspira bombas y ceniza. Si se traga suficientes Bombas de Ceniza (1 + 1 por cada 12 jugadores) queda **aturdida 8 s** y recibe todo el daño. Si no, escupe un abanico de fuego.
+- **Rueda** hecha una bola: embiste rebotando en las paredes y lanza a la gente hacia el foso. Es invulnerable mientras rueda.
+- **Ruge** e invoca Crías de Ceniza desde las grietas (máximo 12).
+
+Por debajo del 40% de vida, las grietas entran en erupción y rueda más a menudo.
+
+Bloques nuevos: **Mata de Pólvora**, **Estatua Agrietada**, **Géiser de Fuego** (fase 0-3 con shift + clic derecho en creativo; cada fase retrasa la erupción 1 s).
 
 ## Montar vuestro propio templo
 
