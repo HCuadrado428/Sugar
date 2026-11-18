@@ -22,6 +22,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -72,7 +73,9 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final RawAnimation ANIM_BREATH = RawAnimation.begin().thenPlay("animation.magma_serpent.breath");
 
     // Lanzallamas (sincronizado con la animación "breath": coge aire 0,5 s y escupe fuego hasta los 2,8 s)
-    private static final int BREATH_START = 10, FIRE_START = 20, FIRE_END = 66, HEAD_TIME = 100;
+    private static final int BREATH_START = 14, FIRE_START = BREATH_START + 12, FIRE_END = BREATH_START + 56, HEAD_TIME = 104;
+    private static final int EMERGE_TICKS = 22, SUBMERGE_TICKS = 20, TAKEOFF_TICKS = 40;
+    private static final float TURN_SPEED = 7.0F;          // grados por tick al girar
     private static final double BREATH_RANGE = 13.0, BREATH_ANGLE = Math.toRadians(20);
     private static final double MOUTH_UP = 3.0, MOUTH_FORWARD = 2.0;     // posición de la boca en la pose de ataque
     private static final RawAnimation ANIM_DEATH = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.death");
@@ -89,6 +92,8 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private float breathYaw;
     private float breathPitch;
     private float breathSweep;
+    private double takeoffY;
+    private float breathFrom;
 
     public MagmaSerpent(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -143,26 +148,39 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 if (timer >= 50) emerge(level);
             }
             case EMERGING -> {
-                moveToward(ventTop(), 0.3);
-                if (timer >= 20) setPhase(HEAD);
+                // Sale con impulso y se asienta con un pequeño rebote
+                double u = backOut(Math.min(1.0, timer / (double) EMERGE_TICKS));
+                Vec3 top = ventTop();
+                setPos(top.x, top.y - 5.0 + 5.0 * u, top.z);
+                faceNearestPlayer();
+                if (timer >= EMERGE_TICKS) setPhase(HEAD);
             }
             case HEAD -> {
                 if (timer < BREATH_START) faceNearestPlayer();
                 if (timer == BREATH_START) startBreath(level);
+                if (timer > BREATH_START && timer < FIRE_START) {      // mientras coge aire, gira hacia el inicio del barrido
+                    float yaw = Mth.approachDegrees(getYRot(), breathYaw - breathSweep, 9.0F);
+                    setYRot(yaw); yBodyRot = yaw; yHeadRot = yaw;
+                }
                 if (timer >= FIRE_START && timer <= FIRE_END) breathTick(level, (timer - FIRE_START) / (float) (FIRE_END - FIRE_START));
                 if (timer >= HEAD_TIME) setPhase(SUBMERGING);
             }
             case SUBMERGING -> {
-                moveToward(ventTop().add(0, -6.0, 0), 0.35);
-                if (timer >= 20) setPhase(BURROWED);
+                // Se hunde acelerando
+                double u = Math.min(1.0, timer / (double) SUBMERGE_TICKS);
+                Vec3 top = ventTop();
+                setPos(top.x, top.y - 6.0 * u * u * u, top.z);
+                if (timer >= SUBMERGE_TICKS) setPhase(BURROWED);
             }
             case STUNNED -> {
                 stunnedEffects(level);
                 if (timer >= 160) setPhase(TAKEOFF);
             }
             case TAKEOFF -> {
-                moveToward(new Vec3(getX(), flyHeight(), getZ()), 0.4);
-                if (timer >= 40) {
+                if (timer == 1) takeoffY = getY();
+                double u = smooth(Math.min(1.0, timer / (double) TAKEOFF_TICKS));
+                setPos(getX(), takeoffY + (flyHeight() - takeoffY) * u, getZ());
+                if (timer >= TAKEOFF_TICKS) {
                     Vec3 c = center();
                     flyAngle = Math.atan2(getZ() - c.z, getX() - c.x);
                     setPhase(FLYING);
@@ -255,8 +273,8 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         triggerAnim("main", "breath");
         List<ServerPlayer> players = targets(level);
         ServerPlayer target = players.isEmpty() ? null : players.get(random.nextInt(players.size()));
-        if (target != null) face(target.getX() - getX(), target.getZ() - getZ());
-        breathYaw = getYRot();
+        breathYaw = target == null ? getYRot()
+                : (float) Math.toDegrees(Math.atan2(target.getZ() - getZ(), target.getX() - getX())) - 90.0F;
         breathSweep = (enraged ? 60.0F : 40.0F) * (random.nextBoolean() ? 1 : -1);
         if (target != null) {
             Vec3 m = mouth(breathYaw);
@@ -271,7 +289,11 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
 
     /** progress 0→1: barre de un lado a otro escupiendo fuego. */
     private void breathTick(ServerLevel level, float progress) {
-        float yaw = breathYaw + breathSweep * (float) -Math.cos(Math.PI * progress);
+        // Empieza donde se quedó al coger aire y barre suavemente hasta el otro lado
+        float startYaw = progress == 0 ? getYRot() : breathFrom;
+        if (progress == 0) breathFrom = startYaw;
+        float endYaw = breathYaw + breathSweep;
+        float yaw = startYaw + Mth.wrapDegrees(endYaw - startYaw) * (float) smooth(progress);
         setYRot(yaw);
         yBodyRot = yaw;
         yHeadRot = yaw;
@@ -495,11 +517,22 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         if (p != null) face(p.getX() - getX(), p.getZ() - getZ());
     }
 
+    /** Gira poco a poco hacia la dirección indicada (sin giros bruscos). */
     private void face(double dx, double dz) {
-        float yaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90.0F;
+        float target = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90.0F;
+        float yaw = Mth.approachDegrees(getYRot(), target, TURN_SPEED);
         setYRot(yaw);
         yBodyRot = yaw;
         yHeadRot = yaw;
+    }
+
+    private static double smooth(double x) {
+        return x * x * (3 - 2 * x);
+    }
+
+    private static double backOut(double x) {
+        double s = 1.4, c = s + 1;
+        return 1 + c * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2);
     }
 
     @Override
@@ -551,7 +584,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "main", 6, state -> {
+        controllers.add(new AnimationController<>(this, "main", 8, state -> {
             if (isDeadOrDying()) return state.setAndContinue(ANIM_DEATH);
             return switch (phase()) {
                 case STUNNED -> state.setAndContinue(ANIM_STUNNED);
