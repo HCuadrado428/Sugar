@@ -11,7 +11,7 @@ import java.util.List;
 public enum TempleType {
     VOLCAN("volcan", "Corazón del Volcán", "Sierpe de Magma", ChatFormatting.GOLD),
     CENIZA("ceniza", "Las Fauces de Ceniza", "Gran Bestia de Ceniza", ChatFormatting.RED),
-    ECO("eco", "Santuario del Eco", "Tamborilero Sin Cuerpo", ChatFormatting.DARK_PURPLE);
+    ECO("eco", "Santuario del Eco", "El Tamborilero", ChatFormatting.DARK_PURPLE);
 
     private final String id;
     private final String templeName;

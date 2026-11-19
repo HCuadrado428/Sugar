@@ -45,7 +45,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Tamborilero Sin Cuerpo: un torso fantasma sin cabeza, invisible, que flota sobre un tambor gigante,
+ * El Tamborilero: un torso fantasma sin cabeza, invisible, que flota sobre un tambor gigante,
  * con un corazón de sculk dentro de las costillas, y dos manos de piedra enormes.
  *
  * OCULTO: solo se ve con la Lente del Eco en la mano y apenas le afecta el daño (25%).

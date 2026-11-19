@@ -6,7 +6,7 @@ Mod de bosses de evento para SMP (Forge 1.20.1 + GeckoLib). Tres templos con rec
 |---|---|---|
 | Corazón del Volcán (`volcan`) | Sierpe de Magma | ✅ Listo para probar |
 | Las Fauces de Ceniza (`ceniza`) | Gran Bestia de Ceniza | ✅ Listo para probar |
-| Santuario del Eco (`eco`) | Tamborilero Sin Cuerpo | ✅ Listo para probar |
+| Santuario del Eco (`eco`) | El Tamborilero | ✅ Listo para probar |
 
 ## Descargar el .jar
 
@@ -80,7 +80,7 @@ Templo por defecto: `/eventtemple place eco` (~140 × 52 bloques hacia el este).
 4. **Antesala**: checkpoint, 4 cofres y 2 atriles más. Puerta canal 2 para el admin.
 5. **Gran Tambor**: arena circular sobre el abismo (si caes, agua y escalera hasta el puente). `/eventboss summon eco`.
 
-**Tamborilero Sin Cuerpo**: un torso fantasma sin cabeza (costillas de hueso, hombreras de deepslate y fuego de alma saliendo del cuello) que flota invisible sobre el tambor (solo se ve con la lente), y dos enormes manos de piedra.
+**El Tamborilero**: un torso fantasma sin cabeza (costillas de hueso, hombreras de deepslate y fuego de alma saliendo del cuello) que flota invisible sobre el tambor (solo se ve con la lente), y dos enormes manos de piedra.
 - **Presentación**: todo se oscurece y suenan tambores cada vez más rápido; las manos trepan desde el abismo y golpean el tambor, el torso sube encorvado, se yergue de golpe, prende el fuego del cuello, se ríe sacudiendo los hombros y se desvanece.
 - **Golpe**: una mano sube sobre alguien; su sombra marca dónde caerá. Después se queda unos segundos en el suelo.
 - **Redoble**: las manos golpean el tambor por turnos y todo el que esté apoyado sale botando. Saltad justo antes del golpe.
