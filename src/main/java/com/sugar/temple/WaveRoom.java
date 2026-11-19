@@ -60,7 +60,7 @@ public final class WaveRoom {
         State s = new State(data.type, altar.immutable(), channel);
         STATES.put(s.altar, s);
         level.playSound(null, altar, SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, 0.7F);
-        if (isForge(data, channel)) TempleService.setDoors(level.getServer(), data, TempleObjectives.V_FORGE_GATE, false);
+        if (channel == TempleObjectives.V_FORGE) TempleService.setDoors(level.getServer(), data, TempleObjectives.V_FORGE_GATE, false);
         TempleStory.narrate(level, data, TempleStory.waveStart(data.type));
     }
 
@@ -100,6 +100,7 @@ public final class WaveRoom {
                     level.playSound(null, s.altar, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     TempleService.setDoors(server, data, s.channel, true);
                     data.markDone(s.channel);
+                    if (s.channel == TempleObjectives.V_FORGE) TempleService.setDoors(server, data, TempleObjectives.V_FORGE_GATE, true);
                 }
             } else {
                 s.delay = PAUSE;

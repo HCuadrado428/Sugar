@@ -114,11 +114,11 @@ public final class TempleEvents {
     // ---------- Guarida del Volcán ----------
 
     /**
-     * Templo del Volcán: con la puerta del jefe abierta, cuando el 60 % de los que están dentro han bajado a la
+     * Con la puerta del jefe abierta, cuando el 60 % de los que están dentro han bajado a la
      * guarida, la puerta se cierra a su espalda y la Sierpe despierta.
      */
     private static void lairQuorum(ServerLevel level, TempleData data) {
-        if (data.type != TempleType.VOLCAN || data.altar == null || !data.isDone(TempleObjectives.V_BOSS_DOOR)
+        if (data.altar == null || !data.isDone(TempleObjectives.V_BOSS_DOOR)
                 || data.isDone(TempleObjectives.BELL) || data.summonCountdown > 0 || TempleService.findBoss(level, data) != null) return;
         List<ServerPlayer> inside = TempleService.playersInside(level, data);
         if (inside.isEmpty()) return;

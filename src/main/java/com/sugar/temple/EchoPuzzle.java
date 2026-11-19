@@ -28,7 +28,7 @@ import java.util.Optional;
  * Al terminar se abren las puertas del canal {@link #CHANNEL}.
  */
 public final class EchoPuzzle {
-    public static final int CHANNEL = 1;
+    public static final int CHANNEL = 7;
     public static final int[] ROUNDS = {3, 4, 5};
     private static final int BEAT_TICKS = 14;
     private static final float[] PITCH = {0.5F, 0.7F, 0.94F, 1.26F};
@@ -121,7 +121,6 @@ public final class EchoPuzzle {
             level.playSound(null, gong, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.5F, 0.8F);
             TempleSavedData.get(level.getServer()).findAt(level.dimension(), gong).ifPresent(d -> {
                 TempleService.setDoors(level.getServer(), d, CHANNEL, true);
-                TempleService.actionbar(level, d, Component.literal("¡Los tambores callan! Se ha abierto el paso.").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
             });
             return;
         }

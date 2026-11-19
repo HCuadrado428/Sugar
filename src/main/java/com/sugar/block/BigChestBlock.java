@@ -37,13 +37,14 @@ import java.util.Optional;
 
 /**
  * Gran Cofre. KIND 0: Martillo de Obsidiana (uno para cada jugador), 1: Brújula del templo (una para
- * cada jugador, apunta al Gran Cofre de la Llave del Jefe), 2: Llave del Jefe (del grupo).
+ * cada jugador, apunta al Gran Cofre de la Llave del Jefe), 2: Llave del Jefe (del grupo),
+ * 3: bolsa de bombas (8 por jugador), 4: Lente del Eco (una por jugador).
  * La primera vez que se abre hay escena: sonido, luz y el narrador.
  * En creativo: shift + clic derecho con la mano vacía para cambiar el contenido.
  */
 public class BigChestBlock extends TempleBlock {
-    public static final int HAMMER = 0, COMPASS = 1, BOSS_KEY = 2;
-    public static final IntegerProperty KIND = IntegerProperty.create("kind", 0, 2);
+    public static final int HAMMER = 0, COMPASS = 1, BOSS_KEY = 2, BOMBS = 3, LENS = 4;
+    public static final IntegerProperty KIND = IntegerProperty.create("kind", 0, 4);
     public static final BooleanProperty OPEN = BooleanProperty.create("open");
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 15, 16);
 
@@ -68,9 +69,9 @@ public class BigChestBlock extends TempleBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (player.isCreative() && player.isShiftKeyDown() && player.getItemInHand(hand).isEmpty()) {
-            int next = (state.getValue(KIND) + 1) % 3;
+            int next = (state.getValue(KIND) + 1) % 5;
             level.setBlock(pos, state.setValue(KIND, next), Block.UPDATE_ALL);
-            player.displayClientMessage(Component.literal("Gran Cofre: " + new String[]{"martillo", "brújula", "Llave del Jefe"}[next])
+            player.displayClientMessage(Component.literal("Gran Cofre: " + new String[]{"martillo", "brújula", "Llave del Jefe", "bombas", "lente"}[next])
                     .withStyle(ChatFormatting.AQUA), true);
             return InteractionResult.CONSUME;
         }
@@ -107,7 +108,12 @@ public class BigChestBlock extends TempleBlock {
             return;
         }
         TempleSavedData.get(level.getServer()).setDirty();
-        ItemStack stack = kind == HAMMER ? new ItemStack(ModItems.OBSIDIAN_HAMMER.get()) : compass(level, data);
+        ItemStack stack = switch (kind) {
+            case HAMMER -> new ItemStack(ModItems.OBSIDIAN_HAMMER.get());
+            case BOMBS -> new ItemStack(ModItems.ASH_BOMB.get(), 8);
+            case LENS -> new ItemStack(ModItems.ECHO_LENS.get());
+            default -> compass(level, data);
+        };
         if (!player.getInventory().add(stack)) player.drop(stack, false);
         player.displayClientMessage(Component.literal("Has conseguido: ").withStyle(ChatFormatting.GOLD).append(stack.getHoverName()), true);
     }

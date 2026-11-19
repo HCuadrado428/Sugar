@@ -43,17 +43,21 @@ public final class TempleStory {
                 default -> null;
             };
             case CENIZA -> switch (channel) {
-                case 1 -> "El sello cede y la puerta se abre. Al otro lado se oyen chillidos.";
-                case 2 -> "El nido queda en silencio. El aire sabe a ceniza.";
-                case 3 -> "Las cuatro placas ceden a la vez y los géiseres se calman.";
-                case TempleObjectives.BELL -> "La campana resuena en la caverna. La montaña empieza a respirar...";
+                case TempleObjectives.V_FORGE -> "El nido queda en silencio. Al fondo, la reja que guardaba el Gran Cofre se levanta.";
+                case TempleObjectives.V_SEALS -> "Los sellos arden a la vez y la jaula de la vieja mina se abre.";
+                case TempleObjectives.V_BRIDGE -> "Las placas ceden y los géiseres se callan. Muy abajo, la lava del pozo empieza a retirarse...";
+                case TempleObjectives.V_SWITCHES -> "Seis explosiones casi a la vez, y algo pesado se desliza en el polvorín.";
+                case TempleObjectives.V_BOSS_DOOR -> "El cerrojo gira. Del túnel sale un aliento caliente que huele a pólvora.";
+                case TempleObjectives.BELL -> "La puerta se cierra a vuestra espalda. En la caverna, la montaña empieza a respirar...";
                 default -> null;
             };
             case ECO -> switch (channel) {
-                case 1 -> "Los tambores callan. El eco de vuestro ritmo abre la cripta.";
-                case 2 -> "Los muertos de la cripta vuelven a dormir.";
-                case 3 -> "Las placas suenan como un tambor lejano y el camino se abre.";
-                case TempleObjectives.BELL -> "La campana suena... y en algún sitio, alguien empieza a tocar.";
+                case TempleObjectives.V_SEALS -> "Los tambores callan. En el silencio, la jaula del centro se abre.";
+                case TempleObjectives.V_FORGE -> "Los muertos de la cripta vuelven a dormir. La reja del Gran Cofre se levanta.";
+                case TempleObjectives.V_BRIDGE -> "Las placas suenan como un tambor lejano. Abajo, en el pozo, una reja se abre.";
+                case TempleObjectives.V_SWITCHES -> "Los seis sellos brillan a la vez. Algo se mueve en la oscuridad de la sala.";
+                case TempleObjectives.V_BOSS_DOOR -> "La puerta cede. Desde el fondo del túnel llega un latido, cada vez más fuerte.";
+                case TempleObjectives.BELL -> "La puerta se cierra a vuestra espalda... y en algún sitio, alguien empieza a tocar.";
                 default -> null;
             };
         };
@@ -78,8 +82,8 @@ public final class TempleStory {
     public static String waveStart(TempleType t) {
         return switch (t) {
             case VOLCAN -> "La reja de la Forja cae a vuestra espalda. El altar se enciende y las paredes empiezan a escupir criaturas.";
-            case CENIZA -> "El altar se agrieta. Del suelo del nido salen cosas que estaban esperando.";
-            case ECO -> "El altar suena como un tambor. La cripta despierta.";
+            case CENIZA -> "La reja del nido cae a vuestra espalda. El altar se agrieta y del suelo salen cosas que estaban esperando.";
+            case ECO -> "La reja de la cripta cae a vuestra espalda. El altar suena como un tambor y la cripta despierta.";
         };
     }
 
@@ -112,7 +116,7 @@ public final class TempleStory {
 
     /** Al abrir un cofre con llave (n = llaves pequeñas encontradas). */
     public static String smallKey(TempleType t, int n) {
-        return "Dentro del cofre hay una llave pequeña, caliente todavía. Es la " + (n <= 1 ? "primera" : n == 2 ? "segunda" : n == 3 ? "tercera" : "cuarta") + " que encontráis.";
+        return "Dentro del cofre hay una llave pequeña. Es la " + (n <= 1 ? "primera" : n == 2 ? "segunda" : n == 3 ? "tercera" : "cuarta") + " que encontráis.";
     }
 
     public static String unlocked(TempleType t) {
@@ -128,7 +132,9 @@ public final class TempleStory {
         return switch (kind) {
             case 0 -> who + " abre el Gran Cofre: dentro hay martillos de obsidiana, uno para cada uno. Pesan como una montaña.";
             case 1 -> who + " abre el Gran Cofre: una brújula antigua. Su aguja no apunta al norte, sino hacia el fondo del templo.";
-            default -> who + " abre el Gran Cofre y levanta la Llave del Jefe. Es enorme, y quema.";
+            case 3 -> who + " abre el Gran Cofre: bolsas de bombas de ceniza, una para cada uno. Mejor no acercarlas al fuego.";
+            case 4 -> who + " abre el Gran Cofre: lentes de cristal frío, una para cada uno. A través de ellas se ve lo que no está.";
+            default -> who + " abre el Gran Cofre y levanta la Llave del Jefe. Es enorme, y pesa como un recuerdo.";
         };
     }
 

@@ -1,5 +1,7 @@
 package com.sugar.entity;
 
+import net.minecraft.core.BlockPos;
+
 import com.sugar.block.AshStatueBlock;
 import com.sugar.registry.ModEntities;
 import com.sugar.registry.ModItems;
@@ -137,6 +139,14 @@ public class AshBomb extends ThrowableItemProjectile {
         if (level() instanceof ServerLevel sl) {
             sl.explode(this, getX(), getY() + 0.2, getZ(), 2.4F, Level.ExplosionInteraction.NONE);
             AshStatueBlock.breakAround(sl, position(), 3.0);
+            // Una explosión también enciende los interruptores de obsidiana cercanos
+            BlockPos c = blockPosition();
+            for (BlockPos p : BlockPos.betweenClosed(c.offset(-3, -2, -3), c.offset(3, 2, 3))) {
+                var st = sl.getBlockState(p);
+                if (st.getBlock() instanceof com.sugar.block.HammerSwitchBlock hs)
+                    com.sugar.temple.TempleSavedData.get(sl.getServer()).findAt(sl.dimension(), p)
+                            .filter(d -> d.active).ifPresent(d -> hs.activate(sl, p.immutable(), st, d));
+            }
         }
         discard();
     }

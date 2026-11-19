@@ -100,7 +100,7 @@ public final class TempleService {
     /** Se abre la puerta del vestíbulo (empieza a contar el tiempo, aunque no se muestra). */
     public static void openLobby(MinecraftServer server, TempleData data) {
         setDoors(server, data, 0, true);
-        if (data.type == TempleType.VOLCAN) setDoors(server, data, TempleObjectives.V_FORGE_GATE, true);
+        setDoors(server, data, TempleObjectives.V_FORGE_GATE, true);
         ServerLevel level = levelOf(server, data);
         if (level == null) return;
         data.startTime = level.getGameTime();
@@ -212,7 +212,7 @@ public final class TempleService {
     /** El jefe ha caído: el narrador cierra la historia y corre el rumor por el servidor. */
     public static void complete(ServerLevel level, TempleData data, SugarBoss boss) {
         data.markDone(TempleObjectives.BOSS);
-        if (data.type == TempleType.VOLCAN) setDoors(level.getServer(), data, TempleObjectives.V_BOSS_DOOR, true);
+        setDoors(level.getServer(), data, TempleObjectives.V_BOSS_DOOR, true);
         TempleSavedData.get(level.getServer()).setDirty();
         TempleStory.narrate(level, data, TempleStory.ending(data.type));
         level.getServer().getPlayerList().broadcastSystemMessage(

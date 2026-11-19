@@ -28,9 +28,11 @@ public class StructureBuilder {
 
     /** Desplazamiento en X para las secciones que van después de las salas nuevas. */
     public int ox;
+    /** Desplazamiento en Y (para construir una pieza más abajo, como la guarida del jefe). */
+    public int oy;
 
     public BlockPos abs(int x, int y, int z) {
-        return origin.offset(x + ox, y, z);
+        return origin.offset(x + ox, y + oy, z);
     }
 
     public void set(int x, int y, int z, BlockState state) {

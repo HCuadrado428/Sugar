@@ -52,7 +52,7 @@ public class HammerSwitchBlock extends EventSwitchBlock {
 
     private void hammer(BlockState state, ServerLevel level, BlockPos pos, Player player) {
         if (!player.getMainHandItem().is(ModItems.OBSIDIAN_HAMMER.get())) {
-            player.displayClientMessage(Component.literal("Ni se mueve. Haría falta algo muy pesado.").withStyle(ChatFormatting.GRAY), true);
+            player.displayClientMessage(Component.literal("Ni se mueve. Haría falta un buen golpe: un martillo... o una explosión.").withStyle(ChatFormatting.GRAY), true);
             return;
         }
         Optional<TempleData> data = TempleSavedData.get(level.getServer()).findAt(level.dimension(), pos);

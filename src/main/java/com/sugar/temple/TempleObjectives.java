@@ -25,16 +25,20 @@ public final class TempleObjectives {
                     new Objective(BELL, "Bajar al Corazón del Volcán"),
                     new Objective(BOSS, "Derrotar a la Sierpe de Magma"));
             case CENIZA -> List.of(
-                    new Objective(1, "Abrirse paso por la Galería de estatuas"),
-                    new Objective(2, "Resistir en el Nido de crías"),
-                    new Objective(3, "Ocupar las placas de la Sala de los Géiseres"),
-                    new Objective(BELL, "Tocar la campana del jefe"),
+                    new Objective(V_FORGE, "Resistir en el Nido de crías"),
+                    new Objective(V_SEALS, "Encender los sellos de la mina"),
+                    new Objective(V_BRIDGE, "Apagar la Sala de los Géiseres"),
+                    new Objective(V_SWITCHES, "Volar los interruptores del Polvorín"),
+                    new Objective(V_BOSS_DOOR, "Abrir la puerta del jefe"),
+                    new Objective(BELL, "Bajar a la guarida de la Bestia"),
                     new Objective(BOSS, "Derrotar a la Gran Bestia de Ceniza"));
             case ECO -> List.of(
-                    new Objective(1, "Repetir el ritmo de los tambores"),
-                    new Objective(2, "Resistir en la Cripta del Eco"),
-                    new Objective(3, "Ocupar las placas sobre el abismo"),
-                    new Objective(BELL, "Tocar la campana del jefe"),
+                    new Objective(V_SEALS, "Repetir el ritmo de los tambores"),
+                    new Objective(V_FORGE, "Resistir en la Cripta del Eco"),
+                    new Objective(V_BRIDGE, "Ocupar las placas del abismo"),
+                    new Objective(V_SWITCHES, "Encender los seis sellos"),
+                    new Objective(V_BOSS_DOOR, "Abrir la puerta del jefe"),
+                    new Objective(BELL, "Bajar al Gran Tambor"),
                     new Objective(BOSS, "Derrotar a El Tamborilero"));
         };
     }
