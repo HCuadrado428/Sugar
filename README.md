@@ -17,7 +17,7 @@ Cada cambio se compila y se prueba en un servidor automático en **Actions** →
 Irrompibles en supervivencia; los admins los colocan y quitan en creativo.
 
 - **Piedra de Control**: checkpoint. Al pisarla o hacer clic derecho durante el evento, el jugador reaparece ahí si muere.
-- **Puerta de Evento**: bloque sólido que desaparece al abrirse. Tiene canal 0–15 (shift + clic derecho con la mano vacía en creativo para cambiarlo). El canal 0 es la entrada y se abre con `/event start`.
+- **Puerta de Evento**: bloque sólido que desaparece al abrirse. Tiene canal 0–15 (shift + clic derecho con la mano vacía en creativo para cambiarlo). El canal 10 es la entrada de fuera (`/event open`) y el 0 la del vestíbulo (`/event start`).
 - **Altar del Jefe**: el boss aparece encima.
 
 Bloques de mecánicas (sirven en cualquier templo):
@@ -49,6 +49,7 @@ Templo por defecto: `/eventtemple place volcan` construye todo hacia el este (+X
 
 Orden típico:
 ```
+/event open volcan             (el grupo se reúne en el vestíbulo)
 /event start volcan
    (el grupo recorre el templo y toca la campana en la antesala)
 /event reset volcan            (al terminar)
@@ -115,7 +116,7 @@ Salas comunes a los tres templos:
 
 `/event info <templo>` muestra a los admins los pasos cumplidos, el tiempo y las caídas del grupo.
 
-Canales de puertas de los templos por defecto: 0 vestíbulo (`/event start`), 1-3 salas, 8 tesoro, 9 arena.
+Canales de puertas de los templos por defecto: 10 entrada (`/event open`), 0 vestíbulo (`/event start`), 1-3 salas, 8 tesoro, 9 arena.
 
 ## Fases, ondas y sacudida de pantalla
 
@@ -134,15 +135,24 @@ Los golpes fuertes, rugidos y derrumbes **sacuden la pantalla**. Se ajusta o se 
 ## Comandos
 
 Jugadores:
-- `/event join <templo>`: ir al evento activo (al checkpoint si ya tienes uno).
+- `/event join <templo>`: ir a un templo abierto o en marcha (al vestíbulo, o a tu checkpoint si ya tienes uno).
 
 Admins (nivel OP 2):
-- `/event start|stop|reset <templo>`
+- `/event open <templo>`: abre la entrada de fuera y deja usar `/event join` para que el grupo se reúna en el vestíbulo. La puerta hacia la primera sala sigue cerrada.
+- `/event start <templo>`: abre el vestíbulo y empieza la historia (si no estaba abierto, lo abre también).
+- `/event stop|reset <templo>`
 - `/event door <templo> <canal> open|close`
 - `/eventtemple define|place|scan|setlobby|info|remove <templo>`
 - `/eventboss summon|kill|info <templo>`
 
-`/eventboss kill` quita el boss sin dar recompensas. `/event reset` cierra puertas, restaura bloques, quita el boss y borra los checkpoints.
+`/eventboss kill` quita el boss sin dar recompensas. `/event reset` cierra todas las puertas (también la entrada), restaura bloques, quita el boss y borra los checkpoints.
+
+Cada templo va por su cuenta: podéis tener los tres construidos y hacer solo uno. Los cerrados no dejan entrar ni con `/event join`, y nada de dentro responde. Orden típico:
+```
+/event open volcan     (el grupo va entrando con /event join volcan)
+/event start volcan    (cuando estéis todos)
+/event reset volcan    (al terminar)
+```
 
 ## Escalado y recompensas
 

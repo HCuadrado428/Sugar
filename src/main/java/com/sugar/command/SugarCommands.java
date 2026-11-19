@@ -31,7 +31,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import java.util.Optional;
 
 /**
- * /event      start|stop|reset|door|join
+ * /event      open|start|stop|reset|door|join
  * /eventtemple define|place|scan|setlobby|info|remove
  * /eventboss  summon|kill|info
  */
@@ -46,6 +46,11 @@ public final class SugarCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("event")
                 .then(Commands.literal("join").then(temple().executes(SugarCommands::join)))
+                .then(Commands.literal("open").requires(SugarCommands::admin).then(temple().executes(c -> {
+                    TempleData data = data(c);
+                    TempleService.open(c.getSource().getServer(), data);
+                    return ok(c, "Templo abierto para reunirse: " + data.type.id() + ". Cuando estéis todos: /event start " + data.type.id());
+                })))
                 .then(Commands.literal("start").requires(SugarCommands::admin).then(temple().executes(c -> {
                     TempleData data = data(c);
                     TempleService.start(c.getSource().getServer(), data, 200);
@@ -113,7 +118,7 @@ public final class SugarCommands {
     private static int join(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         ServerPlayer player = c.getSource().getPlayerOrException();
         TempleData data = data(c);
-        if (!data.active) return fail(c, "Ese evento no está activo ahora mismo.");
+        if (!data.open && !data.active) return fail(c, "Ese templo está cerrado ahora mismo.");
         TempleService.sendToTemple(player, data);
         player.displayClientMessage(Component.literal("Bienvenido a ").append(data.type.displayName()), false);
         return 1;
@@ -172,7 +177,7 @@ public final class SugarCommands {
                 + "\n  Zona: " + z.minX() + " " + z.minY() + " " + z.minZ() + " → " + z.maxX() + " " + z.maxY() + " " + z.maxZ()
                 + "\n  Vestíbulo: " + data.lobby.toShortString()
                 + "\n  Altar: " + (data.altar != null ? data.altar.toShortString() : "no colocado")
-                + "\n  Activo: " + (data.active ? "sí" : "no")
+                + "\n  Estado: " + (data.active ? "en marcha" : data.open ? "abierto (reuniéndose)" : "cerrado")
                 + "\n  Bloques especiales: " + data.blocks.size()
                 + "\n  Checkpoints guardados: " + data.checkpoints.size()
                 + "\n  Pasos cumplidos: " + com.sugar.temple.TempleObjectives.done(data) + "/" + com.sugar.temple.TempleObjectives.of(data.type).size()

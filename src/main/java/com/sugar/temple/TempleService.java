@@ -77,16 +77,24 @@ public final class TempleService {
         start(server, data, 0);
     }
 
-    /** Empieza el evento: se abre el vestíbulo y el narrador cuenta la llegada. */
-    public static void start(MinecraftServer server, TempleData data, int unused) {
-        data.active = true;
-        data.clearProgress();
+    /** Abre el templo para reunirse: se abre la entrada de fuera y ya funciona /event join. */
+    public static void open(MinecraftServer server, TempleData data) {
+        data.open = true;
         TempleSavedData.get(server).setDirty();
-        openLobby(server, data);
+        setDoors(server, data, TempleObjectives.ENTRANCE, true);
         server.getPlayerList().broadcastSystemMessage(Component.literal("Las puertas de ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)
                 .append(data.type.displayName())
                 .append(Component.literal(" se han abierto. ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
                 .append(Component.literal("(/event join " + data.type.id() + ")").withStyle(ChatFormatting.DARK_GRAY)), false);
+    }
+
+    /** Empieza la historia: se abre la puerta del vestíbulo hacia la primera sala. Si no estaba abierto, lo abre. */
+    public static void start(MinecraftServer server, TempleData data, int unused) {
+        if (!data.open) open(server, data);
+        data.active = true;
+        data.clearProgress();
+        TempleSavedData.get(server).setDirty();
+        openLobby(server, data);
     }
 
     /** Se abre la puerta del vestíbulo (empieza a contar el tiempo, aunque no se muestra). */
@@ -101,6 +109,7 @@ public final class TempleService {
 
     public static void stop(MinecraftServer server, TempleData data) {
         data.active = false;
+        data.open = false;
         data.countdown = 0;
         data.summonCountdown = 0;
         data.checkpoints.clear();
@@ -127,6 +136,7 @@ public final class TempleService {
             removeBoss(level, data);
         }
         data.active = false;
+        data.open = false;
         data.clearProgress();
         TempleSavedData.get(server).setDirty();
     }

@@ -26,6 +26,8 @@ public class TempleData {
     public BlockPos lobby;
     @Nullable public BlockPos altar;
     public boolean active;
+    /** Abierto para reunirse: se puede entrar y usar /event join, aunque la historia no ha empezado. */
+    public boolean open;
     @Nullable public UUID bossId;
     public final Map<UUID, BlockPos> checkpoints = new HashMap<>();
     public final Set<BlockPos> blocks = new HashSet<>();
@@ -82,6 +84,7 @@ public class TempleData {
         tag.put("lobby", NbtUtils.writeBlockPos(lobby));
         if (altar != null) tag.put("altar", NbtUtils.writeBlockPos(altar));
         tag.putBoolean("active", active);
+        tag.putBoolean("open", open);
         if (bossId != null) tag.putUUID("boss", bossId);
 
         ListTag cps = new ListTag();
@@ -126,6 +129,7 @@ public class TempleData {
         TempleData data = new TempleData(type, dim, zone, NbtUtils.readBlockPos(tag.getCompound("lobby")));
         if (tag.contains("altar")) data.altar = NbtUtils.readBlockPos(tag.getCompound("altar"));
         data.active = tag.getBoolean("active");
+        data.open = tag.getBoolean("open") || data.active;
         if (tag.hasUUID("boss")) data.bossId = tag.getUUID("boss");
 
         ListTag cps = tag.getList("checkpoints", Tag.TAG_COMPOUND);

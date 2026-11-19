@@ -140,7 +140,7 @@ public class VolcanoTempleGenerator implements TempleGenerator {
         b.room(0, 0, 0, 10, 6, 10, wall, floor);
         b.set(5, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{2, 2}, {8, 2}, {2, 8}, {8, 8}}) b.set(c[0], 6, c[1], Blocks.SHROOMLIGHT);
-        b.air(0, 1, 5, 0, 2, 5);  // entrada a pie desde fuera
+        b.fill(0, 1, 5, 0, 2, 5, ModBlocks.EVENT_DOOR.get().defaultBlockState().setValue(EventDoorBlock.CHANNEL, TempleObjectives.ENTRANCE));  // entrada (se abre con /event open)
     }
 
     // ---------- 2. Pasarela sobre magma ----------

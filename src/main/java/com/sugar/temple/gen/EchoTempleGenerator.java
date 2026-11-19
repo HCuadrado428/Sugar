@@ -68,7 +68,7 @@ public class EchoTempleGenerator implements TempleGenerator {
         b.set(6, 0, 7, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{3, 3}, {9, 3}, {3, 11}, {9, 11}}) b.set(c[0], 6, c[1], Blocks.SOUL_LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
         for (int[] c : new int[][]{{3, 1}, {6, 1}, {9, 1}, {3, 13}, {6, 13}, {9, 13}}) b.set(c[0], 1, c[1], ModBlocks.LENS_PEDESTAL.get());
-        b.air(0, 1, 7, 0, 2, 7);
+        b.fill(0, 1, 7, 0, 2, 7, ModBlocks.EVENT_DOOR.get().defaultBlockState().setValue(EventDoorBlock.CHANNEL, TempleObjectives.ENTRANCE));  // entrada (se abre con /event open)
         doors(b, 12, 1, 6, 0);
     }
 

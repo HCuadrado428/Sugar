@@ -71,7 +71,7 @@ public class SugarGameTests {
         int crates = TempleService.positionsOf(level, data, SupplyCrateBlock.class).size();
         helper.assertTrue(vents == 8, "Respiraderos: " + vents);
         helper.assertTrue(seals == 3, "Sellos: " + seals);
-        helper.assertTrue(doors == 54, "Puertas: " + doors);
+        helper.assertTrue(doors == 56, "Puertas: " + doors);
         helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
         checkEventRooms(helper, level, data);
 
@@ -161,7 +161,7 @@ public class SugarGameTests {
         helper.assertTrue(bushes == 18, "Matas: " + bushes);
         helper.assertTrue(geysers == 26, "Géiseres: " + geysers);
         helper.assertTrue(cracks == 6, "Grietas: " + cracks);
-        helper.assertTrue(doors == 54, "Puertas: " + doors);
+        helper.assertTrue(doors == 56, "Puertas: " + doors);
         helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
         checkEventRooms(helper, level, data);
 
@@ -224,7 +224,7 @@ public class SugarGameTests {
         helper.assertTrue(drums == 8, "Tambores: " + drums);
         helper.assertTrue(gongs == 1, "Gongs: " + gongs);
         helper.assertTrue(pedestals == 8, "Atriles: " + pedestals);
-        helper.assertTrue(doors == 54, "Puertas: " + doors);
+        helper.assertTrue(doors == 56, "Puertas: " + doors);
         helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
         checkEventRooms(helper, level, data);
         int platforms = 0;
@@ -384,6 +384,11 @@ public class SugarGameTests {
                 .filter(p -> level.getBlockState(p).getValue(EventDoorBlock.CHANNEL) == ch)
                 .allMatch(p -> level.getBlockState(p).getValue(EventDoorBlock.OPEN));
 
+        // Abrir para reunirse: entrada abierta, vestíbulo todavía cerrado
+        TempleService.open(level.getServer(), data);
+        helper.assertTrue(data.open && !data.active, "/event open no deja el templo abierto sin empezar");
+        helper.assertTrue(doorOpen.test(com.sugar.temple.TempleObjectives.ENTRANCE), "No se abre la entrada");
+        helper.assertTrue(!doorOpen.test(0), "El vestíbulo se abre antes de /event start");
         TempleService.start(level.getServer(), data);
         helper.assertTrue(doorOpen.test(0), "No se abre el vestíbulo");
         helper.runAfterDelay(50, () -> {
@@ -416,7 +421,8 @@ public class SugarGameTests {
         helper.runAfterDelay(50 + 80 * 3 + 20 + 120, () -> {
             helper.assertTrue(TempleService.findBoss(level, data) != null, "La campana no despierta al jefe");
             TempleService.reset(level.getServer(), data);
-            helper.assertTrue(data.progressMask == 0 && !data.active, "El reset no borra el progreso");
+            helper.assertTrue(data.progressMask == 0 && !data.active && !data.open, "El reset no borra el progreso");
+            helper.assertTrue(!doorOpen.test(com.sugar.temple.TempleObjectives.ENTRANCE), "El reset no cierra la entrada");
             helper.assertTrue(!doorOpen.test(2), "El reset no cierra las puertas");
             saved.remove(TempleType.CENIZA);
             for (int[] c : forced) level.setChunkForced(c[0], c[1], false);

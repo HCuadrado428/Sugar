@@ -7,7 +7,7 @@ import java.util.List;
  * (el canal 15 es derrotar al jefe). El canal 8 es la cámara del tesoro (opcional, no cuenta).
  */
 public final class TempleObjectives {
-    public static final int VAULT = 8, BELL = 9, BOSS = 15;
+    public static final int VAULT = 8, BELL = 9, ENTRANCE = 10, BOSS = 15;
 
     public record Objective(int channel, String name) {}
 
