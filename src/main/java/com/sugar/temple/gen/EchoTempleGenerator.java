@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -34,13 +35,16 @@ public class EchoTempleGenerator implements TempleGenerator {
     public static final int CX = 110, CZ = 7, CAVE_R = 24, CAVE_H = 22;
     private static final int SHIFT = 41;
     private static final int PIT = -16;
+    /** Distancia del campamento a la entrada y cuánto se baja por el barranco. */
+    public static final int APPROACH = 100, DROP = 20;
 
     /** Camino del puente invisible: puntos por los que pasa (x, z). */
     static final int[][] PATH = {{16, 7}, {20, 7}, {20, 3}, {27, 3}, {27, 11}, {33, 11}, {37, 11}, {42, 11}, {42, 4}, {46, 4}, {46, 9}, {51, 9}, {51, 7}};
 
     @Override
     public Result generate(ServerLevel level, BlockPos feet) {
-        StructureBuilder b = new StructureBuilder(level, feet.offset(-6, -1, -7));
+        // El admin está en el campamento, arriba; el santuario está 100 bloques al este y 20 más abajo
+        StructureBuilder b = new StructureBuilder(level, origin(feet));
 
         Supplier<BlockState> wall = b.mix(6, Blocks.DEEPSLATE_BRICKS, 2, Blocks.DEEPSLATE_TILES, 1, Blocks.CRACKED_DEEPSLATE_BRICKS, 1, Blocks.SCULK);
         Supplier<BlockState> floor = b.mix(5, Blocks.POLISHED_DEEPSLATE, 3, Blocks.DEEPSLATE_TILES, 1, Blocks.SCULK);
@@ -58,7 +62,16 @@ public class EchoTempleGenerator implements TempleGenerator {
         antechamber(b, wall, floor);
         b.ox = 0;
 
+        Supplier<BlockState> moss = b.mix(4, Blocks.MOSS_BLOCK, 3, Blocks.PODZOL, 2, Blocks.COARSE_DIRT, 1, Blocks.SCULK);
+        Approach.drape(b, b.bounds(), 10, rock, moss);
+        outside(b, rock, moss, floor);
+
         return new Result(b.bounds(), feet);
+    }
+
+    /** Origen de la construcción a partir de donde está el admin (centro del campamento). */
+    public static BlockPos origin(BlockPos feet) {
+        return feet.offset(APPROACH, -DROP - 1, -7);
     }
 
     // ---------- 1. Vestíbulo ----------
@@ -68,8 +81,114 @@ public class EchoTempleGenerator implements TempleGenerator {
         b.set(6, 0, 7, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{3, 3}, {9, 3}, {3, 11}, {9, 11}}) b.set(c[0], 6, c[1], Blocks.SOUL_LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
         for (int[] c : new int[][]{{3, 1}, {6, 1}, {9, 1}, {3, 13}, {6, 13}, {9, 13}}) b.set(c[0], 1, c[1], ModBlocks.LENS_PEDESTAL.get());
-        b.fill(0, 1, 7, 0, 2, 7, ModBlocks.EVENT_DOOR.get().defaultBlockState().setValue(EventDoorBlock.CHANNEL, TempleObjectives.ENTRANCE));  // entrada (se abre con /event open)
+        b.air(0, 1, 6, 0, 3, 8);              // se entra desde el barranco (la entrada de fuera está en el campamento)
         doors(b, 12, 1, 6, 0);
+    }
+
+    // ---------- 0. Fuera: el Barranco de los Ecos ----------
+
+    /**
+     * Campamento en lo alto (donde está el admin) → un barranco que baja 20 bloques haciendo eses: sima con
+     * puente que se hunde, un cementerio con checkpoint, la Puerta de los Ecos (cuatro placas a la vez),
+     * arcos de roca que sueltan piedras y, al fondo, la fachada del Santuario.
+     */
+    private void outside(StructureBuilder b, Supplier<BlockState> rock, Supplier<BlockState> moss, Supplier<BlockState> floor) {
+        int zc = 7, top = DROP, x0 = -APPROACH - 12, x1 = -11;
+        // Meseta: roca solo donde hay aire (en un mundo normal es el propio terreno) y suelo musgoso arriba
+        Approach.fillAir(b, x0, 0, zc - 30, x1 + 1, top - 1, zc + 30, rock);
+        for (int x = x0; x <= x1 + 1; x++)
+            for (int z = zc - 30; z <= zc + 30; z++)
+                if (b.level.getBlockState(b.abs(x, top, z)).isAir()) b.set(x, top, z, moss.get());
+        Approach.camp(b, -APPROACH, top, zc, 12, 12, () -> Blocks.MOSSY_COBBLESTONE.defaultBlockState(),
+                b.mix(4, Blocks.PODZOL, 3, Blocks.MOSS_BLOCK, 2, Blocks.COARSE_DIRT),
+                Blocks.GRAY_WOOL.defaultBlockState(), Blocks.CYAN_WOOL.defaultBlockState(), Blocks.SOUL_CAMPFIRE.defaultBlockState(),
+                Blocks.SOUL_LANTERN.defaultBlockState());
+        // Abetos oscuros alrededor del campamento
+        for (int k = 0; k < 14; k++) {
+            int x = -APPROACH - 10 + b.random.nextInt(30), z = zc + (b.random.nextBoolean() ? 1 : -1) * (14 + b.random.nextInt(12));
+            int h = 5 + b.random.nextInt(4);
+            b.fill(x, top + 1, z, x, top + h, z, Blocks.DARK_OAK_LOG.defaultBlockState());
+            for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) b.set(x + dx, top + h, z + dz, Blocks.DARK_OAK_LEAVES);
+            b.set(x, top + h + 1, z, Blocks.DARK_OAK_LEAVES);
+        }
+
+        List<int[]> path = Approach.path(-APPROACH + 13, top, x1, 0, zc, 10);
+        Supplier<BlockState> trail = b.mix(4, Blocks.COBBLED_DEEPSLATE, 3, Blocks.MOSSY_COBBLESTONE, 2, Blocks.TUFF);
+        Approach.pave(b, path, 3, trail, rock, 4, top + 2);
+        for (int i = 0; i < path.size(); i += 24) {                   // faroles de alma a los lados
+            int[] c = path.get(i);
+            b.set(c[0], c[1] + 1, c[2] + 3, Blocks.COBBLED_DEEPSLATE_WALL);
+            b.set(c[0], c[1] + 2, c[2] + 3, Blocks.SOUL_LANTERN);
+        }
+
+        // 1. Sima con un puente que se hunde
+        for (int i = (int) (path.size() * 0.12); i <= (int) (path.size() * 0.17); i++) {
+            int[] c = path.get(i);
+            for (int w = -3; w <= 3; w++) {
+                b.air(c[0], c[1] - 6, c[2] + w, c[0], c[1], c[2] + w);
+                b.set(c[0], c[1] - 7, c[2] + w, ModBlocks.RISING_MAGMA.get());
+                if (Math.abs(w) <= 1) b.set(c[0], c[1], c[2] + w, ModBlocks.CRUMBLING_BASALT.get());
+            }
+        }
+        // 2. Cementerio: ensanche con tumbas y checkpoint
+        clearing(b, path, 0.30, 0.36, floor);
+        int[] g = Approach.at(path, 0.33);
+        b.set(g[0], g[1], g[2], ModBlocks.CHECKPOINT_STONE.get());
+        for (int k = -2; k <= 2; k++) {
+            for (int w : new int[]{-6, 6}) {
+                int[] c = Approach.at(path, 0.33 + k * 0.012);
+                b.set(c[0], c[1] + 1, c[2] + w, Blocks.COBBLED_DEEPSLATE_WALL);
+                b.set(c[0], c[1] + 2, c[2] + w, k == 0 ? Blocks.SOUL_LANTERN : Blocks.CHISELED_DEEPSLATE);
+            }
+        }
+        b.set(g[0] + 2, g[1] + 1, g[2] - 5, ModBlocks.SUPPLY_CRATE.get());
+        b.set(g[0] - 2, g[1] + 1, g[2] + 5, ModBlocks.SUPPLY_CRATE.get());
+        // 3. La Puerta de los Ecos: una reja (canal 4) que se abre con cuatro placas a la vez
+        clearing(b, path, 0.48, 0.55, floor);
+        BlockState plate = ModBlocks.GROUP_PLATE.get().defaultBlockState().setValue(com.sugar.block.GroupPlateBlock.CHANNEL, 4);
+        for (double s : new double[]{0.49, 0.54}) {
+            int[] c = Approach.at(path, s);
+            b.set(c[0], c[1], c[2] - 6, plate);
+            b.set(c[0], c[1], c[2] + 6, plate);
+        }
+        int[] gate = Approach.at(path, 0.57);
+        b.fill(gate[0], gate[1] + 1, gate[2] - 3, gate[0], gate[1] + 6, gate[2] + 3, Approach.door(4));
+        b.fill(gate[0], gate[1] + 7, gate[2] - 4, gate[0], gate[1] + 7, gate[2] + 4, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
+        for (int w : new int[]{-4, 4}) b.fill(gate[0], gate[1] + 1, gate[2] + w, gate[0], gate[1] + 6, gate[2] + w, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
+        b.set(gate[0] - 1, gate[1] + 7, gate[2], Blocks.SOUL_LANTERN);
+        // 4. Arcos de roca que sueltan piedras
+        for (double s : new double[]{0.66, 0.72, 0.78}) {
+            int[] c = Approach.at(path, s);
+            b.fill(c[0], c[1] + 6, c[2] - 4, c[0] + 1, c[1] + 7, c[2] + 4, rock);
+            b.set(c[0], c[1] + 6, c[2], ModBlocks.ROCKFALL.get());
+        }
+        int[] cp = Approach.at(path, 0.84);
+        b.set(cp[0], cp[1], cp[2], ModBlocks.CHECKPOINT_STONE.get());
+        // 5. Fachada del Santuario al fondo del barranco
+        int fx = x1;
+        for (int z = zc - 9; z <= zc + 9; z++) {
+            int h = 14 - Math.abs(z - zc) / 3;
+            b.fill(fx, 0, z, fx + 1, h, z, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
+            Approach.fillAir(b, fx + 2, 0, z, -1, h, z, rock);
+        }
+        for (int w : new int[]{-6, -3, 3, 6}) b.fill(fx - 1, 1, zc + w, fx - 1, 11, zc + w, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
+        b.fill(fx - 1, 12, zc - 7, fx - 1, 12, zc + 7, Blocks.CHISELED_DEEPSLATE.defaultBlockState());
+        b.fill(fx - 1, 8, zc - 1, fx - 1, 10, zc + 1, Blocks.SCULK.defaultBlockState());
+        b.set(fx - 1, 9, zc, Blocks.SCULK_CATALYST);
+        for (int w : new int[]{-5, 5}) b.set(fx - 1, 7, zc + w, Blocks.SOUL_LANTERN);
+        b.fill(fx - 1, 0, zc - 1, 0, 0, zc + 1, floor);
+        b.air(fx - 1, 1, zc - 1, 0, 4, zc + 1);
+    }
+
+    /** Ensancha el barranco (de s1 a s2 del camino) para tener sitio. */
+    private void clearing(StructureBuilder b, List<int[]> path, double s1, double s2, Supplier<BlockState> floor) {
+        for (int i = (int) (path.size() * s1); i <= (int) (path.size() * s2); i++) {
+            int[] c = path.get(i);
+            for (int w = -7; w <= 7; w++) {
+                b.set(c[0], c[1], c[2] + w, floor.get());
+                b.air(c[0], c[1] + 1, c[2] + w, c[0], DROP + 2, c[2] + w);
+            }
+        }
     }
 
     // ---------- 2. Puente invisible ----------

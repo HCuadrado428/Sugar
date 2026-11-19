@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -30,10 +31,13 @@ import java.util.function.Supplier;
 public class AshTempleGenerator implements TempleGenerator {
     private static final int CX = 102, CZ = 5, ARENA_R = 20, DOME_H = 17;
     private static final int SHIFT = 41;
+    /** Distancia del campamento base a la entrada del templo. */
+    public static final int APPROACH = 100;
 
     @Override
     public Result generate(ServerLevel level, BlockPos feet) {
-        StructureBuilder b = new StructureBuilder(level, feet.offset(-5, -1, -5));
+        // El admin está en el campamento base; el templo empieza 100 bloques al este
+        StructureBuilder b = new StructureBuilder(level, feet.offset(APPROACH, -1, -5));
 
         Supplier<BlockState> wall = b.mix(6, Blocks.DEEPSLATE_BRICKS, 2, Blocks.CRACKED_DEEPSLATE_BRICKS, 2, Blocks.COBBLED_DEEPSLATE);
         Supplier<BlockState> floor = b.mix(5, Blocks.POLISHED_DEEPSLATE, 3, Blocks.DEEPSLATE_TILES, 1, Blocks.BLACKSTONE);
@@ -51,6 +55,10 @@ public class AshTempleGenerator implements TempleGenerator {
         antechamber(b, wall, floor);
         b.ox = 0;
 
+        Supplier<BlockState> ash = b.mix(3, Blocks.TUFF, 3, Blocks.LIGHT_GRAY_CONCRETE_POWDER, 2, Blocks.GRAVEL, 2, Blocks.BASALT, 1, Blocks.COARSE_DIRT);
+        Approach.drape(b, b.bounds(), 10, rock, ash);
+        outside(b, rock, ash, floor);
+
         return new Result(b.bounds(), feet);
     }
 
@@ -60,8 +68,124 @@ public class AshTempleGenerator implements TempleGenerator {
         b.room(0, 0, 0, 10, 6, 10, wall, floor);
         b.set(5, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{2, 2}, {8, 2}, {2, 8}, {8, 8}}) b.set(c[0], 6, c[1], Blocks.SHROOMLIGHT);
-        b.fill(0, 1, 5, 0, 2, 5, ModBlocks.EVENT_DOOR.get().defaultBlockState().setValue(EventDoorBlock.CHANNEL, TempleObjectives.ENTRANCE));  // entrada (se abre con /event open)
+        b.air(0, 1, 4, 0, 3, 6);              // se entra por las Fauces (la entrada de fuera está en el campamento)
         doors(b, 10, 1, 4, 0);
+    }
+
+    // ---------- 0. Fuera: el Desfiladero de Ceniza ----------
+
+    /**
+     * Campamento minero (donde está el admin) → llanura de ceniza con géiseres y matas de pólvora → muro de roca
+     * con un desfiladero cerrado por estatuas (hay que volarlas con bombas) → grieta de lava con puente que se
+     * hunde → las Fauces: la boca de piedra de la montaña, que lleva al vestíbulo.
+     */
+    private void outside(StructureBuilder b, Supplier<BlockState> rock, Supplier<BlockState> ash, Supplier<BlockState> floor) {
+        int zc = 5, x0 = -APPROACH - 12, x1 = -9;
+        // Valle: suelo de ceniza y paredes a los lados
+        for (int x = x0; x <= x1; x++)
+            for (int z = zc - 30; z <= zc + 30; z++) {
+                for (int y = -3; y < 0; y++) b.set(x, y, z, rock.get());
+                b.set(x, 0, z, ash.get());
+                for (int y = 1; y <= 12; y++) if (!b.level.getBlockState(b.abs(x, y, z)).isAir()) b.set(x, y, z, Blocks.AIR.defaultBlockState());
+                int edge = Math.min(z - (zc - 30), (zc + 30) - z);
+                if (edge < 6) {
+                    int h = 8 + (5 - edge) + (int) Math.round(Math.sin(x * 0.4 + z) * 1.5);
+                    b.fill(x, 1, z, x, h, z, rock);
+                    b.set(x, h + 1, z, ash.get());
+                }
+            }
+        // Árboles quemados y matojos
+        for (int k = 0; k < 26; k++) {
+            int x = x0 + 14 + b.random.nextInt(x1 - x0 - 16), z = zc + (b.random.nextBoolean() ? 1 : -1) * (8 + b.random.nextInt(14));
+            if (b.random.nextInt(3) == 0) { b.set(x, 1, z, Blocks.DEAD_BUSH); continue; }
+            int h = 3 + b.random.nextInt(4);
+            b.fill(x, 1, z, x, h, z, Blocks.DARK_OAK_LOG.defaultBlockState());
+            b.set(x + 1, h - 1, z, Blocks.DARK_OAK_LOG); b.set(x, h, z - 1, Blocks.DARK_OAK_LOG);
+        }
+        Approach.camp(b, -APPROACH, 0, zc, 12, 12, () -> Blocks.SPRUCE_LOG.defaultBlockState(),
+                b.mix(5, Blocks.COARSE_DIRT, 3, Blocks.GRAVEL, 2, Blocks.PODZOL),
+                Blocks.LIGHT_GRAY_WOOL.defaultBlockState(), Blocks.ORANGE_WOOL.defaultBlockState(), Blocks.CAMPFIRE.defaultBlockState(), Blocks.LANTERN.defaultBlockState());
+        for (int x = -APPROACH - 10; x <= -APPROACH + 10; x++) b.set(x, 1, zc + 10, Blocks.RAIL);        // vía de la mina
+        for (int[] p : new int[][]{{-APPROACH - 9, zc - 9}, {-APPROACH - 8, zc - 9}, {-APPROACH, zc - 10}}) b.set(p[0], 1, p[1], Blocks.BARREL);
+
+        List<int[]> path = Approach.path(-APPROACH + 13, 0, x1, 0, zc, 9);
+        Supplier<BlockState> trail = b.mix(4, Blocks.COARSE_DIRT, 2, Blocks.GRAVEL, 1, Blocks.TUFF);
+        Approach.pave(b, path, 2, trail, rock, 5, 0);
+
+        // 1. Llanura de los géiseres: filas que se alternan, y matas de pólvora para más adelante
+        int k = 0;
+        for (double s : new double[]{0.12, 0.17, 0.22}) {
+            int[] c = Approach.at(path, s);
+            for (int w = -2; w <= 2; w++)
+                b.set(c[0], 0, c[2] + w, ModBlocks.FIRE_GEYSER.get().defaultBlockState().setValue(FireGeyserBlock.PHASE, (k * 2 + (w & 1)) % 4));
+            k++;
+        }
+        for (double s : new double[]{0.27, 0.31, 0.35}) {
+            int[] c = Approach.at(path, s);
+            b.set(c[0], 1, c[2] - 3, ModBlocks.BOMB_BUSH.get());
+            b.set(c[0], 1, c[2] + 3, ModBlocks.BOMB_BUSH.get());
+        }
+        int[] cp1 = Approach.at(path, 0.29);
+        b.set(cp1[0], 0, cp1[2], ModBlocks.CHECKPOINT_STONE.get());
+
+        // 2. Muro de roca de lado a lado del valle con un desfiladero; dentro, las estatuas cierran el paso
+        int mx1 = Approach.at(path, 0.40)[0], mx2 = Approach.at(path, 0.62)[0];
+        for (int x = mx1; x <= mx2; x++)
+            for (int z = zc - 25; z <= zc + 25; z++) {
+                int h = 10 + (int) Math.round(Math.sin(x * 0.3) * Math.cos(z * 0.2) * 2);
+                b.fill(x, 1, z, x, h, z, rock);
+                b.set(x, h + 1, z, ash.get());
+            }
+        for (int[] c : path) {
+            if (c[0] < mx1 - 1 || c[0] > mx2 + 1) continue;
+            for (int w = -2; w <= 2; w++) {
+                b.set(c[0], 0, c[2] + w, trail.get());
+                b.air(c[0], 1, c[2] + w, c[0], 13, c[2] + w);
+            }
+        }
+        for (double s : new double[]{0.44, 0.48}) {
+            int[] c = Approach.at(path, s);
+            b.set(c[0], 1, c[2] - 2, ModBlocks.BOMB_BUSH.get());
+            b.set(c[0], 1, c[2] + 2, ModBlocks.BOMB_BUSH.get());
+        }
+        int[] sw = Approach.at(path, 0.55);
+        BlockState statue = ModBlocks.ASH_STATUE.get().defaultBlockState();
+        for (int dx = 0; dx <= 1; dx++)
+            for (int w = -3; w <= 3; w++) b.fill(sw[0] + dx, 1, sw[2] + w, sw[0] + dx, 5, sw[2] + w, statue);
+        for (int w = -2; w <= 2; w += 2) b.set(sw[0] - 4, 12, sw[2] + w, Blocks.SHROOMLIGHT);
+
+        // 3. Grieta de lava de lado a lado con un puente de basalto que se hunde
+        int[] gc = Approach.at(path, 0.72);
+        for (int dx = -1; dx <= 2; dx++)
+            for (int z = zc - 24; z <= zc + 24; z++) {
+                b.set(gc[0] + dx, -2, z, rock.get());
+                b.fill(gc[0] + dx, -1, z, gc[0] + dx, 0, z, ModBlocks.RISING_MAGMA.get().defaultBlockState());
+                b.air(gc[0] + dx, 1, z, gc[0] + dx, 3, z);
+            }
+        for (int dx = -1; dx <= 2; dx++)
+            for (int w = -1; w <= 1; w++) b.set(gc[0] + dx, 0, gc[2] + w, ModBlocks.CRUMBLING_BASALT.get());
+        int[] cp2 = Approach.at(path, 0.78);
+        b.set(cp2[0], 0, cp2[2], ModBlocks.CHECKPOINT_STONE.get());
+
+        // 4. Las Fauces: una cara de piedra en la ladera con la boca abierta hacia el vestíbulo
+        int fx = -11;
+        for (int z = zc - 11; z <= zc + 11; z++) Approach.fillAir(b, fx + 2, 0, z, -1, 15 - Math.abs(z - zc) / 2, z, rock);
+        for (int z = zc - 11; z <= zc + 11; z++) {
+            int h = 15 - Math.abs(z - zc) / 2;
+            b.fill(fx, 0, z, fx + 1, h, z, Blocks.BLACKSTONE.defaultBlockState());
+            b.set(fx - 1, h, z, Blocks.POLISHED_BLACKSTONE_BRICKS);
+        }
+        b.fill(fx, 0, zc - 2, 0, 0, zc + 2, floor);
+        b.air(fx - 1, 1, zc - 2, 0, 6, zc + 2);
+        for (int z = zc - 3; z <= zc + 3; z++) { b.set(fx - 1, 7, z, Blocks.POLISHED_BLACKSTONE_BRICKS); b.set(fx - 1, 0, z, Blocks.POLISHED_BLACKSTONE_BRICKS); }
+        for (int z = zc - 2; z <= zc + 2; z += 2) { b.set(fx - 1, 6, z, Blocks.BONE_BLOCK); b.set(fx - 1, 5, z, Blocks.BONE_BLOCK); }   // colmillos de arriba
+        for (int z : new int[]{zc - 2, zc + 2}) b.set(fx - 1, 1, z, Blocks.BONE_BLOCK);                                                  // colmillos de abajo
+        for (int dz : new int[]{-5, 4}) {                                                                                                // ojos
+            b.fill(fx - 1, 10, zc + dz, fx - 1, 11, zc + dz + 1, Blocks.MAGMA_BLOCK.defaultBlockState());
+            b.set(fx - 1, 10, zc + dz + (dz < 0 ? 1 : 0), Blocks.SHROOMLIGHT);
+            b.fill(fx - 1, 12, zc + dz - 1, fx - 1, 12, zc + dz + 2, Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
+        }
+        b.set(fx + 1, 6, zc, Blocks.SHROOMLIGHT);
     }
 
     // ---------- 2. Paso de los géiseres ----------

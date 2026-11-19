@@ -25,8 +25,8 @@ public final class TempleStory {
     public static String opening(TempleType t) {
         return switch (t) {
             case VOLCAN -> "La empalizada del campamento se abre. Arriba, el volcán humea. El templo está en el cráter: hay que subir.";
-            case CENIZA -> "Las puertas se abren. Huele a pólvora, y la ceniza cae como nieve sucia.";
-            case ECO -> "Las puertas se abren sin un ruido. Al otro lado, alguien toca un tambor muy lejos.";
+            case CENIZA -> "La empalizada del campamento minero se abre. Al fondo del valle, la montaña tiene boca... y está abierta.";
+            case ECO -> "El muro del campamento se abre sin un ruido. Abajo, en el barranco, alguien toca un tambor muy lejos.";
         };
     }
 

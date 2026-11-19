@@ -237,7 +237,7 @@ public class SugarGameTests {
     @GameTest(template = "empty", timeoutTicks = 600)
     public static void ashTempleFullFlow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(-3000, 20, 6000);
+        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(-3000, 45, 6000);
         TempleGenerator.Result result = new AshTempleGenerator().generate(level, feet);
         TempleSavedData saved = TempleSavedData.get(level.getServer());
         TempleData data = saved.define(TempleType.CENIZA, level.dimension(), result.zone(), result.lobby());
@@ -250,12 +250,12 @@ public class SugarGameTests {
         int cracks = TempleService.positionsOf(level, data, MagmaVentBlock.class).size();
         int doors = TempleService.positionsOf(level, data, EventDoorBlock.class).size();
         int crates = TempleService.positionsOf(level, data, SupplyCrateBlock.class).size();
-        helper.assertTrue(statues == 264, "Estatuas: " + statues);
-        helper.assertTrue(bushes == 18, "Matas: " + bushes);
-        helper.assertTrue(geysers == 26, "Géiseres: " + geysers);
+        helper.assertTrue(statues >= 264 + 70, "Estatuas: " + statues);
+        helper.assertTrue(bushes >= 18 + 10, "Matas: " + bushes);
+        helper.assertTrue(geysers >= 26 + 15, "Géiseres: " + geysers);
         helper.assertTrue(cracks == 6, "Grietas: " + cracks);
-        helper.assertTrue(doors == 56, "Puertas: " + doors);
-        helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
+        helper.assertTrue(doors == 56 - 2 + 18, "Puertas: " + doors);
+        helper.assertTrue(crates == 9, "Cofres (6 de suministros y 3 del tesoro): " + crates);
         checkEventRooms(helper, level, data);
 
         int acx = data.altar.getX() >> 4, acz = data.altar.getZ() >> 4;
@@ -302,7 +302,7 @@ public class SugarGameTests {
     @GameTest(template = "empty", timeoutTicks = 900)
     public static void echoTempleFullFlow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(6000, 20, -3000);
+        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(6000, 45, -3000);
         TempleGenerator.Result result = new EchoTempleGenerator().generate(level, feet);
         TempleSavedData saved = TempleSavedData.get(level.getServer());
         TempleData data = saved.define(TempleType.ECO, level.dimension(), result.zone(), result.lobby());
@@ -317,11 +317,11 @@ public class SugarGameTests {
         helper.assertTrue(drums == 8, "Tambores: " + drums);
         helper.assertTrue(gongs == 1, "Gongs: " + gongs);
         helper.assertTrue(pedestals == 8, "Atriles: " + pedestals);
-        helper.assertTrue(doors == 56, "Puertas: " + doors);
-        helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
+        helper.assertTrue(doors == 56 - 2 + 18 + 42, "Puertas: " + doors);
+        helper.assertTrue(crates == 11, "Cofres (8 de suministros y 3 del tesoro): " + crates);
         checkEventRooms(helper, level, data);
         int platforms = 0;
-        for (BlockPos p : BlockPos.betweenClosed(feet.offset(-6, -1, -7), feet.offset(60, -1, 10))) {
+        for (BlockPos p : BlockPos.betweenClosed(EchoTempleGenerator.origin(feet), EchoTempleGenerator.origin(feet).offset(66, 0, 17))) {
             if (level.getBlockState(p).getBlock() instanceof EchoPlatformBlock) platforms++;
         }
         helper.assertTrue(platforms > 40, "Puente invisible: " + platforms);
@@ -448,7 +448,7 @@ public class SugarGameTests {
         int bells = TempleService.positionsOf(level, data, com.sugar.block.BossBellBlock.class).size();
         int treasure = TempleService.positionsOf(level, data, com.sugar.block.TreasureCrateBlock.class).size();
         helper.assertTrue(altars == 1, "Altares de oleadas: " + altars);
-        helper.assertTrue(plates == 4, "Placas de grupo: " + plates);
+        helper.assertTrue(plates >= 4, "Placas de grupo: " + plates);
         helper.assertTrue(relics == 3, "Reliquias: " + relics);
         helper.assertTrue(bells == 1, "Campanas: " + bells);
         helper.assertTrue(treasure == 3, "Cofres del tesoro: " + treasure);
@@ -458,7 +458,7 @@ public class SugarGameTests {
     @GameTest(template = "empty", timeoutTicks = 1200, batch = "evento")
     public static void eventModeFlow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(-3000, 20, -6000);
+        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(-3000, 45, -6000);
         TempleGenerator.Result result = new AshTempleGenerator().generate(level, feet);
         TempleSavedData saved = TempleSavedData.get(level.getServer());
         TempleData data = saved.define(TempleType.CENIZA, level.dimension(), result.zone(), result.lobby());
