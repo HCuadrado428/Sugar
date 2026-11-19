@@ -304,4 +304,43 @@ public class SugarGameTests {
             helper.succeed();
         });
     }
+
+    /** Fuerza las fases 2 y 3 de un jefe y comprueba que termina la escena y sigue peleando. */
+    private static void runStages(GameTestHelper helper, com.sugar.boss.SugarBoss boss, java.util.function.IntSupplier phase, int ragePhase) {
+        helper.runAfterDelay(20, () -> {
+            boss.debugNextStage();
+            helper.assertTrue(boss.stage() == 2, "No pasa a la fase 2");
+            helper.assertTrue(phase.getAsInt() == ragePhase, "No arranca la escena de la fase 2 (fase " + phase.getAsInt() + ")");
+        });
+        helper.runAfterDelay(110, () -> {
+            helper.assertTrue(boss.isAlive(), "Ha desaparecido en la fase 2");
+            helper.assertTrue(phase.getAsInt() != ragePhase, "La escena de la fase 2 no termina");
+            boss.debugNextStage();
+            helper.assertTrue(boss.stage() == 3, "No pasa a la fase 3");
+        });
+        helper.runAfterDelay(220, () -> {
+            helper.assertTrue(boss.isAlive(), "Ha desaparecido en la fase 3");
+            helper.assertTrue(phase.getAsInt() != ragePhase, "La escena de la fase 3 no termina");
+            boss.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void serpentStages(GameTestHelper helper) {
+        MagmaSerpent b = helper.spawn(ModEntities.MAGMA_SERPENT.get(), new BlockPos(2, 2, 2));
+        runStages(helper, b, b::phase, MagmaSerpent.RAGE);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void beastStages(GameTestHelper helper) {
+        AshBeast b = helper.spawn(ModEntities.ASH_BEAST.get(), new BlockPos(2, 2, 2));
+        runStages(helper, b, b::phase, AshBeast.RAGE);
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void drummerStages(GameTestHelper helper) {
+        EchoDrummer b = helper.spawn(ModEntities.ECHO_DRUMMER.get(), new BlockPos(2, 2, 2));
+        runStages(helper, b, b::phase, EchoDrummer.RAGE);
+    }
 }

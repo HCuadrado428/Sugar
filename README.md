@@ -41,7 +41,9 @@ Templo por defecto: `/eventtemple place volcan` construye todo hacia el este (+X
 5. **Antesala**: checkpoint y 4 cofres (martillo, comida, manzana dorada, flechas). Puerta canal 2: la abre el admin cuando todos estén listos.
 6. **Cráter**: `/eventboss summon volcan`.
 
-**Sierpe de Magma**: asoma por un respiradero y solo la aturde el **Martillo de Obsidiana** (hacen falta más golpes cuantos más jugadores haya). Aturdida recibe daño durante 8 s; luego vuela en círculos lanzando magma (vulnerable a flechas) y vuelve a hundirse. Con 10+ jugadores salen cabezas señuelo: tienen los ojos apagados y explotan si las golpeas. Por debajo del 40% de vida, la mitad de los respiraderos entran en erupción y caen más rocas.
+**Sierpe de Magma**: asoma por un respiradero y solo la aturde el **Martillo de Obsidiana** (hacen falta más golpes cuantos más jugadores haya). Aturdida recibe daño durante 8 s; luego vuela en círculos lanzando magma (vulnerable a flechas) y vuelve a hundirse. Con 10+ jugadores salen cabezas señuelo: tienen los ojos apagados y explotan si las golpeas.
+- **Fase II (66%)**: sale disparada, sube al centro rugiendo y todos los respiraderos escupen fuego. Desde ahora hace **pasadas de fuego**: marca una línea de humo en el suelo, baja en rasante y deja un reguero de llamas (al pasar baja es vulnerable). Además, antes de hundirse da un **golpe de lava**: una onda de fuego que hay que saltar.
+- **Fase III (33%)**: se estrella contra el techo, que se derrumba en una lluvia de rocas, y la mitad de los respiraderos entran en erupción.
 
 Orden típico de un evento:
 ```
@@ -66,7 +68,8 @@ Templo por defecto: `/eventtemple place ceniza` (~125 × 50 bloques hacia el est
 - **Rueda** hecha una bola: embiste rebotando en las paredes y lanza a la gente hacia el foso. Es invulnerable mientras rueda.
 - **Ruge** e invoca Crías de Ceniza desde las grietas (máximo 12).
 
-Por debajo del 40% de vida, las grietas entran en erupción y rueda más a menudo.
+- **Fase II (66%)**: ruge con una onda de ceniza. Sus pisotones abren **grietas de lava**: líneas que se resquebrajan hacia los jugadores y revientan en fuego al poco (apartaos de la línea). Al chocar rodando contra una pared caen rocas del techo.
+- **Fase III (33%)**: **tormenta de ceniza**. Al inhalar crea un remolino que arrastra de verdad (y es el mejor momento para meterle una bomba), sus pisotones lanzan ondas que hay que saltar y a veces rueda dos veces seguidas.
 
 Bloques nuevos: **Mata de Pólvora**, **Estatua Agrietada**, **Géiser de Fuego** (fase 0-3 con shift + clic derecho en creativo; cada fase retrasa la erupción 1 s).
 
@@ -86,11 +89,21 @@ Templo por defecto: `/eventtemple place eco` (~140 × 52 bloques hacia el este).
 - **Redoble**: las manos golpean el tambor por turnos y todo el que esté apoyado sale botando. Saltad justo antes del golpe.
 - **Agarre**: atrapa a un jugador, lo aprieta y lo lanza. Si los demás golpean la mano, lo suelta.
 - **Barrido**: arrastra la mano a ras de suelo en arco; saltad por encima.
-- **Palmada** (por debajo del 40% de vida): las dos manos se cierran de golpe sobre alguien.
+- **Palmada** (fase III): las dos manos se cierran de golpe sobre alguien.
+- **Fase II (66%)**: se hace visible, ruge con las costillas en abanico y desde ahora su corazón **late**: cada latido lanza una onda desde el centro del tambor que hay que saltar.
+- **Fase III (33%)**: el ritmo se acelera y aprende el **Grito del Eco**: se hace visible, apunta a alguien con un hilo de almas (que se vuelve fuego de alma al fijar el objetivo) y dispara un rayo sónico. Apartaos de la línea.
 
 Golpear una mano la va aturdiendo (la barra sale en pantalla); al llenarse cae al suelo unos 7 s. **Si las dos manos están en el suelo a la vez, el torso se desploma, las costillas se abren como puertas y el corazón queda a la vista y recibe todo el daño** durante unos 8 s; luego se sacude, se ríe y vuelve a esconderse. Oculta solo recibe el 25% del daño (flechas de quien lleve la lente).
 
 Bloques nuevos: **Tambor del Eco** (nota 0-3 con shift + clic derecho en creativo), **Gong del Eco**, **Atril de la Lente**, **Plataforma Oculta** (en creativo se ve siempre).
+
+## Fases, ondas y sacudida de pantalla
+
+Los tres jefes tienen **tres fases** (100 %, 66 % y 33 % de vida). Al cambiar de fase hay una escena corta en la que el jefe es invulnerable, sale un título y aparecen ataques nuevos; la barra de jefe lo indica con "· II" y "· III".
+
+Las **ondas expansivas** son anillos que recorren el suelo: golpean a quien esté apoyado cuando pasan, así que hay que saltar justo a tiempo.
+
+Los golpes fuertes, rugidos y derrumbes **sacuden la pantalla**. Se ajusta o se desactiva con `sacudidaPantalla` en `config/sugar-common.toml` (0 = desactivada, 1 = normal, 2 = el doble).
 
 ## Montar vuestro propio templo
 
