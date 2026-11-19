@@ -40,7 +40,8 @@ public class DrainableMagmaBlock extends EventDoorBlock {
     @Override
     @SuppressWarnings("deprecation")
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (state.getValue(OPEN) || level.isClientSide) return;
+        // Solo a los seres vivos: los objetos de quien muere no se queman
+        if (state.getValue(OPEN) || level.isClientSide || !(entity instanceof net.minecraft.world.entity.LivingEntity)) return;
         entity.makeStuckInBlock(state, new net.minecraft.world.phys.Vec3(0.6, 0.5, 0.6));
         entity.setSecondsOnFire(8);
         entity.hurt(level.damageSources().lava(), 4.0F);

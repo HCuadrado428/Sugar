@@ -128,7 +128,7 @@ Salas comunes a los tres templos:
 - **Reliquias**: tres por templo, escondidas en rincones de parkour. Cada una cuenta a quien la encuentra un trozo de la historia del jefe. Con las tres se abre la **cámara del tesoro** junto a la antesala (canal 8), con un **Cofre del Tesoro** por jugador.
 - **Campana del Jefe** en la antesala (Ceniza y Eco): solo suena si la mayoría del grupo está allí. Abre la arena (canal 9), el suelo late unos segundos y el jefe despierta con su presentación. El admin puede seguir usando `/eventboss summon`.
 
-`/event info <templo>` muestra a los admins los pasos cumplidos, el tiempo y las caídas del grupo.
+`/eventtemple info <templo>` muestra a los admins los pasos cumplidos, el tiempo y las caídas del grupo.
 
 Canales de puertas de los templos por defecto: 10 entrada (`/event open`), 0 vestíbulo (`/event start`), 1-3 salas, 8 tesoro, 9 arena. En el Volcán: 1-3 cerraduras (sellos, puente, martillo), 4 jaula del martillo, 5 Puente de Brasas y lago, 6 interruptores, 7 sellos, 8 tesoro, 11 Puerta del Jefe, 12 reja de la Forja.
 
