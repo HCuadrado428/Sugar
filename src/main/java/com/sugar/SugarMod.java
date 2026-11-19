@@ -41,6 +41,8 @@ public class SugarMod {
         TempleRegistry.registerBoss(TempleType.ECO, ModEntities.ECHO_DRUMMER);
         TempleRegistry.registerGenerator(TempleType.ECO, new EchoTempleGenerator());
 
+        com.sugar.net.SugarNetwork.register();
+
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SugarConfig.SPEC);
     }
 

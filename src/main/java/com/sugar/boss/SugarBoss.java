@@ -61,6 +61,10 @@ public abstract class SugarBoss extends Monster {
     private float damageScale = 1.0F;
     private int scaledPlayers = 1;
     private boolean scaledOnce;
+    /** Fase del combate: 1 (100-66 %), 2 (66-33 %), 3 (33-0 %). */
+    private int stage = 1;
+    /** Ticks que quedan de invulnerabilidad por el cambio de fase (la escena del jefe). */
+    protected int stageLock;
 
     protected SugarBoss(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -126,6 +130,43 @@ public abstract class SugarBoss extends Monster {
     public ResourceLocation rewardTable() {
         ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(getType());
         return SugarMod.id("bosses/" + key.getPath());
+    }
+
+    // ---------- Fases ----------
+
+    public int stage() {
+        return stage;
+    }
+
+    /** Se llama una vez al entrar en la fase 2 y otra al entrar en la 3. Cada jefe monta aquí su escena. */
+    protected void onStageChange(ServerLevel level, int newStage) {}
+
+    /** Para las pruebas: fuerza el paso a la siguiente fase. */
+    public void debugNextStage() {
+        if (stage < 3 && level() instanceof ServerLevel sl) advanceStage(sl);
+    }
+
+    private void advanceStage(ServerLevel level) {
+        stage++;
+        updateBarName();
+        onStageChange(level, stage);
+    }
+
+    private void updateBarName() {
+        Component name = getDisplayName();
+        bossEvent.setName(stage <= 1 ? name : name.copy().append(Component.literal(stage == 2 ? "  · II" : "  · III").withStyle(ChatFormatting.GOLD)));
+    }
+
+    /** Título de cambio de fase para todo el templo. */
+    protected void announceStage(Component subtitle) {
+        TempleType t = temple;
+        Component name = (t != null ? t.bossDisplayName() : getDisplayName()).copy();
+        announce(name.copy().append(stage == 2 ? " · II" : " · III").withStyle(ChatFormatting.BOLD), subtitle);
+    }
+
+    /** Sacudida de pantalla alrededor del jefe. */
+    protected void shake(float intensity, int ticks) {
+        if (level() instanceof ServerLevel sl) com.sugar.fx.Fx.shake(sl, position(), 72.0, intensity, ticks);
     }
 
     // ---------- Templo ----------
@@ -195,6 +236,7 @@ public abstract class SugarBoss extends Monster {
         if (level().isClientSide) return super.hurt(source, amount);
         if (source.is(DamageTypeTags.IS_FALL) || source.is(DamageTypeTags.IS_DROWNING)) return false;
         if (inIntro() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;   // invulnerable durante la presentación
+        if (stageLock > 0 && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false; // y durante el cambio de fase
 
         float before = getHealth();
         boolean result = super.hurt(source, amount / healthScale);
@@ -252,6 +294,9 @@ public abstract class SugarBoss extends Monster {
     protected void customServerAiStep() {
         super.customServerAiStep();
         if (!scaledOnce || tickCount % 200 == 0) rescale();
+        if (stageLock > 0) stageLock--;
+        if (!inIntro() && stage < 3 && isAlive() && level() instanceof ServerLevel sl
+                && getHealth() / getMaxHealth() <= (stage == 1 ? 0.66F : 0.33F)) advanceStage(sl);
         bossEvent.setProgress(inIntro() ? Math.max(0.0F, Math.min(1.0F, introProgress)) : getHealth() / getMaxHealth());
     }
 
@@ -279,6 +324,7 @@ public abstract class SugarBoss extends Monster {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (temple != null) tag.putString("SugarTemple", temple.id());
+        tag.putInt("SugarStage", stage);
         ListTag dmg = new ListTag();
         damageByPlayer.forEach((uuid, value) -> {
             CompoundTag c = new CompoundTag();
@@ -298,7 +344,8 @@ public abstract class SugarBoss extends Monster {
             CompoundTag c = dmg.getCompound(i);
             damageByPlayer.put(c.getUUID("Player"), c.getFloat("Damage"));
         }
-        if (hasCustomName()) bossEvent.setName(getDisplayName());
+        stage = Math.max(1, Math.min(3, tag.getInt("SugarStage")));
+        updateBarName();
         setIntro(false);
     }
 }

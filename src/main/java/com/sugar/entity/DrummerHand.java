@@ -268,6 +268,7 @@ public class DrummerHand extends Mob implements GeoEntity {
         else if (timer <= 13) setPos(aim.x, Mth.lerp((timer - 10) / 3.0, aim.y + 6.2, floor), aim.z);
         if (timer == 13) {
             impact(level, owner, aim, 2.8, owner.scaledDamage(9.0F), 0.9, true);
+            com.sugar.fx.Fx.shake(level, aim, 24, 1.5F, 10);
             owner.drumBoom(level, aim, 12, 0.35);
         }
         if (timer > 13 && timer < 34) setPos(aim.x, floor, aim.z);        // ventana para atacarla
@@ -408,6 +409,7 @@ public class DrummerHand extends Mob implements GeoEntity {
         if (timer == 13 && clapSide > 0) {
             level.playSound(null, BlockPos.containing(c), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 2.0F, 1.4F);
             level.sendParticles(ParticleTypes.SONIC_BOOM, c.x, c.y + 0.5, c.z, 1, 0, 0, 0, 0);
+            com.sugar.fx.Fx.shake(level, c, 22, 2.2F, 12);
             for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, new net.minecraft.world.phys.AABB(c, c).inflate(2.6, 1.8, 2.6),
                     q -> !q.isSpectator() && !q.isCreative())) {
                 p.hurt(damageSources().mobAttack(this), owner.scaledDamage(14.0F));

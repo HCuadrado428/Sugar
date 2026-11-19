@@ -1,5 +1,7 @@
 package com.sugar.entity;
 
+import com.sugar.fx.Fx;
+import com.sugar.fx.Shockwaves;
 import com.sugar.boss.SugarBoss;
 import com.sugar.registry.ModEntities;
 import com.sugar.temple.TempleData;
@@ -53,9 +55,13 @@ import java.util.UUID;
  *   (saltad a tiempo), agarre y lanzamiento, barrido a ras de suelo y, con poca vida, palmada.
  * Golpear una mano la va aturdiendo; cuando cae se queda unos segundos en el suelo.
  * Si las DOS manos están en el suelo a la vez, el torso se desploma, las costillas se abren y el corazón recibe todo el daño.
+ * Fase 2 (66%): LATIDOS. El corazón late y lanza ondas desde el centro del tambor que hay que saltar.
+ * Fase 3 (33%): GRITO DEL ECO. Se hace visible, apunta a alguien con un hilo de almas y dispara un rayo sónico;
+ *   además el ritmo de las manos se acelera.
  */
 public class EchoDrummer extends SugarBoss implements GeoEntity {
-    public static final int INTRO = 0, HIDDEN = 1, EXPOSE = 2, EXPOSED = 3, RETREAT = 4, LAUGH = 5;
+    public static final int INTRO = 0, HIDDEN = 1, EXPOSE = 2, EXPOSED = 3, RETREAT = 4, LAUGH = 5, RAGE = 6, PULSE = 7, CHARGE = 8;
+    private static final int RAGE_TIME = 52, BEAT_EVERY = 14, CHARGE_TIME = 32, CHARGE_LOCK = 20;
     public static final int ARENA_R = 15;
     private static final int INTRO_TOTAL = 150, INTRO_REVEAL = 70, EXPOSE_TIME = 16, EXPOSED_TIME = 160, RETREAT_TIME = 26, LAUGH_TIME = 32;
     private static final double HOVER_H = 6.0, EXPOSED_H = 0.6;
@@ -70,6 +76,9 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
     private static final RawAnimation A_EXPOSE = RawAnimation.begin().thenPlay(P + "expose").thenLoop(P + "exposed");
     private static final RawAnimation A_RETREAT = RawAnimation.begin().thenPlayAndHold(P + "retreat");
     private static final RawAnimation A_LAUGH = RawAnimation.begin().thenPlay(P + "laugh").thenLoop(P + "idle");
+    private static final RawAnimation A_RAGE = RawAnimation.begin().thenPlay(P + "rage").thenLoop(P + "idle");
+    private static final RawAnimation A_PULSE = RawAnimation.begin().thenLoop(P + "pulse");
+    private static final RawAnimation A_CHARGE = RawAnimation.begin().thenPlayAndHold(P + "charge");
     private static final RawAnimation A_DEATH = RawAnimation.begin().thenPlayAndHold(P + "death");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -81,6 +90,11 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
     private int rollBeats, rollTimer;
     private boolean rollLeft;
     private int laughCooldown = 400;
+    private int rageStage;
+    private int pulseBeats;
+    private int specialCooldown = 160;
+    @Nullable private UUID chargeTarget;
+    private Vec3 chargeFrom = Vec3.ZERO, chargeDir = new Vec3(1, 0, 0);
     private boolean enraged;
     @Nullable private UUID lookId;
 
@@ -324,7 +338,8 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
 
         switch (phase()) {
             case INTRO -> introTick(level, look);
-            case HIDDEN, LAUGH -> hiddenTick(level, look);
+            case HIDDEN, LAUGH, PULSE, CHARGE -> hiddenTick(level, look);
+            case RAGE -> rageTick(level, look);
             case EXPOSE -> {
                 // Se desploma hasta casi el suelo (animación "expose")
                 Vec3 c = center();
@@ -364,7 +379,6 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
             }
             default -> setPhase(HIDDEN);
         }
-        if (!enraged && !inIntro() && getHealth() / getMaxHealth() < 0.4F) enrage(level);
     }
 
     private void holdHands(int ticks) {
@@ -379,12 +393,23 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
             if (timer % 8 == 4) level.playSound(null, blockPosition(), SoundEvents.WITCH_CELEBRATE, SoundSource.HOSTILE, 3.0F, 0.5F);
             if (timer >= LAUGH_TIME) setPhase(HIDDEN);
         }
+        if (phase() == PULSE) pulseTick(level);
+        if (phase() == CHARGE) { chargeTick(level); return; }
+        if (specialCooldown > 0) specialCooldown--;
         // Pistas para quien no lleve lente
         if (tickCount % 15 == 0) level.sendParticles(ParticleTypes.REVERSE_PORTAL, getX(), getY() + 2.5, getZ(), 2, 0.8, 0.8, 0.8, 0.01);
         if (laughCooldown > 0) laughCooldown--;
 
         if (rollBeats > 0) { drumRoll(level); return; }
         if (cooldown > 0) { cooldown--; return; }
+        // Ataques del propio torso (fases 2 y 3)
+        if (phase() == HIDDEN && specialCooldown == 0 && stage() >= 2 && !players(level).isEmpty()) {
+            specialCooldown = enraged ? 150 : 220;
+            if (stage() >= 3 && random.nextBoolean()) startCharge(level);
+            else startPulse(level);
+            cooldown = 20;
+            return;
+        }
 
         DrummerHand l = hand(true), r = hand(false);
         List<DrummerHand> free = new ArrayList<>();
@@ -417,9 +442,128 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
             h.orderSweep(c, a - dir * 1.4, a + dir * 2.2);
         }
         cooldown = enraged ? 30 : 50;
-        if (laughCooldown == 0 && random.nextInt(4) == 0) {
+        if (laughCooldown == 0 && phase() == HIDDEN && random.nextInt(4) == 0) {
             laughCooldown = 500;
             setPhase(LAUGH);
+        }
+    }
+
+    // ---------- Cambios de fase ----------
+
+    /**
+     * Fase 2: se hace visible, ruge con las costillas en abanico y su corazón empieza a latir (ondas que hay que saltar).
+     * Fase 3: igual, más fuerte; el ritmo se acelera y aprende el Grito del Eco.
+     */
+    @Override
+    protected void onStageChange(ServerLevel level, int newStage) {
+        rageStage = newStage;
+        stageLock = RAGE_TIME + 10;
+        rollBeats = 0;
+        pulseBeats = 0;
+        for (boolean left : new boolean[]{true, false}) { DrummerHand h = hand(left); if (h != null) h.orderRecover(); }
+        setVisible(true);
+        setPhase(RAGE);
+    }
+
+    private void rageTick(ServerLevel level, @Nullable ServerPlayer look) {
+        Vec3 c = center();
+        double from = getY();
+        setPos(c.x, Mth.lerp(0.15, from, c.y + HOVER_H), c.z);
+        if (look != null) turnTo(look, 3);
+        if (timer == 8) level.playSound(null, blockPosition(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, 5.0F, 0.5F);
+        if (timer == 12) {
+            level.playSound(null, blockPosition(), SoundEvents.WARDEN_ROAR, SoundSource.HOSTILE, 6.0F, 0.6F);
+            shake(rageStage >= 3 ? 3.8F : 3.0F, 40);
+            Shockwaves.spawn(level, new Vec3(c.x, c.y, c.z), 0.45, ARENA_R + 2, scaledDamage(4.0F), 0.6, Shockwaves.ECHO, this);
+            Fx.particles(level, ParticleTypes.SCULK_SOUL, getX(), getY() + 3, getZ(), 120, 2.5, 2.0, 2.5, 0.12);
+            Fx.particles(level, ParticleTypes.SONIC_BOOM, getX(), getY() + 3, getZ(), 1, 0, 0, 0, 0);
+            if (rageStage >= 3) {
+                announceStage(Component.literal("¡Grito del Eco! Apartaos de su línea").withStyle(ChatFormatting.DARK_AQUA));
+                enrage(level);
+            } else {
+                announceStage(Component.literal("Su corazón late... ¡saltad las ondas!").withStyle(ChatFormatting.AQUA));
+            }
+        }
+        if (timer > 12 && timer < 40 && timer % 3 == 0)
+            Fx.particles(level, ParticleTypes.SOUL_FIRE_FLAME, getX(), getY() + 4.5, getZ(), 6, 0.5, 0.6, 0.5, 0.05);
+        if (timer >= RAGE_TIME) {
+            fade(level);
+            setPhase(HIDDEN);
+            cooldown = 30;
+            specialCooldown = 60;
+        }
+    }
+
+    // ---------- Latidos (fase 2+) ----------
+
+    private void startPulse(ServerLevel level) {
+        pulseBeats = stage() >= 3 ? 3 : 2;
+        setPhase(PULSE);
+        templeData().ifPresent(d -> TempleService.actionbar(level, d,
+                Component.literal("♥ ¡Su corazón va a latir! Saltad cuando llegue la onda").withStyle(ChatFormatting.AQUA)));
+    }
+
+    private void pulseTick(ServerLevel level) {
+        // Cada latido: golpe sordo y una onda que sale del centro del tambor (animación "pulse")
+        if (timer % BEAT_EVERY == 4 && pulseBeats > 0) {
+            Vec3 c = center();
+            level.playSound(null, BlockPos.containing(c), SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, 6.0F, 0.6F);
+            level.playSound(null, BlockPos.containing(c), SoundEvents.NOTE_BLOCK_BASEDRUM.value(), SoundSource.HOSTILE, 5.0F, 0.5F);
+            Shockwaves.spawn(level, new Vec3(c.x, c.y, c.z), enraged ? 0.5 : 0.42, ARENA_R + 1, scaledDamage(5.0F), 0.55, Shockwaves.ECHO, this);
+            Fx.particles(level, ParticleTypes.SCULK_SOUL, getX(), getY() + 2.6, getZ(), 20, 0.6, 0.6, 0.6, 0.08);
+            shake(1.2F, 8);
+            pulseBeats--;
+        }
+        if (pulseBeats == 0 && timer % BEAT_EVERY >= 10) setPhase(HIDDEN);
+    }
+
+    // ---------- Grito del Eco (fase 3) ----------
+
+    private void startCharge(ServerLevel level) {
+        List<ServerPlayer> list = players(level);
+        ServerPlayer t = list.get(random.nextInt(list.size()));
+        chargeTarget = t.getUUID();
+        setVisible(true);
+        setPhase(CHARGE);
+        level.playSound(null, blockPosition(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 5.0F, 0.8F);
+        t.displayClientMessage(Component.literal("¡Te está apuntando! Muévete de lado").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+    }
+
+    private void chargeTick(ServerLevel level) {
+        Vec3 heart = position().add(0, 2.6, 0);
+        if (timer <= CHARGE_LOCK) {
+            Entity e = chargeTarget != null ? level.getEntity(chargeTarget) : null;
+            if (e instanceof ServerPlayer p && p.isAlive()) {
+                chargeDir = p.position().add(0, 1.0, 0).subtract(heart).normalize();
+                turnTo(p, 8);
+            }
+            chargeFrom = heart;
+        }
+        // Aviso: un hilo de almas hacia el objetivo, que se vuelve fuego de alma al fijarse
+        if (timer % 2 == 0) {
+            var type = timer > CHARGE_LOCK ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SCULK_SOUL;
+            Fx.line(level, type, chargeFrom, chargeFrom.add(chargeDir.scale(30)), 1.2, 0.05);
+        }
+        if (timer == CHARGE_TIME) {
+            level.playSound(null, blockPosition(), SoundEvents.WARDEN_SONIC_BOOM, SoundSource.HOSTILE, 6.0F, 0.7F);
+            shake(2.2F, 14);
+            for (int i = 1; i <= 30; i++) {
+                Vec3 p = chargeFrom.add(chargeDir.scale(i));
+                Fx.particles(level, ParticleTypes.SONIC_BOOM, p.x, p.y, p.z, 1, 0, 0, 0, 0);
+            }
+            for (ServerPlayer p : players(level)) {
+                Vec3 rel = p.position().add(0, 1.0, 0).subtract(chargeFrom);
+                double along = rel.dot(chargeDir);
+                if (along < 0 || along > 30) continue;
+                if (rel.subtract(chargeDir.scale(along)).length() > 1.4) continue;
+                p.hurt(damageSources().sonicBoom(this), scaledDamage(12.0F));
+                p.push(chargeDir.x * 1.5, 0.5, chargeDir.z * 1.5);
+                p.hurtMarked = true;
+            }
+        }
+        if (timer >= CHARGE_TIME + 12) {
+            fade(level);
+            setPhase(HIDDEN);
         }
     }
 
@@ -577,6 +721,9 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
                 case EXPOSE, EXPOSED -> state.setAndContinue(A_EXPOSE);
                 case RETREAT -> state.setAndContinue(A_RETREAT);
                 case LAUGH -> state.setAndContinue(A_LAUGH);
+                case RAGE -> state.setAndContinue(A_RAGE);
+                case PULSE -> state.setAndContinue(A_PULSE);
+                case CHARGE -> state.setAndContinue(A_CHARGE);
                 default -> state.setAndContinue(A_IDLE);
             };
         }));

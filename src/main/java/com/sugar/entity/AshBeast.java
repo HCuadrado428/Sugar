@@ -1,5 +1,7 @@
 package com.sugar.entity;
 
+import com.sugar.fx.Fx;
+import com.sugar.fx.Shockwaves;
 import com.sugar.block.MagmaVentBlock;
 import com.sugar.boss.SugarBoss;
 import com.sugar.registry.ModEntities;
@@ -60,10 +62,14 @@ import java.util.UUID;
  *  - RODAR: se hace una bola y embiste rebotando contra las paredes, empujando a la gente hacia la lava.
  *  - RUGIR: invoca Crías de Ceniza desde las grietas.
  * Fuera de la aturdida su coraza solo deja pasar el 20% del daño, y rodando es invulnerable.
- * Por debajo del 40%: las grietas entran en erupción y rueda más a menudo.
+ * Fase 2 (66%): sus pisotones abren GRIETAS DE LAVA en línea que revientan al poco; al chocar rodando
+ *   contra una pared caen rocas del techo.
+ * Fase 3 (33%): TORMENTA DE CENIZA. Inhalar se vuelve un remolino que arrastra de verdad, sus pisotones
+ *   lanzan ondas que hay que saltar, rueda dos veces seguidas y las grietas entran en erupción.
  */
 public class AshBeast extends SugarBoss implements GeoEntity {
-    public static final int STALK = 0, INHALE = 1, FIRE = 2, STUNNED = 3, CURL = 4, ROLLING = 5, UNCURL = 6, ROAR = 7, STOMP = 8, INTRO = 9, RECOVER = 10, FIRE_END = 11;
+    public static final int STALK = 0, INHALE = 1, FIRE = 2, STUNNED = 3, CURL = 4, ROLLING = 5, UNCURL = 6, ROAR = 7, STOMP = 8, INTRO = 9, RECOVER = 10, FIRE_END = 11, RAGE = 12, FISSURE = 13;
+    private static final int RAGE_TIME = 56, FISSURE_TIME = 36, FISSURE_CRACK = 7, FISSURE_BURST = 27;
     private static final int RECOVER_TIME = 38, FIRE_WINDUP = 12, FIRE_END_TIME = 16;
     private static final int INTRO_TIME = 120;
     private static final EntityDataAccessor<Integer> PHASE = SynchedEntityData.defineId(AshBeast.class, EntityDataSerializers.INT);
@@ -81,6 +87,8 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     private static final RawAnimation A_UNCURL = RawAnimation.begin().thenPlay(P + "roll_end");
     private static final RawAnimation A_ROAR = RawAnimation.begin().thenPlay(P + "roar");
     private static final RawAnimation A_STOMP = RawAnimation.begin().thenPlay(P + "stomp");
+    private static final RawAnimation A_FISSURE = RawAnimation.begin().thenPlay(P + "stomp").thenLoop(P + "idle");
+    private static final RawAnimation A_RAGE = RawAnimation.begin().thenPlay(P + "roar").thenLoop(P + "idle");
     private static final RawAnimation A_DEATH = RawAnimation.begin().thenPlayAndHold(P + "death");
     private static final RawAnimation A_INTRO = RawAnimation.begin().thenPlayAndHold(P + "intro");
 
@@ -99,6 +107,10 @@ public class AshBeast extends SugarBoss implements GeoEntity {
     private int hintCooldown;
     private boolean enraged;
     private Vec3 rollDir = Vec3.ZERO;
+    private int rageStage;
+    private int extraRolls;
+    /** Grietas en marcha: origen y dirección de cada una. */
+    private final List<Vec3[]> fissures = new ArrayList<>();
 
     public AshBeast(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -288,6 +300,7 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                 if (timer >= FIRE_END_TIME) setPhase(STALK);
             }
             case CURL -> {
+                if (timer == 1 && stage() >= 3 && extraRolls == 0 && random.nextInt(2) == 0) extraRolls = 1;
                 if (target != null) turnTo(target.getX() - getX(), target.getZ() - getZ(), 12);
                 if (timer == 1) level.playSound(null, blockPosition(), SoundEvents.IRON_GOLEM_REPAIR, SoundSource.HOSTILE, 2.0F, 0.5F);
                 if (timer >= CURL_TIME) {
@@ -296,19 +309,30 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                 }
             }
             case ROLLING -> roll(level);
-            case UNCURL -> { if (timer >= UNCURL_TIME) setPhase(STALK); }
+            case UNCURL -> {
+                if (timer >= UNCURL_TIME) {
+                    if (extraRolls > 0) { extraRolls--; setPhase(CURL); }
+                    else setPhase(STALK);
+                }
+            }
             case ROAR -> {
                 if (timer == 2) level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 4.0F, 0.5F);
                 if (timer == 21) { shockwave(level, 4.0, 3.0F, 0.4); summonHatchlings(level); }
                 if (timer >= ROAR_TIME) setPhase(STALK);
             }
+            case RAGE -> rageTick(level, target);
+            case FISSURE -> fissureTick(level, target);
             case STOMP -> {
-                if (timer == 7) shockwave(level, 5.0, 6.0F, 0.7);
+                if (timer == 7) {
+                    shockwave(level, 5.0, 6.0F, 0.7);
+                    if (stage() >= 3) Shockwaves.spawn(level, position(), 0.45, 13.0, scaledDamage(5.0F), 0.5, Shockwaves.ASH, this);
+                    shake(1.6F, 10);
+                }
                 if (timer >= STOMP_TIME) setPhase(STALK);
             }
             default -> setPhase(STALK);
         }
-        if (!enraged && !inIntro() && getHealth() / getMaxHealth() < 0.4F) enrage(level);
+        if (stage() >= 3 && !inIntro() && tickCount % 5 == 0) ashStorm(level);
     }
 
     private void stalk(ServerLevel level, @Nullable ServerPlayer target) {
@@ -320,14 +344,15 @@ public class AshBeast extends SugarBoss implements GeoEntity {
         } else {
             getNavigation().stop();
             turnTo(target.getX() - getX(), target.getZ() - getZ(), 8);
-            if (stompCooldown <= 0) { stompCooldown = 60; setPhase(STOMP); return; }
+            if (stompCooldown <= 0) { stompCooldown = 60; setPhase(stage() >= 2 && random.nextBoolean() ? FISSURE : STOMP); return; }
         }
         int decide = enraged ? 80 : 120;
         if (timer >= decide) {
             double r = random.nextDouble();
             double pRoll = enraged ? 0.5 : 0.32;
             int alive = hatchlingCount(level);
-            if (r < pRoll) setPhase(CURL);
+            if (stage() >= 2 && r > 0.8) setPhase(FISSURE);
+            else if (r < pRoll) setPhase(CURL);
             else if (r < pRoll + 0.18 && alive < MAX_HATCHLINGS) setPhase(ROAR);
             else setPhase(INHALE);
         }
@@ -353,10 +378,23 @@ public class AshBeast extends SugarBoss implements GeoEntity {
             for (ServerPlayer p : targets(level)) {
                 Vec3 to = p.position().subtract(mouth);
                 double d = to.length();
-                if (d > 1.5 && d < 10 && to.normalize().dot(fwd) > 0.5) {
-                    Vec3 pull = to.normalize().scale(-0.045);
+                boolean vortex = stage() >= 3;
+                if (d > 1.5 && d < (vortex ? 14 : 10) && to.normalize().dot(fwd) > (vortex ? 0.15 : 0.5)) {
+                    Vec3 pull = to.normalize().scale(vortex ? -0.11 : -0.045);
                     p.push(pull.x, 0, pull.z);
                     p.hurtMarked = true;
+                }
+            }
+            // Tormenta (fase 3): remolino de ceniza que gira hacia la boca
+            if (stage() >= 3) {
+                Vec3 side = new Vec3(-fwd.z, 0, fwd.x);
+                for (int i = 0; i < 6; i++) {
+                    double a = timer * 0.4 + i * Math.PI / 3;
+                    double rr = 3 + (i % 3) * 3.5;
+                    Vec3 from = mouth.add(fwd.scale(rr + 1)).add(side.scale(Math.cos(a) * rr * 0.6)).add(0, Math.sin(a) * 1.5 - 0.5, 0);
+                    Vec3 v = mouth.subtract(from).scale(0.1).add(side.scale(-Math.sin(a) * 0.2));
+                    Fx.spray(level, ParticleTypes.WHITE_ASH, from, v, 1.0);
+                    Fx.spray(level, ParticleTypes.LARGE_SMOKE, from, v, 0.6);
                 }
             }
             // Partículas de ceniza entrando en la boca
@@ -445,6 +483,15 @@ public class AshBeast extends SugarBoss implements GeoEntity {
             bounces++;
             level.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.5F, 0.6F);
             level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 1.0, getZ(), 2, 0.5, 0.5, 0.5, 0.0);
+            shake(stage() >= 2 ? 2.2F : 1.2F, 12);
+            if (stage() >= 2) {
+                // El golpe contra la pared suelta rocas del techo alrededor
+                int n = 3 + scaledPlayers() / 10;
+                for (int i = 0; i < n; i++) {
+                    double a = random.nextDouble() * Math.PI * 2, d = 1.5 + random.nextDouble() * 5;
+                    rockFromCeiling(level, getX() + Math.cos(a) * d - rollDir.x * 2, getZ() + Math.sin(a) * d - rollDir.z * 2, scaledDamage(7.0F));
+                }
+            }
             ServerPlayer next = randomTarget(level);
             Vec3 nd = next != null ? new Vec3(next.getX() - getX(), 0, next.getZ() - getZ()) : rollDir.scale(-1);
             double jitter = (random.nextDouble() - 0.5) * 0.6;
@@ -516,6 +563,128 @@ public class AshBeast extends SugarBoss implements GeoEntity {
             for (int i = 0; i < cracks.size() / 2; i++) MagmaVentBlock.setErupting(level, cracks.get(i), true);
             TempleService.actionbar(level, d, Component.literal("¡El suelo se agrieta!").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
         });
+    }
+
+    // ---------- Cambios de fase ----------
+
+    /**
+     * Fase 2: se alza rugiendo, onda de ceniza y desde ahora sus pisotones abren grietas de lava.
+     * Fase 3: tormenta de ceniza; su inhalación se vuelve un remolino y sus pisotones lanzan ondas.
+     */
+    @Override
+    protected void onStageChange(ServerLevel level, int newStage) {
+        rageStage = newStage;
+        stageLock = RAGE_TIME + 10;
+        getNavigation().stop();
+        setDeltaMovement(Vec3.ZERO);
+        extraRolls = 0;
+        setPhase(RAGE);
+    }
+
+    private void rageTick(ServerLevel level, @Nullable ServerPlayer target) {
+        if (target != null && timer < 14) turnTo(target.getX() - getX(), target.getZ() - getZ(), 8);
+        if (timer == 2) level.playSound(null, blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 6.0F, 0.4F);
+        if (timer == 21) {
+            shake(rageStage >= 3 ? 3.8F : 3.0F, 36);
+            Shockwaves.spawn(level, position(), 0.5, 18.0, scaledDamage(4.0F), 0.6, Shockwaves.ASH, this);
+            Fx.particles(level, ParticleTypes.WHITE_ASH, getX(), getY() + 2, getZ(), 200, 4, 2, 4, 0.1);
+            Fx.particles(level, new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BASALT.defaultBlockState()), getX(), getY() + 0.2, getZ(), 80, 3, 0.1, 3, 0.2);
+            level.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 4.0F, 0.5F);
+            if (rageStage >= 3) {
+                announceStage(Component.literal("¡Tormenta de ceniza! Su aliento os arrastra").withStyle(ChatFormatting.GRAY));
+                enrage(level);
+            } else {
+                announceStage(Component.literal("¡Cada pisotón abre grietas de lava!").withStyle(ChatFormatting.GOLD));
+                templeData().ifPresent(d -> {
+                    List<BlockPos> cracks = new ArrayList<>(TempleService.positionsOf(level, d, MagmaVentBlock.class));
+                    Collections.shuffle(cracks);
+                    for (int i = 0; i < cracks.size() / 4; i++) MagmaVentBlock.setErupting(level, cracks.get(i), true);
+                });
+            }
+        }
+        if (timer > 21 && timer < 45 && timer % 4 == 0) {
+            for (int i = 0; i < 3; i++) {
+                double a = random.nextDouble() * Math.PI * 2, d = 3 + random.nextDouble() * 10;
+                Fx.particles(level, ParticleTypes.LAVA, getX() + Math.cos(a) * d, getY() + 0.2, getZ() + Math.sin(a) * d, 3, 0.3, 0.1, 0.3, 0);
+            }
+        }
+        if (timer >= RAGE_TIME) setPhase(STALK);
+    }
+
+    /** Grietas de lava: pisa fuerte, el suelo se resquebraja en líneas y al poco revientan en fuego. */
+    private void fissureTick(ServerLevel level, @Nullable ServerPlayer target) {
+        if (target != null && timer < FISSURE_CRACK) turnTo(target.getX() - getX(), target.getZ() - getZ(), 10);
+        double len = stage() >= 3 ? 16 : 13;
+        if (timer == FISSURE_CRACK) {
+            fissures.clear();
+            shockwave(level, 4.0, 5.0F, 0.6);
+            shake(1.8F, 12);
+            level.playSound(null, blockPosition(), SoundEvents.DEEPSLATE_BREAK, SoundSource.HOSTILE, 3.0F, 0.5F);
+            List<ServerPlayer> players = new ArrayList<>(targets(level));
+            Collections.shuffle(players);
+            int n = 3 + stage();
+            for (int i = 0; i < n; i++) {
+                Vec3 dir;
+                if (i < players.size()) dir = new Vec3(players.get(i).getX() - getX(), 0, players.get(i).getZ() - getZ());
+                else { double a = random.nextDouble() * Math.PI * 2; dir = new Vec3(Math.cos(a), 0, Math.sin(a)); }
+                if (dir.lengthSqr() < 0.01) dir = forward();
+                fissures.add(new Vec3[]{position().add(0, 0.1, 0), dir.normalize()});
+            }
+        }
+        // Las grietas avanzan desde las patas (aviso) y luego revientan a la vez
+        if (timer > FISSURE_CRACK && timer < FISSURE_BURST && timer % 2 == 0) {
+            double reach = len * Math.min(1.0, (timer - FISSURE_CRACK) / 12.0);
+            for (Vec3[] f : fissures) {
+                Fx.line(level, new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BASALT.defaultBlockState()), f[0].add(f[1].scale(2)), f[0].add(f[1].scale(reach)), 1.0, 0.1);
+                if (timer > FISSURE_BURST - 10) Fx.line(level, ParticleTypes.SMOKE, f[0].add(f[1].scale(2)), f[0].add(f[1].scale(reach)), 1.5, 0.1);
+            }
+            if (timer % 6 == 0) level.playSound(null, blockPosition(), SoundEvents.BASALT_BREAK, SoundSource.HOSTILE, 2.0F, 0.6F);
+        }
+        if (timer == FISSURE_BURST) {
+            level.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3.0F, 0.6F);
+            shake(2.0F, 14);
+            for (Vec3[] f : fissures) {
+                for (double t = 2; t <= len; t += 1.0) {
+                    Vec3 p = f[0].add(f[1].scale(t));
+                    Fx.particles(level, ParticleTypes.FLAME, p.x, p.y, p.z, 0, 0, 1, 0, 0.35 + random.nextDouble() * 0.25);
+                    Fx.particles(level, ParticleTypes.FLAME, p.x, p.y + 0.5, p.z, 3, 0.15, 0.5, 0.15, 0.02);
+                    if (random.nextInt(3) == 0) Fx.particles(level, ParticleTypes.LAVA, p.x, p.y + 0.3, p.z, 1, 0.1, 0.1, 0.1, 0);
+                }
+            }
+            for (ServerPlayer p : targets(level)) {
+                for (Vec3[] f : fissures) {
+                    Vec3 rel = p.position().subtract(f[0]);
+                    double along = rel.x * f[1].x + rel.z * f[1].z;
+                    if (along < 1.5 || along > len + 0.5 || Math.abs(rel.y) > 1.5) continue;
+                    double across = Math.abs(rel.x * f[1].z - rel.z * f[1].x);
+                    if (across > 1.1) continue;
+                    p.hurt(damageSources().mobAttack(this), scaledDamage(8.0F));
+                    p.setSecondsOnFire(5);
+                    p.push(0, 0.8, 0);
+                    p.hurtMarked = true;
+                    break;
+                }
+            }
+        }
+        if (timer >= FISSURE_TIME) setPhase(STALK);
+    }
+
+    /** Fase 3: la ceniza cae por toda la cueva. */
+    private void ashStorm(ServerLevel level) {
+        for (ServerPlayer p : targets(level)) {
+            Fx.particles(level, ParticleTypes.WHITE_ASH, p.getX(), p.getY() + 3, p.getZ(), 12, 6, 3, 6, 0.02);
+            if (random.nextInt(3) == 0) Fx.particles(level, ParticleTypes.ASH, p.getX(), p.getY() + 3, p.getZ(), 8, 6, 3, 6, 0.01);
+        }
+    }
+
+    private void rockFromCeiling(ServerLevel level, double x, double z, float damage) {
+        BlockPos base = BlockPos.containing(x, getY(), z);
+        int y = base.getY() + 2;
+        for (int i = 2; i <= 16; i++) {
+            if (!level.getBlockState(base.above(i)).isAir()) break;
+            y = base.getY() + i;
+        }
+        FallingRock.spawn(level, x, y, z, damage);
     }
 
     // ---------- Daño ----------
@@ -638,6 +807,8 @@ public class AshBeast extends SugarBoss implements GeoEntity {
                 case UNCURL -> state.setAndContinue(A_UNCURL);
                 case ROAR -> state.setAndContinue(A_ROAR);
                 case STOMP -> state.setAndContinue(A_STOMP);
+                case FISSURE -> state.setAndContinue(A_FISSURE);
+                case RAGE -> state.setAndContinue(A_RAGE);
                 default -> state.setAndContinue(state.isMoving() ? A_WALK : A_IDLE);
             };
         }));

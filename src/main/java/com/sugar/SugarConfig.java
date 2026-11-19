@@ -15,6 +15,7 @@ public final class SugarConfig {
     public static final ForgeConfigSpec.IntValue MVP_COUNT;
     public static final ForgeConfigSpec.BooleanValue RESPAWN_AT_CHECKPOINT;
     public static final ForgeConfigSpec.BooleanValue INVERT_BREATH_SWEEP;
+    public static final ForgeConfigSpec.DoubleValue SCREEN_SHAKE;
 
     static {
         ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
@@ -56,6 +57,9 @@ public final class SugarConfig {
         INVERT_BREATH_SWEEP = b
                 .comment("Si en el juego el fuego de la Sierpe va hacia el lado contrario al que gira su cabeza, pon esto a true")
                 .define("invertirBarridoLanzallamas", false);
+        SCREEN_SHAKE = b
+                .comment("Fuerza de la sacudida de pantalla en golpes y rugidos (0 = desactivada)")
+                .defineInRange("sacudidaPantalla", 1.0, 0.0, 2.0);
         b.pop();
 
         SPEC = b.build();

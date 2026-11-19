@@ -2,6 +2,8 @@ package com.sugar.entity;
 
 import com.sugar.SugarConfig;
 import com.sugar.block.MagmaVentBlock;
+import com.sugar.fx.Fx;
+import com.sugar.fx.Shockwaves;
 import com.sugar.boss.SugarBoss;
 import com.sugar.registry.ModEntities;
 import com.sugar.registry.ModItems;
@@ -58,11 +60,15 @@ import java.util.Optional;
  *  ATURDIDA: recibe todo el daño durante 8 s → DESPEGUE → VUELO en círculos lanzando magma
  *  → PICADO hacia un respiradero → ENTERRADA.
  *  Con muchos jugadores asoman además cabezas señuelo en otros respiraderos.
- *  Por debajo del 40% de vida: la mitad de los respiraderos entran en erupción y caen más rocas.
+ *  Fase 2 (66%): sale volando y ruge. PASADA DE FUEGO: marca una línea de humo en el suelo, baja en
+ *   rasante y deja un reguero de llamas. Antes de hundirse da un GOLPE DE LAVA (onda que hay que saltar).
+ *  Fase 3 (33%): se estrella contra el techo y lo derrumba; la mitad de los respiraderos entran en erupción.
  */
 public class MagmaSerpent extends SugarBoss implements GeoEntity {
     public static final int BURROWED = 0, EMERGING = 1, HEAD = 2, SUBMERGING = 3,
-            STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7, INTRO = 8, WAKING = 9, PLUNGE = 10;
+            STUNNED = 4, TAKEOFF = 5, FLYING = 6, DIVING = 7, INTRO = 8, WAKING = 9, PLUNGE = 10,
+            RAGE = 11, STRAFE_AIM = 12, STRAFE = 13, SLAM = 14;
+    private static final int RAGE_TICKS = 70, STRAFE_AIM_TICKS = 34, SLAM_TICKS = 26, SLAM_HIT = 13, TRAIL_LIFE = 80;
     private static final int WAKE_TICKS = 28, PLUNGE_TICKS = 26;
     private static final int INTRO_RISE = 18 + 48, INTRO_LAP = 110, INTRO_TOTAL = INTRO_RISE + INTRO_LAP + 40;   // 48 ticks = animación "intro"
 
@@ -89,6 +95,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private static final RawAnimation ANIM_SUBMERGE = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.submerge");
     private static final RawAnimation ANIM_WAKE = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.wake");
     private static final RawAnimation ANIM_TAKEOFF = RawAnimation.begin().thenPlay("animation.magma_serpent.takeoff").thenLoop("animation.magma_serpent.fly");
+    private static final RawAnimation ANIM_SLAM = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.slam");
     private static final RawAnimation ANIM_DIVE = RawAnimation.begin().thenPlayAndHold("animation.magma_serpent.dive");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -107,6 +114,13 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
     private double plungeY;
     private boolean introLap;
     private int introTicks;
+    // Fases 2 y 3
+    private int rageStage;
+    private Vec3 rageFrom = Vec3.ZERO;
+    private Vec3 strafeA = Vec3.ZERO, strafeB = Vec3.ZERO;
+    private int strafeCooldown = 60;
+    /** Reguero de fuego que deja la pasada: punto y tick en que se apaga. */
+    private final List<double[]> trail = new ArrayList<>();
 
     public MagmaSerpent(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -234,7 +248,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                     setYRot(yaw); yBodyRot = yaw; yHeadRot = yaw;
                 }
                 if (timer >= FIRE_START && timer <= FIRE_END) breathTick(level, (timer - FIRE_START) / (float) (FIRE_END - FIRE_START));
-                if (timer >= HEAD_TIME) setPhase(SUBMERGING);
+                if (timer >= HEAD_TIME) setPhase(stage() >= 2 ? SLAM : SUBMERGING);
             }
             case SUBMERGING -> {
                 // Coge impulso y se hunde acelerando (animación "submerge")
@@ -245,6 +259,10 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 if (timer == 10) lavaSplash(level, 1.0F);
                 if (timer >= SUBMERGE_TICKS) setPhase(BURROWED);
             }
+            case SLAM -> slamTick(level);
+            case RAGE -> rageTick(level);
+            case STRAFE_AIM -> strafeAimTick(level);
+            case STRAFE -> strafeTick(level);
             case STUNNED -> {
                 stunnedEffects(level);
                 if (timer >= 160) setPhase(WAKING);
@@ -279,7 +297,10 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 flyAngle += 0.6 / Math.max(6.0, radius);
                 moveToward(new Vec3(c.x + Math.cos(flyAngle) * radius, flyHeight(), c.z + Math.sin(flyAngle) * radius), 0.7);
                 if (!introLap && timer % (enraged ? 7 : 12) == 0) dropBolt(level);
-                if (introLap && timer >= INTRO_LAP) {
+                if (strafeCooldown > 0) strafeCooldown--;
+                if (!introLap && stage() >= 2 && strafeCooldown == 0 && timer > 40 && timer < 180 && !targets(level).isEmpty()) {
+                    startStrafe(level);
+                } else if (introLap && timer >= INTRO_LAP) {
                     vent = pickVent(level, null);
                     setPhase(DIVING);
                 } else if (timer >= 220) {
@@ -308,8 +329,8 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             default -> setPhase(BURROWED);
         }
 
-        if (phase() != BURROWED && !inIntro() && tickCount % (enraged ? 40 : 80) == 0) rockRain(level);
-        if (!enraged && getHealth() / getMaxHealth() < 0.4F) enrage(level);
+        if (phase() != BURROWED && phase() != RAGE && !inIntro() && tickCount % (enraged ? 40 : 80) == 0) rockRain(level);
+        trailTick(level);
     }
 
     private void emerge(ServerLevel level) {
@@ -319,6 +340,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         triggerAnim("main", "emerge");
         lavaSplash(level, 1.2F);
         level.playSound(null, vent, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 3.0F, 0.7F);
+        shake(1.2F, 10);
         level.sendParticles(ParticleTypes.LAVA, vent.getX() + 0.5, vent.getY() + 1.2, vent.getZ() + 0.5, 20, 0.6, 0.3, 0.6, 0.0);
 
         // Señuelos: uno por cada 10 jugadores
@@ -364,6 +386,185 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         for (int i = 0; i < list.size() / 2; i++) MagmaVentBlock.setErupting(level, list.get(i), true);
         templeData().ifPresent(d -> TempleService.actionbar(level, d,
                 Component.literal("¡El volcán despierta!").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)));
+    }
+
+    // ---------- Cambios de fase ----------
+
+    /**
+     * Fase 2: sale disparada del respiradero, sube al centro, ruge y todos los respiraderos escupen fuego.
+     * Fase 3: sube hasta el techo, se estrella contra él y lo derrumba; el volcán entra en erupción.
+     */
+    @Override
+    protected void onStageChange(ServerLevel level, int newStage) {
+        rageStage = newStage;
+        stageLock = RAGE_TICKS + 10;
+        if (phase() == BURROWED || phase() == SUBMERGING || phase() == PLUNGE) {
+            Vec3 top = ventTop();
+            setPos(top.x, top.y, top.z);
+            lavaSplash(level, 1.6F);
+        }
+        rageFrom = position();
+        setPhase(RAGE);
+        setInvisible(false);
+        level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 4.0F, 0.6F);
+    }
+
+    private void rageTick(ServerLevel level) {
+        Vec3 c = center();
+        double peak = rageStage >= 3 ? c.y + 17.0 : flyHeight() - 2.0;
+        double u = smooth(Math.min(1.0, timer / 26.0));
+        setPos(Mth.lerp(u, rageFrom.x, c.x), Mth.lerp(u, rageFrom.y, peak), Mth.lerp(u, rageFrom.z, c.z));
+        faceNearestPlayer();
+        if (timer == 12 || timer == 22) level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 4.0F, 0.7F);
+        if (timer == 28) {
+            if (rageStage >= 3) {
+                // Se estrella contra el techo: estruendo y derrumbe
+                level.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 6.0F, 0.5F);
+                level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 6.0F, 0.5F);
+                Fx.particles(level, new BlockParticleOption(ParticleTypes.BLOCK, Blocks.BASALT.defaultBlockState()), getX(), getY() + 3, getZ(), 150, 3, 1, 3, 0.3);
+                Fx.particles(level, ParticleTypes.EXPLOSION_EMITTER, getX(), getY() + 3, getZ(), 1, 0, 0, 0, 0);
+                shake(4.5F, 50);
+                announceStage(Component.literal("¡El volcán se derrumba!").withStyle(ChatFormatting.RED));
+                enrage(level);
+            } else {
+                level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 6.0F, 0.55F);
+                shake(3.0F, 35);
+                announceStage(Component.literal("¡Alza el vuelo! Cuidado con sus pasadas de fuego").withStyle(ChatFormatting.GOLD));
+                Shockwaves.spawn(level, new Vec3(c.x, c.y, c.z), 0.45, flyRadius() + 6, scaledDamage(4.0F), 0.6, Shockwaves.FIRE, this);
+            }
+        }
+        // Fase 2: columnas de fuego en todos los respiraderos. Fase 3: lluvia de rocas del techo
+        if (timer >= 28 && timer <= 60) {
+            if (rageStage >= 3) {
+                if (timer % 3 == 0) {
+                    int count = 2 + scaledPlayers() / 12;
+                    double r = flyRadius() + 3;
+                    for (int i = 0; i < count; i++) {
+                        double a = random.nextDouble() * Math.PI * 2, d = Math.sqrt(random.nextDouble()) * r;
+                        rockFromCeiling(level, c.x + Math.cos(a) * d, c.z + Math.sin(a) * d, scaledDamage(7.0F));
+                    }
+                }
+            } else if (timer % 2 == 0) {
+                for (BlockPos v : vents(level)) {
+                    for (int i = 0; i < 2; i++) Fx.particles(level, ParticleTypes.FLAME, v.getX() + 0.5, v.getY() + 1.2, v.getZ() + 0.5, 0, (random.nextDouble() - 0.5) * 0.15, 1.0, (random.nextDouble() - 0.5) * 0.15, 0.9);
+                    if (timer % 6 == 0) Fx.particles(level, ParticleTypes.LAVA, v.getX() + 0.5, v.getY() + 1.4, v.getZ() + 0.5, 3, 0.3, 0.3, 0.3, 0);
+                }
+                if (timer % 8 == 0) level.playSound(null, BlockPos.containing(c), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 3.0F, 0.5F);
+            }
+        }
+        if (timer >= RAGE_TICKS) {
+            flyAngle = Math.atan2(getZ() - c.z, getX() - c.x);
+            strafeCooldown = 20;
+            setPhase(FLYING);
+        }
+    }
+
+    /** Roca que cae desde el techo (o 16 bloques por encima si no hay techo). */
+    private void rockFromCeiling(ServerLevel level, double x, double z, float damage) {
+        BlockPos base = BlockPos.containing(x, center().y, z);
+        int y = base.getY() + 2;
+        for (int i = 2; i <= 18; i++) {
+            if (!level.getBlockState(base.above(i)).isAir()) break;
+            y = base.getY() + i;
+        }
+        FallingRock.spawn(level, x, y, z, damage);
+    }
+
+    // ---------- Pasada de fuego (fase 2+) ----------
+
+    private void startStrafe(ServerLevel level) {
+        List<ServerPlayer> players = targets(level);
+        ServerPlayer t = players.get(random.nextInt(players.size()));
+        double a = random.nextDouble() * Math.PI * 2;
+        Vec3 dir = new Vec3(Math.cos(a), 0, Math.sin(a));
+        double len = flyRadius() + 4;
+        double y = center().y;
+        strafeA = new Vec3(t.getX() - dir.x * len, y, t.getZ() - dir.z * len);
+        strafeB = new Vec3(t.getX() + dir.x * len, y, t.getZ() + dir.z * len);
+        setPhase(STRAFE_AIM);
+        level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 5.0F, 0.8F);
+        templeData().ifPresent(d -> TempleService.actionbar(level, d,
+                Component.literal("¡Va a hacer una pasada! Apartaos de la línea de humo").withStyle(ChatFormatting.GOLD)));
+    }
+
+    private void strafeAimTick(ServerLevel level) {
+        // Se coloca en un extremo de la línea mientras el suelo humea por donde va a pasar
+        moveToward(strafeA.add(0, 7.0, 0), 1.0);
+        if (timer % 3 == 0) {
+            Fx.line(level, ParticleTypes.LARGE_SMOKE, strafeA.add(0, 0.2, 0), strafeB.add(0, 0.2, 0), 1.4, 0.15);
+            if (timer > STRAFE_AIM_TICKS / 2) Fx.line(level, ParticleTypes.FLAME, strafeA.add(0, 0.15, 0), strafeB.add(0, 0.15, 0), 2.0, 0.2);
+        }
+        if (timer >= STRAFE_AIM_TICKS) {
+            setPhase(STRAFE);
+            level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.HOSTILE, 5.0F, 0.6F);
+        }
+    }
+
+    private void strafeTick(ServerLevel level) {
+        // Rasante a 3,5 bloques del suelo escupiendo fuego hacia abajo
+        Vec3 low = strafeB.add(0, 3.5, 0);
+        Vec3 d = low.subtract(position());
+        double step = timer < 6 ? 0.7 + timer * 0.12 : 1.4;
+        moveToward(low, step);
+        Vec3 fwd = forward(getYRot());
+        Vec3 m = position().add(fwd.scale(2.5)).add(0, 0.5, 0);
+        for (int i = 0; i < 4; i++) {
+            Vec3 v = fwd.scale(0.4).add((random.nextDouble() - 0.5) * 0.3, -1.0, (random.nextDouble() - 0.5) * 0.3);
+            Fx.spray(level, ParticleTypes.FLAME, m, v, 0.6);
+        }
+        if (timer % 2 == 0) trail.add(new double[]{getX(), strafeA.y, getZ(), tickCount + TRAIL_LIFE});
+        if (timer % 5 == 0) level.playSound(null, blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 3.0F, 0.5F);
+        // Choca con quien esté en su camino
+        for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, getBoundingBox().inflate(1.0), q -> !q.isSpectator() && !q.isCreative())) {
+            if (p.hurtTime > 0) continue;
+            p.hurt(damageSources().mobAttack(this), scaledDamage(9.0F));
+            p.push(fwd.x * 1.2, 0.6, fwd.z * 1.2);
+            p.hurtMarked = true;
+        }
+        if (d.length() < 1.5 || timer > 60) {
+            Vec3 c = center();
+            flyAngle = Math.atan2(getZ() - c.z, getX() - c.x);
+            strafeCooldown = enraged ? 90 : 150;
+            setPhase(FLYING);
+            timer = 40;
+        }
+    }
+
+    /** El reguero de fuego quema a quien lo pise durante unos segundos. */
+    private void trailTick(ServerLevel level) {
+        if (trail.isEmpty()) return;
+        trail.removeIf(t -> t[3] < tickCount);
+        boolean draw = tickCount % 4 == 0;
+        List<ServerPlayer> players = draw || tickCount % 5 == 0 ? targets(level) : List.of();
+        for (double[] t : trail) {
+            if (draw) Fx.particles(level, ParticleTypes.FLAME, t[0], t[1] + 0.15, t[2], 3, 0.45, 0.1, 0.45, 0.01);
+            if (draw && random.nextInt(4) == 0) Fx.particles(level, ParticleTypes.SMOKE, t[0], t[1] + 0.6, t[2], 1, 0.3, 0.2, 0.3, 0.01);
+            for (ServerPlayer p : players) {
+                if (Math.abs(p.getY() - t[1]) > 1.5 || Math.pow(p.getX() - t[0], 2) + Math.pow(p.getZ() - t[2], 2) > 1.6) continue;
+                p.setSecondsOnFire(4);
+                if (p.hurtTime == 0) p.hurt(damageSources().inFire(), scaledDamage(2.0F));
+            }
+        }
+    }
+
+    // ---------- Golpe de lava (fase 2+) ----------
+
+    private void slamTick(ServerLevel level) {
+        // Se yergue rugiendo y estrella la cabeza: onda de lava que hay que saltar (animación "slam")
+        if (timer == 1) {
+            level.playSound(null, blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 4.0F, 0.9F);
+        }
+        if (timer < 8) faceNearestPlayer();
+        if (timer == SLAM_HIT) {
+            Vec3 at = position().add(forward(getYRot()).scale(3.0));
+            Vec3 ground = new Vec3(at.x, ventTop().y, at.z);
+            level.playSound(null, BlockPos.containing(ground), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 4.0F, 0.5F);
+            Fx.particles(level, new BlockParticleOption(ParticleTypes.BLOCK, Blocks.MAGMA_BLOCK.defaultBlockState()), ground.x, ground.y + 0.3, ground.z, 60, 1.5, 0.2, 1.5, 0.25);
+            Fx.particles(level, ParticleTypes.LAVA, ground.x, ground.y + 0.3, ground.z, 25, 1.2, 0.3, 1.2, 0);
+            Shockwaves.spawn(level, ground, enraged ? 0.55 : 0.45, flyRadius() + 8, scaledDamage(7.0F), 0.55, Shockwaves.FIRE, this);
+            shake(2.6F, 16);
+        }
+        if (timer >= SLAM_TICKS) setPhase(SUBMERGING);
     }
 
     // ---------- Ataques ----------
@@ -508,7 +709,7 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
         if (inIntro()) return false;
 
         int phase = phase();
-        if (phase == HEAD) {
+        if (phase == HEAD || phase == SLAM) {
             if (source.getEntity() instanceof ServerPlayer player && source.getDirectEntity() == player) {
                 if (player.getMainHandItem().is(ModItems.OBSIDIAN_HAMMER.get())) {
                     hammerHits++;
@@ -528,7 +729,8 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
             }
             return false;
         }
-        if (phase == STUNNED || phase == WAKING || phase == TAKEOFF || phase == FLYING) {
+        if (phase == STUNNED || phase == WAKING || phase == TAKEOFF || phase == FLYING
+                || phase == STRAFE_AIM || phase == STRAFE || phase == RAGE) {
             return super.hurt(source, amount);
         }
         return false;
@@ -724,6 +926,9 @@ public class MagmaSerpent extends SugarBoss implements GeoEntity {
                 case WAKING -> state.setAndContinue(ANIM_WAKE);
                 case TAKEOFF -> state.setAndContinue(ANIM_TAKEOFF);
                 case FLYING -> state.setAndContinue(ANIM_FLY);
+                case RAGE -> state.setAndContinue(ANIM_TAKEOFF);
+                case STRAFE_AIM, STRAFE -> state.setAndContinue(ANIM_FLY);
+                case SLAM -> state.setAndContinue(ANIM_SLAM);
                 case DIVING, PLUNGE -> state.setAndContinue(ANIM_DIVE);
                 case SUBMERGING -> state.setAndContinue(ANIM_SUBMERGE);
                 default -> state.setAndContinue(ANIM_HEAD);
