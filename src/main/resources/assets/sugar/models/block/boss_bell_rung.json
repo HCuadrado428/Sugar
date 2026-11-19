@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sugar:block/boss_bell_top",
+    "side": "sugar:block/boss_bell_side_rung",
+    "bottom": "sugar:block/boss_bell_side_rung"
+  }
+}

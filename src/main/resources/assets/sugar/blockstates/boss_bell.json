@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "rung=false": {
+      "model": "sugar:block/boss_bell"
+    },
+    "rung=true": {
+      "model": "sugar:block/boss_bell_rung"
+    }
+  }
+}

@@ -38,5 +38,10 @@
   "item.sugar.echo_eye": "Echo Eye",
   "item.sugar.echo_eye.desc": "Trophy: Sanctuary of the Echo",
   "entity.sugar.echo_drummer": "The Drummer",
-  "entity.sugar.drummer_hand": "Drummer's Hand"
+  "entity.sugar.drummer_hand": "Drummer's Hand",
+  "block.sugar.group_plate": "Group Plate",
+  "block.sugar.wave_altar": "Wave Altar",
+  "block.sugar.boss_bell": "Boss Bell",
+  "block.sugar.relic": "Relic",
+  "block.sugar.treasure_crate": "Treasure Chest"
 }

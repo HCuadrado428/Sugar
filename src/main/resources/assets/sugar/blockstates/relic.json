@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "found=false": {
+      "model": "sugar:block/relic"
+    },
+    "found=true": {
+      "model": "sugar:block/relic_found"
+    }
+  }
+}

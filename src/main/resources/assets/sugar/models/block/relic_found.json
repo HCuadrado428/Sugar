@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "base": "sugar:block/relic_found",
+    "gem": "sugar:block/relic_found",
+    "particle": "sugar:block/relic_found"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        4,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#base",
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#base",
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#base",
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#base",
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#base",
+          "uv": [
+            0,
+            8,
+            8,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

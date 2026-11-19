@@ -30,6 +30,38 @@ public class TempleData {
     public final Map<UUID, BlockPos> checkpoints = new HashMap<>();
     public final Set<BlockPos> blocks = new HashSet<>();
     public final Set<UUID> claimedSupplies = new HashSet<>();
+    public final Set<UUID> claimedTreasure = new HashSet<>();
+    /** Canales cuyo objetivo ya se ha cumplido (bit por canal). */
+    public int progressMask;
+    /** Tick de juego en que se abrió la puerta del vestíbulo (-1 si no ha empezado). */
+    public long startTime = -1;
+    public int deaths;
+    // Sin guardar: cuentas atrás en ticks
+    public transient int countdown;
+    public transient int summonCountdown;
+
+    public boolean isDone(int channel) {
+        return (progressMask & (1 << channel)) != 0;
+    }
+
+    /** Marca el canal como cumplido; devuelve false si ya lo estaba. */
+    public boolean markDone(int channel) {
+        if (isDone(channel)) return false;
+        progressMask |= 1 << channel;
+        return true;
+    }
+
+    /** Vuelve a dejar el progreso del evento a cero. */
+    public void clearProgress() {
+        checkpoints.clear();
+        claimedSupplies.clear();
+        claimedTreasure.clear();
+        progressMask = 0;
+        startTime = -1;
+        deaths = 0;
+        countdown = 0;
+        summonCountdown = 0;
+    }
 
     public TempleData(TempleType type, ResourceKey<Level> dimension, BoundingBox zone, BlockPos lobby) {
         this.type = type;
@@ -70,6 +102,16 @@ public class TempleData {
             claimed.add(c);
         });
         tag.put("claimed", claimed);
+        ListTag treasure = new ListTag();
+        claimedTreasure.forEach(uuid -> {
+            CompoundTag c = new CompoundTag();
+            c.putUUID("player", uuid);
+            treasure.add(c);
+        });
+        tag.put("treasure", treasure);
+        tag.putInt("progress", progressMask);
+        tag.putLong("start", startTime);
+        tag.putInt("deaths", deaths);
         return tag;
     }
 
@@ -98,6 +140,11 @@ public class TempleData {
         for (int i = 0; i < claimed.size(); i++) {
             data.claimedSupplies.add(claimed.getCompound(i).getUUID("player"));
         }
+        ListTag treasure = tag.getList("treasure", Tag.TAG_COMPOUND);
+        for (int i = 0; i < treasure.size(); i++) data.claimedTreasure.add(treasure.getCompound(i).getUUID("player"));
+        data.progressMask = tag.getInt("progress");
+        data.startTime = tag.contains("start") ? tag.getLong("start") : -1;
+        data.deaths = tag.getInt("deaths");
         return data;
     }
 }

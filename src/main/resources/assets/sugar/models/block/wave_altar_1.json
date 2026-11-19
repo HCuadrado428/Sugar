@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sugar:block/wave_altar_top_1",
+    "side": "sugar:block/wave_altar_side",
+    "bottom": "sugar:block/wave_altar_side"
+  }
+}

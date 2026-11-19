@@ -2,7 +2,9 @@ package com.sugar.temple.gen;
 
 import com.sugar.block.EventDoorBlock;
 import com.sugar.block.FireGeyserBlock;
+import com.sugar.block.EventSwitchBlock;
 import com.sugar.registry.ModBlocks;
+import com.sugar.temple.TempleObjectives;
 import com.sugar.temple.TempleGenerator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -17,12 +19,17 @@ import java.util.function.Supplier;
  *  1. Vestíbulo (x 0-10)               punto de reunión, puerta canal 0
  *  2. Paso de los géiseres (x 10-46)    pasarela sobre magma con filas de géiseres que se alternan
  *                                       y un tramo de basalto que se derrumba
- *  3. Galería de estatuas (x 46-70)     tres muros de estatuas que hay que volar con bombas
- *  4. Antesala (x 70-80)                checkpoint, cofres, puerta canal 2
- *  5. Caverna (centro x 102)            arena con cúpula, foso de lava, matas de pólvora y grietas
+ *  3. Galería de estatuas (x 46-70)     tres muros de estatuas que hay que volar con bombas; tras el último,
+ *                                       el sello que abre la puerta canal 1
+ *  4. Nido de crías (x 71-93)           sala de oleadas: crías, husks y esqueletos; puerta canal 2
+ *  5. Sala de los Géiseres (x 94-110)   cuatro placas de grupo sobre magma, con géiseres; puerta canal 3
+ *  6. Antesala (x 111-121)              checkpoint, cofres, Campana del Jefe (canal 9) y cámara del tesoro (canal 8)
+ *  7. Caverna (centro x 143)            arena con cúpula, foso de lava, matas de pólvora y grietas
+ *  Reliquias: en un pilar del paso de los géiseres, entre los muros de estatuas y encima de una columna del Nido.
  */
 public class AshTempleGenerator implements TempleGenerator {
     private static final int CX = 102, CZ = 5, ARENA_R = 20, DOME_H = 17;
+    private static final int SHIFT = 41;
 
     @Override
     public Result generate(ServerLevel level, BlockPos feet) {
@@ -32,11 +39,17 @@ public class AshTempleGenerator implements TempleGenerator {
         Supplier<BlockState> floor = b.mix(5, Blocks.POLISHED_DEEPSLATE, 3, Blocks.DEEPSLATE_TILES, 1, Blocks.BLACKSTONE);
         Supplier<BlockState> rock = b.mix(5, Blocks.DEEPSLATE, 3, Blocks.BASALT, 2, Blocks.BLACKSTONE, 1, Blocks.TUFF);
 
+        b.ox = SHIFT;
         cavern(b, rock, floor);
+        b.ox = 0;
         lobby(b, wall, floor);
         geyserWalk(b, wall, floor);
         gallery(b, wall, floor);
+        nest(b, wall, floor);
+        geyserPlates(b, wall);
+        b.ox = SHIFT;
         antechamber(b, wall, floor);
+        b.ox = 0;
 
         return new Result(b.bounds(), feet);
     }
@@ -75,6 +88,8 @@ public class AshTempleGenerator implements TempleGenerator {
 
         b.set(12, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         b.set(34, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
+        b.fill(29, -3, 9, 29, 0, 9, Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());   // pilar con reliquia
+        EventRooms.relic(b, 29, 1, 9);
         for (int x : new int[]{16, 24, 32, 40}) b.set(x, 10, 5, Blocks.SHROOMLIGHT);
         for (int x : new int[]{21, 29, 38}) b.set(x, 10, 2, ModBlocks.ROCKFALL.get());
     }
@@ -102,6 +117,33 @@ public class AshTempleGenerator implements TempleGenerator {
         b.set(47, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         b.set(68, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         for (int x : new int[]{49, 55, 61, 67}) b.set(x, 9, 5, Blocks.SHROOMLIGHT);
+        EventRooms.relic(b, 63, 1, 10);                  // entre el segundo y el tercer muro
+        // Tras el último muro: el sello que abre la salida
+        b.set(70, 2, 1, ModBlocks.EVENT_SWITCH.get().defaultBlockState().setValue(EventSwitchBlock.CHANNEL, 1));
+        doors(b, 70, 1, 4, 1);
+    }
+
+    // ---------- 4. Nido de crías (oleadas) ----------
+
+    private void nest(StructureBuilder b, Supplier<BlockState> wall, Supplier<BlockState> floor) {
+        int[] top = EventRooms.waveRoom(b, 71, 93, -1, 11, 9, wall, floor, Blocks.BASALT.defaultBlockState(),
+                Blocks.SHROOMLIGHT.defaultBlockState(), 2);
+        EventRooms.relic(b, top[0], top[1], top[2]);
+        for (int[] c : new int[][]{{73, 0}, {91, 0}, {73, 10}, {91, 10}}) b.set(c[0], 1, c[1], ModBlocks.BOMB_BUSH.get());
+        for (int x = 75; x <= 89; x += 7) { b.set(x, 0, 1, Blocks.MAGMA_BLOCK); b.set(x, 0, 9, Blocks.MAGMA_BLOCK); }
+    }
+
+    // ---------- 5. Sala de los Géiseres (placas) ----------
+
+    private void geyserPlates(StructureBuilder b, Supplier<BlockState> wall) {
+        EventRooms.plateRoom(b, 94, 110, -1, 11, 10, 3, wall, ModBlocks.RISING_MAGMA.get().defaultBlockState(), 2,
+                Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState(), Blocks.POLISHED_DEEPSLATE.defaultBlockState(), Blocks.SHROOMLIGHT.defaultBlockState(), 3);
+        // Géiseres entre los islotes: hay que cruzar a su ritmo
+        int phase = 0;
+        for (int[] c : new int[][]{{102, 2}, {102, 8}}) {
+            b.fill(c[0], -2, c[1], c[0], -1, c[1], Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
+            b.set(c[0], 0, c[1], ModBlocks.FIRE_GEYSER.get().defaultBlockState().setValue(FireGeyserBlock.PHASE, phase++ * 2 % 4));
+        }
     }
 
     // ---------- 4. Antesala ----------
@@ -112,7 +154,9 @@ public class AshTempleGenerator implements TempleGenerator {
         b.set(72, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{73, 1}, {77, 1}, {73, 9}, {77, 9}}) b.set(c[0], 1, c[1], ModBlocks.SUPPLY_CRATE.get());
         for (int[] c : new int[][]{{73, 3}, {77, 3}, {73, 7}, {77, 7}}) b.set(c[0], 7, c[1], Blocks.SHROOMLIGHT);
-        doors(b, 80, 1, 4, 2);
+        b.set(78, 1, 8, ModBlocks.BOSS_BELL.get());
+        EventRooms.vault(b, 71, 0, 0, wall, floor, Blocks.SHROOMLIGHT.defaultBlockState());
+        doors(b, 80, 1, 4, TempleObjectives.BELL);
     }
 
     // ---------- 5. Caverna ----------

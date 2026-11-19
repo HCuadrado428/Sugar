@@ -71,8 +71,9 @@ public class SugarGameTests {
         int crates = TempleService.positionsOf(level, data, SupplyCrateBlock.class).size();
         helper.assertTrue(vents == 8, "Respiraderos: " + vents);
         helper.assertTrue(seals == 3, "Sellos: " + seals);
-        helper.assertTrue(doors == 27, "Puertas: " + doors);
-        helper.assertTrue(crates == 4, "Cofres: " + crates);
+        helper.assertTrue(doors == 54, "Puertas: " + doors);
+        helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
+        checkEventRooms(helper, level, data);
 
         TempleService.start(level.getServer(), data);
         helper.assertTrue(TempleService.setDoors(level.getServer(), data, 1, true) == 9, "La puerta del canal 1 no se abre");
@@ -157,11 +158,12 @@ public class SugarGameTests {
         int doors = TempleService.positionsOf(level, data, EventDoorBlock.class).size();
         int crates = TempleService.positionsOf(level, data, SupplyCrateBlock.class).size();
         helper.assertTrue(statues == 264, "Estatuas: " + statues);
-        helper.assertTrue(bushes == 14, "Matas: " + bushes);
-        helper.assertTrue(geysers == 24, "Géiseres: " + geysers);
+        helper.assertTrue(bushes == 18, "Matas: " + bushes);
+        helper.assertTrue(geysers == 26, "Géiseres: " + geysers);
         helper.assertTrue(cracks == 6, "Grietas: " + cracks);
-        helper.assertTrue(doors == 18, "Puertas: " + doors);
-        helper.assertTrue(crates == 4, "Cofres: " + crates);
+        helper.assertTrue(doors == 54, "Puertas: " + doors);
+        helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
+        checkEventRooms(helper, level, data);
 
         int acx = data.altar.getX() >> 4, acz = data.altar.getZ() >> 4;
         for (int cx = acx - 2; cx <= acx + 2; cx++)
@@ -222,8 +224,9 @@ public class SugarGameTests {
         helper.assertTrue(drums == 8, "Tambores: " + drums);
         helper.assertTrue(gongs == 1, "Gongs: " + gongs);
         helper.assertTrue(pedestals == 8, "Atriles: " + pedestals);
-        helper.assertTrue(doors == 27, "Puertas: " + doors);
-        helper.assertTrue(crates == 4, "Cofres: " + crates);
+        helper.assertTrue(doors == 54, "Puertas: " + doors);
+        helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
+        checkEventRooms(helper, level, data);
         int platforms = 0;
         for (BlockPos p : BlockPos.betweenClosed(feet.offset(-6, -1, -7), feet.offset(60, -1, 10))) {
             if (level.getBlockState(p).getBlock() instanceof EchoPlatformBlock) platforms++;
@@ -342,5 +345,85 @@ public class SugarGameTests {
     public static void drummerStages(GameTestHelper helper) {
         EchoDrummer b = helper.spawn(ModEntities.ECHO_DRUMMER.get(), new BlockPos(2, 2, 2));
         runStages(helper, b, b::phase, EchoDrummer.RAGE);
+    }
+
+    /** Cada templo tiene una sala de oleadas, cuatro placas, tres reliquias, la campana y el tesoro. */
+    private static void checkEventRooms(GameTestHelper helper, ServerLevel level, TempleData data) {
+        int altars = TempleService.positionsOf(level, data, com.sugar.block.WaveAltarBlock.class).size();
+        int plates = TempleService.positionsOf(level, data, com.sugar.block.GroupPlateBlock.class).size();
+        int relics = TempleService.positionsOf(level, data, com.sugar.block.RelicBlock.class).size();
+        int bells = TempleService.positionsOf(level, data, com.sugar.block.BossBellBlock.class).size();
+        int treasure = TempleService.positionsOf(level, data, com.sugar.block.TreasureCrateBlock.class).size();
+        helper.assertTrue(altars == 1, "Altares de oleadas: " + altars);
+        helper.assertTrue(plates == 4, "Placas de grupo: " + plates);
+        helper.assertTrue(relics == 3, "Reliquias: " + relics);
+        helper.assertTrue(bells == 1, "Campanas: " + bells);
+        helper.assertTrue(treasure == 3, "Cofres del tesoro: " + treasure);
+    }
+
+    /** Modo evento completo en el templo de ceniza: cuenta atrás, oleadas, reliquias, campana y jefe. */
+    @GameTest(template = "empty", timeoutTicks = 1200, batch = "evento")
+    public static void eventModeFlow(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(-3000, 20, -6000);
+        TempleGenerator.Result result = new AshTempleGenerator().generate(level, feet);
+        TempleSavedData saved = TempleSavedData.get(level.getServer());
+        TempleData data = saved.define(TempleType.CENIZA, level.dimension(), result.zone(), result.lobby());
+        TempleService.scan(level, data);
+        java.util.List<int[]> forced = new java.util.ArrayList<>();
+        BlockPos altarWave = TempleService.positionsOf(level, data, com.sugar.block.WaveAltarBlock.class).get(0);
+        BlockPos bell = TempleService.positionsOf(level, data, com.sugar.block.BossBellBlock.class).get(0);
+        for (BlockPos c : new BlockPos[]{altarWave, bell, data.altar}) {
+            for (int cx = (c.getX() >> 4) - 2; cx <= (c.getX() >> 4) + 2; cx++)
+                for (int cz = (c.getZ() >> 4) - 2; cz <= (c.getZ() >> 4) + 2; cz++) {
+                    level.setChunkForced(cx, cz, true);
+                    forced.add(new int[]{cx, cz});
+                }
+        }
+        java.util.function.IntPredicate doorOpen = ch -> TempleService.positionsOf(level, data, EventDoorBlock.class).stream()
+                .filter(p -> level.getBlockState(p).getValue(EventDoorBlock.CHANNEL) == ch)
+                .allMatch(p -> level.getBlockState(p).getValue(EventDoorBlock.OPEN));
+
+        // Cuenta atrás de 2 s: la puerta del vestíbulo sigue cerrada hasta que termina
+        TempleService.start(level.getServer(), data, 40);
+        helper.assertTrue(!doorOpen.test(0), "La puerta del vestíbulo se abre antes de la cuenta atrás");
+        helper.runAfterDelay(50, () -> {
+            helper.assertTrue(doorOpen.test(0), "La cuenta atrás no abre el vestíbulo");
+            helper.assertTrue(data.startTime >= 0, "No arranca el cronómetro");
+            // Oleadas
+            net.minecraft.world.level.block.state.BlockState st = level.getBlockState(altarWave);
+            com.sugar.block.WaveAltarBlock.activate(level, altarWave, st, data);
+        });
+        // Cada 80 ticks: las oleadas ya han salido; las quitamos como si las hubieran matado
+        for (int w = 0; w < 3; w++) {
+            final int wave = w;
+            helper.runAfterDelay(50 + 80 * (w + 1), () -> {
+                java.util.List<net.minecraft.world.entity.Mob> mobs = level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
+                        new net.minecraft.world.phys.AABB(altarWave).inflate(16), m -> m.getTags().contains(com.sugar.temple.WaveRoom.TAG));
+                helper.assertTrue(!mobs.isEmpty(), "No ha salido la oleada " + (wave + 1));
+                mobs.forEach(net.minecraft.world.entity.Entity::discard);
+            });
+        }
+        helper.runAfterDelay(50 + 80 * 3 + 20, () -> {
+            helper.assertTrue(doorOpen.test(2), "Superar las oleadas no abre la puerta del canal 2");
+            helper.assertTrue(data.isDone(2), "El objetivo de las oleadas no cuenta");
+            // Reliquias: al encontrar las tres se abre el tesoro
+            for (BlockPos r : TempleService.positionsOf(level, data, com.sugar.block.RelicBlock.class)) {
+                com.sugar.block.RelicBlock.collect(level, r, level.getBlockState(r), data, "Prueba");
+            }
+            helper.assertTrue(doorOpen.test(com.sugar.temple.TempleObjectives.VAULT), "Las reliquias no abren la cámara del tesoro");
+            // Campana: abre la arena y despierta al jefe tras la cuenta atrás
+            com.sugar.block.BossBellBlock.ring(level, bell, level.getBlockState(bell), data);
+            helper.assertTrue(doorOpen.test(com.sugar.temple.TempleObjectives.BELL), "La campana no abre la arena");
+        });
+        helper.runAfterDelay(50 + 80 * 3 + 20 + 120, () -> {
+            helper.assertTrue(TempleService.findBoss(level, data) != null, "La campana no despierta al jefe");
+            TempleService.reset(level.getServer(), data);
+            helper.assertTrue(data.progressMask == 0 && !data.active, "El reset no borra el progreso");
+            helper.assertTrue(!doorOpen.test(2), "El reset no cierra las puertas");
+            saved.remove(TempleType.CENIZA);
+            for (int[] c : forced) level.setChunkForced(c[0], c[1], false);
+            helper.succeed();
+        });
     }
 }

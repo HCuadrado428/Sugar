@@ -29,6 +29,9 @@ import java.util.Optional;
  * El contenido sale de data/sugar/loot_tables/supplies/<templo>.json
  */
 public class SupplyCrateBlock extends TempleBlock {
+    /** Lote extra de la cámara del tesoro: supplies/<templo>_tesoro, uno por jugador. */
+    protected boolean treasure() { return false; }
+
 
     public SupplyCrateBlock(Properties properties) {
         super(properties);
@@ -48,13 +51,13 @@ public class SupplyCrateBlock extends TempleBlock {
             return InteractionResult.CONSUME;
         }
         TempleData data = found.get();
-        if (!data.claimedSupplies.add(sp.getUUID())) {
-            sp.displayClientMessage(Component.literal("Ya has recogido tus suministros.").withStyle(ChatFormatting.YELLOW), true);
+        if (!(treasure() ? data.claimedTreasure : data.claimedSupplies).add(sp.getUUID())) {
+            sp.displayClientMessage(Component.literal(treasure() ? "Ya has cogido tu parte del tesoro." : "Ya has recogido tus suministros.").withStyle(ChatFormatting.YELLOW), true);
             return InteractionResult.CONSUME;
         }
         saved.setDirty();
 
-        LootTable table = serverLevel.getServer().getLootData().getLootTable(SugarMod.id("supplies/" + data.type.id()));
+        LootTable table = serverLevel.getServer().getLootData().getLootTable(SugarMod.id("supplies/" + data.type.id() + (treasure() ? "_tesoro" : "")));
         LootParams params = new LootParams.Builder(serverLevel)
                 .withParameter(LootContextParams.THIS_ENTITY, sp)
                 .withParameter(LootContextParams.ORIGIN, sp.position())
@@ -63,7 +66,7 @@ public class SupplyCrateBlock extends TempleBlock {
             if (!sp.getInventory().add(stack)) sp.drop(stack, false);
         }
         level.playSound(null, pos, SoundEvents.BARREL_OPEN, SoundSource.BLOCKS, 1.0F, 1.0F);
-        sp.displayClientMessage(Component.literal("Suministros recogidos.").withStyle(ChatFormatting.GREEN), true);
+        sp.displayClientMessage(Component.literal(treasure() ? "✦ ¡Tesoro!" : "Suministros recogidos.").withStyle(ChatFormatting.GREEN), true);
         return InteractionResult.CONSUME;
     }
 }

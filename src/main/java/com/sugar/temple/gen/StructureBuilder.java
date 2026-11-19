@@ -26,8 +26,11 @@ public class StructureBuilder {
         this.random = RandomSource.create(origin.asLong());
     }
 
+    /** Desplazamiento en X para las secciones que van después de las salas nuevas. */
+    public int ox;
+
     public BlockPos abs(int x, int y, int z) {
-        return origin.offset(x, y, z);
+        return origin.offset(x + ox, y, z);
     }
 
     public void set(int x, int y, int z, BlockState state) {

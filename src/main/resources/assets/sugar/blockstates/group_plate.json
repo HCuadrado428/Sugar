@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "channel=0,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=1,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=2,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=3,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=4,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=5,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=6,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=7,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=8,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=9,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=10,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=11,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=12,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=13,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=14,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=15,lit=false": {
+      "model": "sugar:block/group_plate"
+    },
+    "channel=0,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=1,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=2,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=3,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=4,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=5,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=6,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=7,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=8,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=9,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=10,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=11,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=12,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=13,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=14,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    },
+    "channel=15,lit=true": {
+      "model": "sugar:block/group_plate_lit"
+    }
+  }
+}

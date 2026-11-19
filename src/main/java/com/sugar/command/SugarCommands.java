@@ -48,7 +48,7 @@ public final class SugarCommands {
                 .then(Commands.literal("join").then(temple().executes(SugarCommands::join)))
                 .then(Commands.literal("start").requires(SugarCommands::admin).then(temple().executes(c -> {
                     TempleData data = data(c);
-                    TempleService.start(c.getSource().getServer(), data);
+                    TempleService.start(c.getSource().getServer(), data, 200);
                     return ok(c, "Evento iniciado: " + data.type.id());
                 })))
                 .then(Commands.literal("stop").requires(SugarCommands::admin).then(temple().executes(c -> {
@@ -158,28 +158,9 @@ public final class SugarCommands {
     private static int summon(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
         TempleData data = data(c);
         ServerLevel level = level(c, data);
-        if (TempleService.findBoss(level, data) != null) return fail(c, "Ya hay un boss activo en ese templo.");
-
-        Optional<EntityType<? extends SugarBoss>> bossType = TempleRegistry.boss(data.type);
-        if (bossType.isEmpty()) return fail(c, "El boss de '" + data.type.id() + "' todavía no está disponible en esta versión.");
-
-        BlockPos spawn = data.altar != null ? data.altar.above() : data.lobby;
-        SugarBoss boss = bossType.get().create(level);
-        if (boss == null) return fail(c, "No se pudo crear el boss.");
-        boss.moveTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0.0F, 0.0F);
-        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(spawn), MobSpawnType.EVENT, null, null);
-        boss.bindTemple(data.type);
-        boss.rescale();
-        level.addFreshEntity(boss);
-        boss.beginIntro();
-
-        data.bossId = boss.getUUID();
-        TempleSavedData.get(c.getSource().getServer()).setDirty();
-        c.getSource().getServer().getPlayerList().broadcastSystemMessage(Component.literal("⚠ ")
-                .withStyle(ChatFormatting.DARK_RED)
-                .append(data.type.bossDisplayName())
-                .append(Component.literal(" ha despertado en ").withStyle(ChatFormatting.DARK_RED))
-                .append(data.type.displayName()), false);
+        String[] err = new String[1];
+        SugarBoss boss = TempleService.summonBoss(level, data, e -> err[0] = e);
+        if (boss == null) return fail(c, err[0]);
         return ok(c, "Boss invocado, escalado para " + boss.scaledPlayers() + " jugadores.");
     }
 

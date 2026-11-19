@@ -4,6 +4,7 @@ import com.sugar.block.EventDoorBlock;
 import com.sugar.block.EventSwitchBlock;
 import com.sugar.block.entity.MagmaRiserBlockEntity;
 import com.sugar.registry.ModBlocks;
+import com.sugar.temple.TempleObjectives;
 import com.sugar.temple.TempleGenerator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,14 +24,37 @@ import java.util.function.Supplier;
  *  1. Vestíbulo (x 0-10)            punto de reunión, puerta canal 0
  *  2. Pasarela de lava (x 10-42)    dos carriles de basalto inestable sobre magma, rocas del techo
  *  3. Sala de sellos (x 42-56)      3 sellos a distintas alturas, puerta canal 1
- *  4. Pozo de ascenso (x 57-67)     espiral de plataformas mientras sube el magma
- *  5. Antesala (x 67-77, arriba)    checkpoint, cofres de suministros, puerta canal 2
- *  6. Cráter (centro x 99)          arena circular de radio 20 con 8 respiraderos y el altar
+ *  4. La Forja (x 57-79)            sala de oleadas: magma, blazes y esqueletos wither; puerta canal 2
+ *  5. Puente de Brasas (x 80-96)    cuatro placas de grupo sobre un foso de magma; puerta canal 3
+ *  6. Pozo de ascenso (x 97-107)    espiral de plataformas mientras sube el magma
+ *  7. Antesala (x 107-117, arriba)  checkpoint, cofres, Campana del Jefe (canal 9) y cámara del tesoro (canal 8)
+ *  8. Cráter (centro x 139)         arena circular de radio 20 con 8 respiraderos y el altar
+ *  Reliquias: sobre un pilar en la pasarela de lava, en una hornacina de la sala de sellos y otra en el pozo.
  */
 public class VolcanoTempleGenerator implements TempleGenerator {
     private static final int CX = 99, CZ = 5;      // centro del cráter
     private static final int ARENA_Y = 23;          // suelo del cráter y de la antesala
     private static final int ARENA_R = 20;
+    private static final int SHIFT = 40;            // ancho de las salas nuevas (Forja y Puente de Brasas)
+
+    // ---------- 4. La Forja (oleadas) ----------
+
+    private void forge(StructureBuilder b, Supplier<BlockState> wall, Supplier<BlockState> floor) {
+        int[] top = EventRooms.waveRoom(b, 57, 79, -2, 12, 9, wall, floor, Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState(),
+                Blocks.SHROOMLIGHT.defaultBlockState(), 2);
+        for (int x = 60; x <= 76; x += 4) {                      // canales de magma en el suelo (decoración)
+            b.set(x, 0, 0, Blocks.MAGMA_BLOCK);
+            b.set(x, 0, 10, Blocks.MAGMA_BLOCK);
+        }
+        for (int z : new int[]{-1, 11}) for (int x = 60; x <= 76; x += 8) b.set(x, 1, z, Blocks.BLAST_FURNACE);
+    }
+
+    // ---------- 5. Puente de Brasas (placas) ----------
+
+    private void emberBridge(StructureBuilder b, Supplier<BlockState> wall) {
+        EventRooms.plateRoom(b, 80, 96, -1, 11, 10, 3, wall, ModBlocks.RISING_MAGMA.get().defaultBlockState(), 2,
+                Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState(), Blocks.POLISHED_BASALT.defaultBlockState(), Blocks.SHROOMLIGHT.defaultBlockState(), 3);
+    }
 
     @Override
     public Result generate(ServerLevel level, BlockPos feet) {
@@ -40,14 +64,20 @@ public class VolcanoTempleGenerator implements TempleGenerator {
         Supplier<BlockState> floor = b.mix(5, Blocks.POLISHED_BASALT, 3, Blocks.BLACKSTONE, 1, Blocks.POLISHED_BLACKSTONE);
         Supplier<BlockState> rock = b.mix(6, Blocks.BASALT, 3, Blocks.BLACKSTONE, 1, Blocks.SMOOTH_BASALT);
 
+        b.ox = SHIFT;
         cone(b, rock);
+        b.ox = 0;
         lobby(b, wall, floor);
         lavaWalk(b, wall, floor);
         sealRoom(b, wall, floor);
+        forge(b, wall, floor);
+        emberBridge(b, wall);
+        b.ox = SHIFT;                                   // lo que sigue va 40 bloques más allá
         b.fill(67, 0, 0, 77, ARENA_Y - 1, 10, rock);   // base de la antesala
         shaft(b, wall, floor);
         antechamber(b, wall, floor);
         arena(b, floor);
+        b.ox = 0;
 
         return new Result(b.bounds(), feet);
     }
@@ -138,6 +168,8 @@ public class VolcanoTempleGenerator implements TempleGenerator {
 
         b.set(12, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
         b.set(40, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
+        b.fill(30, -3, 5, 30, 0, 5, Blocks.POLISHED_BASALT.defaultBlockState());     // pilar con reliquia entre los carriles
+        EventRooms.relic(b, 30, 1, 5);
         doors(b, 10, 1, 4, 0);                 // puerta del vestíbulo (canal 0)
     }
 
@@ -159,6 +191,8 @@ public class VolcanoTempleGenerator implements TempleGenerator {
         b.set(mid[0], 8, mid[1], seal);                  // sello a media altura
         int[] top = outward(path.get(24), 43, -1, 55, 11);
         b.set(top[0], 14, top[1], seal);                 // sello alto
+        int[] niche = outward(path.get(20), 43, -1, 55, 11);
+        EventRooms.relic(b, niche[0], 12, niche[1]);    // hornacina junto a la escalera
 
         for (int[] c : new int[][]{{46, 2}, {52, 2}, {46, 8}, {52, 8}}) b.set(c[0], 18, c[1], Blocks.SHROOMLIGHT);
         b.set(44, 0, 5, ModBlocks.CHECKPOINT_STONE.get());
@@ -185,6 +219,8 @@ public class VolcanoTempleGenerator implements TempleGenerator {
             int[] c = path.get((2 * k) % n);
             b.set(c[0], k + 1, c[1], step);
         }
+        int[] niche = outward(path.get(26 % n), 58, 1, 66, 9);
+        EventRooms.relic(b, niche[0], 15, niche[1]);
         // Balcón superior (sin taparle el hueco a las últimas plataformas)
         Set<Integer> skip = new HashSet<>();
         for (int k = 18; k <= 21; k++) {
@@ -215,7 +251,9 @@ public class VolcanoTempleGenerator implements TempleGenerator {
             b.set(c[0], ARENA_Y + 1, c[1], ModBlocks.SUPPLY_CRATE.get());
         }
         for (int[] c : new int[][]{{70, 3}, {74, 3}, {70, 7}, {74, 7}}) b.set(c[0], ARENA_Y + 7, c[1], Blocks.SHROOMLIGHT);
-        doors(b, 77, ARENA_Y + 1, 4, 2);
+        b.set(75, ARENA_Y + 1, 8, ModBlocks.BOSS_BELL.get());
+        EventRooms.vault(b, 68, ARENA_Y, 0, wall, floor, Blocks.SHROOMLIGHT.defaultBlockState());
+        doors(b, 77, ARENA_Y + 1, 4, TempleObjectives.BELL);
     }
 
     // ---------- Utilidades ----------

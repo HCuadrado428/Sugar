@@ -4,6 +4,7 @@ import com.sugar.block.EchoDrumBlock;
 import com.sugar.block.EventDoorBlock;
 import com.sugar.entity.EchoDrummer;
 import com.sugar.registry.ModBlocks;
+import com.sugar.temple.TempleObjectives;
 import com.sugar.temple.TempleGenerator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,11 +22,17 @@ import java.util.function.Supplier;
  *  2. Puente invisible (x 12-52)     un abismo con un camino que solo se ve con la lente; quien la
  *                                    lleve guía a los demás. Si caes, hay agua abajo y una escalera
  *  3. Sala de los Tambores (x 52-74) "Simón dice": tocad el gong y repetid el ritmo; abre el canal 1
- *  4. Antesala (x 74-84)             checkpoint, cofres, dos atriles más, puerta canal 2
- *  5. Gran Tambor (centro x 110)     arena circular flotando sobre el abismo
+ *  4. Cripta del Eco (x 75-97)       sala de oleadas: zombis, esqueletos, arañas; puerta canal 2
+ *  5. Placas del abismo (x 98-114)   cuatro placas de grupo en islotes; las piedras de salto son
+ *                                    plataformas ocultas (hace falta la lente); puerta canal 3
+ *  6. Antesala (x 115-125)           checkpoint, cofres, dos atriles, Campana del Jefe (canal 9) y tesoro (canal 8)
+ *  7. Gran Tambor (centro x 151)     arena circular flotando sobre el abismo
+ *  Reliquias: al final de un ramal oculto del puente invisible, en un rincón de la sala de los tambores
+ *  y en un islote apartado de las placas (solo se llega con la lente).
  */
 public class EchoTempleGenerator implements TempleGenerator {
     public static final int CX = 110, CZ = 7, CAVE_R = 24, CAVE_H = 22;
+    private static final int SHIFT = 41;
     private static final int PIT = -16;
 
     /** Camino del puente invisible: puntos por los que pasa (x, z). */
@@ -39,11 +46,17 @@ public class EchoTempleGenerator implements TempleGenerator {
         Supplier<BlockState> floor = b.mix(5, Blocks.POLISHED_DEEPSLATE, 3, Blocks.DEEPSLATE_TILES, 1, Blocks.SCULK);
         Supplier<BlockState> rock = b.mix(6, Blocks.DEEPSLATE, 2, Blocks.COBBLED_DEEPSLATE, 1, Blocks.TUFF, 1, Blocks.SCULK);
 
+        b.ox = SHIFT;
         arena(b, rock);
+        b.ox = 0;
         lobby(b, wall, floor);
         abyss(b, wall);
         drumRoom(b, wall, floor);
+        crypt(b, wall, floor);
+        abyssPlates(b, wall);
+        b.ox = SHIFT;
         antechamber(b, wall, floor);
+        b.ox = 0;
 
         return new Result(b.bounds(), feet);
     }
@@ -76,6 +89,9 @@ public class EchoTempleGenerator implements TempleGenerator {
             int[] a = PATH[i], c = PATH[i + 1];
             b.fill(a[0], 0, a[1], c[0], 0, c[1], hidden);
         }
+        // Ramal oculto sin salida con una reliquia al final
+        b.fill(37, 0, 12, 37, 0, 13, hidden);
+        EventRooms.relic(b, 37, 1, 13);
         // Descanso a mitad de camino (visible) con checkpoint
         b.fill(34, 0, 10, 36, 0, 12, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
         b.fill(34, PIT + 1, 10, 36, -1, 12, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
@@ -109,20 +125,47 @@ public class EchoTempleGenerator implements TempleGenerator {
         }
         b.set(54, 0, 7, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{57, 2}, {69, 2}, {57, 12}, {69, 12}, {63, 7}}) b.set(c[0], 9, c[1], Blocks.SHROOMLIGHT);
+        EventRooms.relic(b, 53, 1, 0);
         doors(b, 74, 1, 6, 1);
     }
 
-    // ---------- 4. Antesala ----------
+    // ---------- 4. Cripta del Eco (oleadas) ----------
+
+    private void crypt(StructureBuilder b, Supplier<BlockState> wall, Supplier<BlockState> floor) {
+        EventRooms.waveRoom(b, 75, 97, 0, 14, 9, wall, floor, Blocks.DEEPSLATE_TILES.defaultBlockState(),
+                Blocks.SOUL_LANTERN.defaultBlockState(), 2);
+        for (int x = 78; x <= 94; x += 4) { b.set(x, 1, 1, Blocks.SKELETON_SKULL); b.set(x, 1, 13, Blocks.SKELETON_SKULL); }
+        for (int x = 80; x <= 92; x += 6) { b.set(x, 0, 3, Blocks.SCULK); b.set(x, 0, 11, Blocks.SCULK); }
+    }
+
+    // ---------- 5. Placas del abismo ----------
+
+    private void abyssPlates(StructureBuilder b, Supplier<BlockState> wall) {
+        BlockState hidden = ModBlocks.ECHO_PLATFORM.get().defaultBlockState();
+        EventRooms.plateRoom(b, 98, 114, 0, 14, 10, 16, wall, Blocks.WATER.defaultBlockState(), 3,
+                Blocks.POLISHED_DEEPSLATE.defaultBlockState(), hidden, Blocks.SOUL_LANTERN.defaultBlockState(), 3);
+        // Escalera para salir del agua y un islote apartado con reliquia (solo se llega por plataformas ocultas)
+        BlockState ladder = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.EAST);
+        for (int y = -15; y <= 0; y++) { b.set(99, y, 3, Blocks.DEEPSLATE_BRICKS.defaultBlockState()); b.set(100, y, 3, ladder); }
+        b.fill(99, 0, 4, 100, 0, 5, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
+        b.fill(106, -15, 7, 106, 0, 7, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
+        b.fill(101, 0, 7, 105, 0, 7, hidden);
+        EventRooms.relic(b, 106, 1, 7);
+    }
+
+    // ---------- 6. Antesala ----------
 
     private void antechamber(StructureBuilder b, Supplier<BlockState> wall, Supplier<BlockState> floor) {
         b.room(74, 0, 1, 84, 7, 13, wall, floor);
-        doors(b, 74, 1, 6, 1);
+        b.air(74, 1, 6, 74, 3, 8);
         b.set(76, 0, 7, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{77, 2}, {81, 2}, {77, 12}, {81, 12}}) b.set(c[0], 1, c[1], ModBlocks.SUPPLY_CRATE.get());
-        b.set(79, 1, 2, ModBlocks.LENS_PEDESTAL.get());
+        b.set(83, 1, 3, ModBlocks.LENS_PEDESTAL.get());
         b.set(79, 1, 12, ModBlocks.LENS_PEDESTAL.get());
         for (int[] c : new int[][]{{77, 4}, {81, 4}, {77, 10}, {81, 10}}) b.set(c[0], 7, c[1], Blocks.SHROOMLIGHT);
-        doors(b, 84, 1, 6, 2);
+        b.set(82, 1, 10, ModBlocks.BOSS_BELL.get());
+        EventRooms.vault(b, 75, 0, 1, wall, floor, Blocks.SHROOMLIGHT.defaultBlockState());
+        doors(b, 84, 1, 6, TempleObjectives.BELL);
     }
 
     // ---------- 5. Gran Tambor ----------

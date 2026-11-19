@@ -51,6 +51,12 @@ public final class ModItems {
     public static final RegistryObject<Item> ECHO_EYE = ITEMS.register("echo_eye",
             () -> new TrophyItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), "item.sugar.echo_eye.desc"));
 
+    public static final RegistryObject<Item> GROUP_PLATE = blockItem("group_plate", ModBlocks.GROUP_PLATE);
+    public static final RegistryObject<Item> WAVE_ALTAR = blockItem("wave_altar", ModBlocks.WAVE_ALTAR);
+    public static final RegistryObject<Item> BOSS_BELL = blockItem("boss_bell", ModBlocks.BOSS_BELL);
+    public static final RegistryObject<Item> RELIC = blockItem("relic", ModBlocks.RELIC);
+    public static final RegistryObject<Item> TREASURE_CRATE = blockItem("treasure_crate", ModBlocks.TREASURE_CRATE);
+
     private static RegistryObject<Item> blockItem(String name, RegistryObject<Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().rarity(Rarity.EPIC)));
     }

@@ -1,0 +1,148 @@
+{
+  "variants": {
+    "channel=0,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=1,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=2,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=3,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=4,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=5,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=6,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=7,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=8,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=9,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=10,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=11,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=12,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=13,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=14,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=15,state=0": {
+      "model": "sugar:block/wave_altar_0"
+    },
+    "channel=0,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=1,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=2,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=3,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=4,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=5,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=6,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=7,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=8,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=9,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=10,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=11,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=12,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=13,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=14,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=15,state=1": {
+      "model": "sugar:block/wave_altar_1"
+    },
+    "channel=0,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=1,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=2,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=3,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=4,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=5,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=6,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=7,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=8,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=9,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=10,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=11,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=12,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=13,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=14,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    },
+    "channel=15,state=2": {
+      "model": "sugar:block/wave_altar_2"
+    }
+  }
+}

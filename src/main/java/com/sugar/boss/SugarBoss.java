@@ -252,6 +252,7 @@ public abstract class SugarBoss extends Monster {
         if (!level().isClientSide && !this.dead && !isRemoved() && level() instanceof ServerLevel serverLevel) {
             BossRewards.distribute(serverLevel, this);
             templeData().ifPresent(data -> {
+                if (data.active) TempleService.complete(serverLevel, data, this);
                 data.bossId = null;
                 TempleSavedData.get(serverLevel.getServer()).setDirty();
             });

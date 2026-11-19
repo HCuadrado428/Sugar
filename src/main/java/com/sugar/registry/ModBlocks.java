@@ -114,5 +114,25 @@ public final class ModBlocks {
     public static final RegistryObject<Block> ECHO_PLATFORM_SHOWN = BLOCKS.register("echo_platform_shown",
             () -> new Block(BlockBehaviour.Properties.of().noOcclusion().noLootTable().strength(-1.0F, 3600000.0F)));
 
+    // ---------- Modo evento (todas las mazmorras) ----------
+
+    public static final RegistryObject<Block> GROUP_PLATE = BLOCKS.register("group_plate",
+            () -> new com.sugar.block.GroupPlateBlock(eventBlock(MapColor.COLOR_LIGHT_GREEN).sound(SoundType.STONE)
+                    .lightLevel(s -> s.getValue(com.sugar.block.GroupPlateBlock.LIT) ? 12 : 3)));
+
+    public static final RegistryObject<Block> WAVE_ALTAR = BLOCKS.register("wave_altar",
+            () -> new com.sugar.block.WaveAltarBlock(eventBlock(MapColor.COLOR_RED).sound(SoundType.STONE)
+                    .lightLevel(s -> s.getValue(com.sugar.block.WaveAltarBlock.STATE) == 1 ? 15 : 6)));
+
+    public static final RegistryObject<Block> BOSS_BELL = BLOCKS.register("boss_bell",
+            () -> new com.sugar.block.BossBellBlock(eventBlock(MapColor.GOLD).sound(SoundType.ANVIL).lightLevel(s -> 8)));
+
+    public static final RegistryObject<Block> RELIC = BLOCKS.register("relic",
+            () -> new com.sugar.block.RelicBlock(eventBlock(MapColor.COLOR_PURPLE).sound(SoundType.AMETHYST).noOcclusion()
+                    .lightLevel(s -> s.getValue(com.sugar.block.RelicBlock.FOUND) ? 2 : 11)));
+
+    public static final RegistryObject<Block> TREASURE_CRATE = BLOCKS.register("treasure_crate",
+            () -> new com.sugar.block.TreasureCrateBlock(eventBlock(MapColor.GOLD).sound(SoundType.WOOD).lightLevel(s -> 7)));
+
     private ModBlocks() {}
 }

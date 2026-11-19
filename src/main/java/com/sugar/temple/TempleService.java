@@ -1,5 +1,7 @@
 package com.sugar.temple;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.MutableComponent;
 import com.sugar.block.EventDoorBlock;
 import com.sugar.block.TempleBlock;
 import com.sugar.boss.SugarBoss;
@@ -72,11 +74,16 @@ public final class TempleService {
     }
 
     public static void start(MinecraftServer server, TempleData data) {
+        start(server, data, 0);
+    }
+
+    /** Empieza el evento. Con cuenta atrás, la puerta del vestíbulo se abre al terminar (la lleva {@link TempleEvents}). */
+    public static void start(MinecraftServer server, TempleData data, int countdownTicks) {
         data.active = true;
-        data.checkpoints.clear();
-        data.claimedSupplies.clear();
+        data.clearProgress();
         TempleSavedData.get(server).setDirty();
-        setDoors(server, data, 0, true);
+        if (countdownTicks > 0) data.countdown = countdownTicks;
+        else openLobby(server, data);
 
         Component title = Component.literal("¡Evento!").withStyle(ChatFormatting.BOLD, data.type.color());
         Component subtitle = data.type.displayName();
@@ -93,8 +100,26 @@ public final class TempleService {
                 .append(Component.literal(" para unirte.").withStyle(ChatFormatting.GRAY)), false);
     }
 
+    /** Fin de la cuenta atrás: se abre la puerta del vestíbulo y arranca el cronómetro. */
+    public static void openLobby(MinecraftServer server, TempleData data) {
+        data.countdown = 0;
+        setDoors(server, data, 0, true);
+        ServerLevel level = levelOf(server, data);
+        if (level == null) return;
+        data.startTime = level.getGameTime();
+        TempleSavedData.get(server).setDirty();
+        for (ServerPlayer p : playersInside(level, data)) {
+            p.connection.send(new ClientboundSetTitlesAnimationPacket(0, 30, 10));
+            p.connection.send(new ClientboundSetTitleTextPacket(Component.literal("¡ADELANTE!").withStyle(ChatFormatting.BOLD, data.type.color())));
+            p.connection.send(new ClientboundSetSubtitleTextPacket(Component.empty()));
+            p.playNotifySound(SoundEvents.RAID_HORN.value(), SoundSource.MASTER, 1.0F, 1.2F);
+        }
+    }
+
     public static void stop(MinecraftServer server, TempleData data) {
         data.active = false;
+        data.countdown = 0;
+        data.summonCountdown = 0;
         data.checkpoints.clear();
         TempleSavedData.get(server).setDirty();
         server.getPlayerList().broadcastSystemMessage(Component.literal("El evento ")
@@ -119,8 +144,7 @@ public final class TempleService {
             removeBoss(level, data);
         }
         data.active = false;
-        data.checkpoints.clear();
-        data.claimedSupplies.clear();
+        data.clearProgress();
         TempleSavedData.get(server).setDirty();
     }
 
@@ -148,7 +172,99 @@ public final class TempleService {
                 if (EventDoorBlock.setOpen(level, pos, state, open)) changed++;
             }
         }
+        if (open) markObjective(level, data, channel);
         return changed;
+    }
+
+    // ---------- Objetivos y celebraciones ----------
+
+    /** Cumple el objetivo de ese canal (si lo hay y no estaba cumplido) y lo celebra. */
+    public static void markObjective(ServerLevel level, TempleData data, int channel) {
+        TempleObjectives.Objective o = TempleObjectives.find(data.type, channel);
+        if (o == null || !data.markDone(channel)) return;
+        TempleSavedData.get(level.getServer()).setDirty();
+        int done = TempleObjectives.done(data), total = TempleObjectives.of(data.type).size();
+        if (channel == TempleObjectives.BOSS) return;      // el final lo celebra complete()
+        celebrate(level, data, Component.literal("✔ " + o.name()).withStyle(ChatFormatting.GREEN),
+                Component.literal("Progreso " + done + "/" + total).withStyle(ChatFormatting.GRAY), channel);
+    }
+
+    /** Título, sonido y chispas de colores en las puertas del canal. */
+    public static void celebrate(ServerLevel level, TempleData data, Component title, Component subtitle, int channel) {
+        for (ServerPlayer p : playersInside(level, data)) {
+            p.connection.send(new ClientboundSetTitlesAnimationPacket(5, 40, 15));
+            p.connection.send(new ClientboundSetTitleTextPacket(Component.empty()));
+            p.connection.send(new ClientboundSetSubtitleTextPacket(title.copy().append(Component.literal("  ")).append(subtitle)));
+            p.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 0.8F, 1.0F);
+        }
+        for (BlockPos pos : data.blocks) {
+            BlockState state = level.getBlockState(pos);
+            if (!(state.getBlock() instanceof EventDoorBlock) || state.getValue(EventDoorBlock.CHANNEL) != channel) continue;
+            com.sugar.fx.Fx.particles(level, ParticleTypes.TOTEM_OF_UNDYING, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 8, 0.4, 0.6, 0.4, 0.4);
+            com.sugar.fx.Fx.particles(level, ParticleTypes.FIREWORK, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, 0.3, 0.5, 0.3, 0.15);
+            level.playSound(null, pos, SoundEvents.FIREWORK_ROCKET_TWINKLE, SoundSource.BLOCKS, 0.6F, 1.0F);
+        }
+    }
+
+    /** Tiempo desde la apertura del vestíbulo, en mm:ss. */
+    public static String elapsed(ServerLevel level, TempleData data) {
+        if (data.startTime < 0) return "--:--";
+        long secs = Math.max(0, (level.getGameTime() - data.startTime) / 20);
+        return String.format("%02d:%02d", secs / 60, secs % 60);
+    }
+
+    /** El jefe ha caído: fuegos artificiales y resumen del evento para todo el servidor. */
+    public static void complete(ServerLevel level, TempleData data, SugarBoss boss) {
+        data.markDone(TempleObjectives.BOSS);
+        TempleSavedData.get(level.getServer()).setDirty();
+        String time = elapsed(level, data);
+        List<java.util.Map.Entry<java.util.UUID, Float>> ranking = new ArrayList<>(boss.damageByPlayer().entrySet());
+        ranking.sort((a, b) -> Float.compare(b.getValue(), a.getValue()));
+        List<String> mvps = new ArrayList<>();
+        for (int i = 0; i < Math.min(3, ranking.size()); i++) {
+            ServerPlayer p = level.getServer().getPlayerList().getPlayer(ranking.get(i).getKey());
+            if (p != null) mvps.add(p.getGameProfile().getName());
+        }
+        for (ServerPlayer p : playersInside(level, data)) {
+            p.connection.send(new ClientboundSetTitlesAnimationPacket(10, 80, 30));
+            p.connection.send(new ClientboundSetTitleTextPacket(Component.literal("¡Templo completado!").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD)));
+            p.connection.send(new ClientboundSetSubtitleTextPacket(data.type.displayName().copy().append(Component.literal("  ⏱ " + time).withStyle(ChatFormatting.WHITE))));
+            p.playNotifySound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.MASTER, 1.0F, 0.8F);
+        }
+        MutableComponent msg = Component.literal("🏆 ").withStyle(ChatFormatting.GOLD)
+                .append(data.type.displayName().copy().withStyle(ChatFormatting.BOLD))
+                .append(Component.literal(" completado").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal("\n   ⏱ Tiempo: ").withStyle(ChatFormatting.GRAY)).append(Component.literal(time).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal("   ☠ Caídas: ").withStyle(ChatFormatting.GRAY)).append(Component.literal(String.valueOf(data.deaths)).withStyle(ChatFormatting.WHITE));
+        if (!mvps.isEmpty()) msg = msg.append(Component.literal("\n   ★ MVP: ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(String.join(", ", mvps)).withStyle(ChatFormatting.YELLOW));
+        level.getServer().getPlayerList().broadcastSystemMessage(msg, false);
+        TempleEvents.launchFireworks(level, data);
+    }
+
+    /** Invoca al jefe del templo en el altar con su presentación. Devuelve null y explica el motivo si no puede. */
+    @Nullable
+    public static SugarBoss summonBoss(ServerLevel level, TempleData data, java.util.function.Consumer<String> error) {
+        if (findBoss(level, data) != null) { error.accept("Ya hay un boss activo en ese templo."); return null; }
+        java.util.Optional<net.minecraft.world.entity.EntityType<? extends SugarBoss>> bossType = TempleRegistry.boss(data.type);
+        if (bossType.isEmpty()) { error.accept("El boss de '" + data.type.id() + "' no está disponible."); return null; }
+        BlockPos spawn = data.altar != null ? data.altar.above() : data.lobby;
+        SugarBoss boss = bossType.get().create(level);
+        if (boss == null) { error.accept("No se pudo crear el boss."); return null; }
+        boss.moveTo(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0.0F, 0.0F);
+        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(spawn), net.minecraft.world.entity.MobSpawnType.EVENT, null, null);
+        boss.bindTemple(data.type);
+        boss.rescale();
+        level.addFreshEntity(boss);
+        boss.beginIntro();
+        data.bossId = boss.getUUID();
+        TempleSavedData.get(level.getServer()).setDirty();
+        level.getServer().getPlayerList().broadcastSystemMessage(Component.literal("⚠ ")
+                .withStyle(ChatFormatting.DARK_RED)
+                .append(data.type.bossDisplayName())
+                .append(Component.literal(" ha despertado en ").withStyle(ChatFormatting.DARK_RED))
+                .append(data.type.displayName()), false);
+        return boss;
     }
 
     // ---------- Boss ----------
