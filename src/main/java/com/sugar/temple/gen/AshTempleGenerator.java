@@ -24,7 +24,7 @@ import static com.sugar.temple.TempleObjectives.*;
  * Dentro: la Gran Garganta (pozo circular, dos pisos y un lago de lava al fondo) y alrededor:
  *   Piso 2 (y 0):   Vestíbulo · Galería de las estatuas (muros que se vuelan con bombas → Llave 1, reliquia 1)
  *                   · Nido de crías (oleadas → Gran Cofre: bombas para todos) · Sala de los sellos (🔒1 → Llave 2)
- *   Piso 1 (y -10): Mina abandonada (muro de estatuas → Llave 3, reliquia 2) · Sala de los Géiseres (🔒2+3,
+ *   Piso 1 (y -10): Mina abandonada (muro de estatuas → Llave 3, brújula, reliquia 2) · Sala de los Géiseres (🔒2+3,
  *                   8 placas: vacía el lago y da la Llave 4) · Polvorín (🔒4, 6 interruptores que se encienden con
  *                   bombas → Llave del Jefe) · Cámara oculta (muro de estatuas, reliquia 3, tesoro canal 8)
  *   Fondo (y -20):  Puerta del Jefe → túnel → caverna de la Gran Bestia (suelo y -24).
@@ -162,6 +162,7 @@ public class AshTempleGenerator implements TempleGenerator {
         for (int z = -16; z >= -28; z--) b.set(16, F1 + 1, z, Blocks.RAIL);
         for (int x : new int[]{20, 32}) { b.set(x, F1 + 9, -20, ModBlocks.ROCKFALL.get()); b.fill(x, F1 + 1, -14, x, F1 + 8, -14, Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState()); }
         b.set(26, F1 + 1, -28, OotKit.keyChest(3));
+        b.set(20, F1 + 1, -28, OotKit.bigChest(BigChestBlock.COMPASS));
         EventRooms.relic(b, 36, F1 + 1, -28);
         b.set(26, F1, -11, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] l : new int[][]{{20, -11}, {32, -11}, {26, -25}}) b.set(l[0], F1 + 9, l[1], Blocks.LANTERN);

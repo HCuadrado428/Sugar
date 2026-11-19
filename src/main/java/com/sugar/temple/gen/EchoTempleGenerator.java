@@ -28,7 +28,7 @@ import static com.sugar.temple.TempleObjectives.*;
  *   Piso 2 (y 0):   Vestíbulo · Sala de los Tambores (ritmo → Llave 1, reliquia 1) · Cripta (oleadas →
  *                   Gran Cofre: una Lente del Eco para cada uno) · Puente invisible (🔒1, con la lente → Llave 2,
  *                   reliquia 2)
- *   Piso 1 (y -10): Osario (foso de fuego con puente oculto → Llave 3) · Placas del abismo (🔒2+3, piedras
+ *   Piso 1 (y -10): Osario (foso de fuego con puente oculto → Llave 3, brújula) · Placas del abismo (🔒2+3, piedras
  *                   ocultas: abren la reja del fondo y la Llave 4) · Sala de los Ecos (🔒4, laberinto oscuro con
  *                   6 sellos a la vez → Llave del Jefe) · Cámara oculta (solo se llega con la lente, reliquia 3,
  *                   tesoro canal 8)
@@ -207,6 +207,7 @@ public class EchoTempleGenerator implements TempleGenerator {
         for (int x = 18; x <= 38; x += 5) { b.set(x, F1 + 1, -9, Blocks.BONE_BLOCK); b.set(x, F1 + 1, -26, Blocks.BONE_BLOCK); b.set(x, F1 + 2, -26, Blocks.SKELETON_SKULL); }
         for (int x : new int[]{22, 34}) b.set(x, F1 + 9, -18, ModBlocks.ROCKFALL.get());
         b.set(28, F1 + 1, -26, OotKit.keyChest(3));
+        b.set(20, F1 + 1, -26, OotKit.bigChest(BigChestBlock.COMPASS));
         b.set(28, F1, -10, ModBlocks.CHECKPOINT_STONE.get());
         for (int[] c : new int[][]{{22, -11}, {34, -11}, {28, -25}}) b.set(c[0], F1 + 8, c[1], lantern());
     }
