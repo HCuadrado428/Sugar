@@ -65,14 +65,24 @@ public class EventSwitchBlock extends TempleBlock {
             return InteractionResult.CONSUME;
         }
 
-        level.setBlock(pos, state.setValue(ACTIVE, true), Block.UPDATE_ALL);
-        level.scheduleTick(pos, this, ACTIVE_TICKS);
-        level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.4F);
-        checkSolved(serverLevel, data.get(), state.getValue(CHANNEL));
+        activate(serverLevel, pos, state, data.get());
         return InteractionResult.CONSUME;
     }
 
-    private static void checkSolved(ServerLevel level, TempleData data, int channel) {
+    /** Cuánto tiempo se queda encendido (en ticks). */
+    protected int activeTicks() {
+        return ACTIVE_TICKS;
+    }
+
+    public void activate(ServerLevel level, BlockPos pos, BlockState state, TempleData data) {
+        if (state.getValue(LOCKED) || state.getValue(ACTIVE)) return;
+        level.setBlock(pos, state.setValue(ACTIVE, true), Block.UPDATE_ALL);
+        level.scheduleTick(pos, this, activeTicks());
+        level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.4F);
+        checkSolved(level, data, state.getValue(CHANNEL));
+    }
+
+    protected static void checkSolved(ServerLevel level, TempleData data, int channel) {
         List<BlockPos> switches = TempleService.positionsOf(level, data, EventSwitchBlock.class).stream()
                 .filter(p -> level.getBlockState(p).getValue(CHANNEL) == channel)
                 .toList();
@@ -81,8 +91,6 @@ public class EventSwitchBlock extends TempleBlock {
             if (level.getBlockState(p).getValue(ACTIVE)) active++;
         }
         if (active < switches.size()) {
-            TempleService.actionbar(level, data, Component.literal("Sellos encendidos: " + active + "/" + switches.size())
-                    .withStyle(ChatFormatting.GOLD));
             return;
         }
         for (BlockPos p : switches) {
@@ -90,7 +98,7 @@ public class EventSwitchBlock extends TempleBlock {
             level.setBlock(p, s.setValue(LOCKED, true).setValue(ACTIVE, true), Block.UPDATE_ALL);
         }
         TempleService.setDoors(level.getServer(), data, channel, true);
-        TempleService.actionbar(level, data, Component.literal("¡Se ha abierto un paso!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+        data.markDone(channel);
     }
 
     @Override

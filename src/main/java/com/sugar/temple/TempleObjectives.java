@@ -8,16 +8,21 @@ import java.util.List;
  */
 public final class TempleObjectives {
     public static final int VAULT = 8, BELL = 9, ENTRANCE = 10, BOSS = 15;
+    /** Templo del Volcán: cerraduras (1-3), Forja (4), Puente (5), interruptores (6), sellos (7), puerta del jefe (11), entrada de la Forja (12). */
+    public static final int V_LOCK_SEALS = 1, V_LOCK_BRIDGE = 2, V_LOCK_HAMMER = 3, V_FORGE = 4, V_BRIDGE = 5, V_SWITCHES = 6,
+            V_SEALS = 7, V_BOSS_DOOR = 11, V_FORGE_GATE = 12;
 
     public record Objective(int channel, String name) {}
 
     public static List<Objective> of(TempleType type) {
         return switch (type) {
             case VOLCAN -> List.of(
-                    new Objective(1, "Encender los tres sellos"),
-                    new Objective(2, "Resistir en la Forja"),
-                    new Objective(3, "Ocupar las placas del Puente de Brasas"),
-                    new Objective(BELL, "Tocar la campana del jefe"),
+                    new Objective(V_FORGE, "Vencer al Capataz de la Forja"),
+                    new Objective(V_SEALS, "Encender los tres sellos"),
+                    new Objective(V_BRIDGE, "Vaciar el lago desde el Puente de Brasas"),
+                    new Objective(V_SWITCHES, "Golpear los interruptores de obsidiana"),
+                    new Objective(V_BOSS_DOOR, "Abrir la puerta del jefe"),
+                    new Objective(BELL, "Bajar al Corazón del Volcán"),
                     new Objective(BOSS, "Derrotar a la Sierpe de Magma"));
             case CENIZA -> List.of(
                     new Objective(1, "Abrirse paso por la Galería de estatuas"),

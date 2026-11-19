@@ -43,5 +43,17 @@
   "block.sugar.wave_altar": "Altar de Oleadas",
   "block.sugar.boss_bell": "Campana del Jefe",
   "block.sugar.relic": "Reliquia",
-  "block.sugar.treasure_crate": "Cofre del Tesoro"
+  "block.sugar.treasure_crate": "Cofre del Tesoro",
+  "block.sugar.key_chest": "Cofre con Llave",
+  "block.sugar.big_chest": "Gran Cofre",
+  "block.sugar.locked_door": "Puerta con Cerradura",
+  "block.sugar.boss_door": "Puerta del Jefe",
+  "block.sugar.cracked_wall": "Muro Agrietado",
+  "block.sugar.hammer_switch": "Interruptor de Obsidiana",
+  "block.sugar.magma_lake": "Lago de Magma",
+  "item.sugar.small_key": "Llave Pequeña",
+  "item.sugar.boss_key": "Llave del Jefe",
+  "item.sugar.small_key.desc": "Admin: en creativo, clic derecho en una cerradura para abrirla.",
+  "item.sugar.boss_key.desc": "Admin: en creativo, clic derecho en la Puerta del Jefe para abrirla.",
+  "entity.sugar.forge_foreman": "Capataz de la Forja"
 }

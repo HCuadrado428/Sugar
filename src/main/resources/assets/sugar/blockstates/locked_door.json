@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "sugar:block/locked_door"
+    }
+  }
+}

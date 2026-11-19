@@ -84,7 +84,7 @@ public class EventDoorBlock extends TempleBlock {
     public static boolean setOpen(ServerLevel level, BlockPos pos, BlockState state, boolean open) {
         if (state.getValue(OPEN) == open) return false;
         level.setBlock(pos, state.setValue(OPEN, open), Block.UPDATE_ALL);
-        level.playSound(null, pos, open ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 1.0F, 0.7F);
+        if (!(state.getBlock() instanceof DrainableMagmaBlock)) level.playSound(null, pos, open ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 1.0F, 0.7F);
         return true;
     }
 }

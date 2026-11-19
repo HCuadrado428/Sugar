@@ -7,6 +7,7 @@ import com.sugar.entity.AshHatchling;
 import com.sugar.entity.DrummerHand;
 import com.sugar.entity.EchoDrummer;
 import com.sugar.entity.FallingRock;
+import com.sugar.entity.ForgeForeman;
 import com.sugar.entity.MagmaBolt;
 import com.sugar.entity.MagmaDecoy;
 import com.sugar.entity.MagmaSerpent;
@@ -63,6 +64,11 @@ public final class ModEntities {
             () -> EntityType.Builder.of(DrummerHand::new, MobCategory.MISC)
                     .sized(2.6F, 1.3F).fireImmune().clientTrackingRange(12).updateInterval(1)
                     .build(SugarMod.id("drummer_hand").toString()));
+
+    public static final RegistryObject<EntityType<ForgeForeman>> FORGE_FOREMAN = ENTITIES.register("forge_foreman",
+            () -> EntityType.Builder.of(ForgeForeman::new, MobCategory.MONSTER)
+                    .sized(1.9F, 2.9F).fireImmune().clientTrackingRange(10)
+                    .build(SugarMod.id("forge_foreman").toString()));
 
     private ModEntities() {}
 }

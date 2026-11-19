@@ -29,6 +29,7 @@ import com.sugar.temple.TempleService;
 import com.sugar.temple.TempleType;
 import com.sugar.temple.gen.VolcanoTempleGenerator;
 import net.minecraft.core.BlockPos;
+import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -54,35 +55,95 @@ public class SugarGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 600)
+    @GameTest(template = "empty", timeoutTicks = 900)
     public static void volcanoTempleFullFlow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(3000, 20, 3000);
+        BlockPos feet = helper.absolutePos(new BlockPos(2, 2, 2)).offset(3000, 40, 3000);
 
         TempleGenerator.Result result = new VolcanoTempleGenerator().generate(level, feet);
         TempleSavedData saved = TempleSavedData.get(level.getServer());
         TempleData data = saved.define(TempleType.VOLCAN, level.dimension(), result.zone(), result.lobby());
         TempleService.scan(level, data);
+        var server = level.getServer();
 
         helper.assertTrue(data.altar != null, "Falta el altar");
         int vents = TempleService.positionsOf(level, data, MagmaVentBlock.class).size();
-        int seals = TempleService.positionsOf(level, data, EventSwitchBlock.class).size();
-        int doors = TempleService.positionsOf(level, data, EventDoorBlock.class).size();
-        int crates = TempleService.positionsOf(level, data, SupplyCrateBlock.class).size();
+        int keyChests = TempleService.positionsOf(level, data, com.sugar.block.KeyChestBlock.class).size();
+        int bigChests = TempleService.positionsOf(level, data, com.sugar.block.BigChestBlock.class).size();
+        int locks = TempleService.positionsOf(level, data, com.sugar.block.LockedDoorBlock.class).size();
+        int hammerSwitches = TempleService.positionsOf(level, data, com.sugar.block.HammerSwitchBlock.class).size();
+        int seals = TempleService.positionsOf(level, data, EventSwitchBlock.class).size() - hammerSwitches;
+        int plates = TempleService.positionsOf(level, data, com.sugar.block.GroupPlateBlock.class).size();
+        int relics = TempleService.positionsOf(level, data, com.sugar.block.RelicBlock.class).size();
+        int altars = TempleService.positionsOf(level, data, com.sugar.block.WaveAltarBlock.class).size();
+        int treasure = TempleService.positionsOf(level, data, com.sugar.block.TreasureCrateBlock.class).size();
+        int cracks = TempleService.positionsOf(level, data, com.sugar.block.CrackedWallBlock.class).size();
+        var lake = TempleService.positionsOf(level, data, com.sugar.block.DrainableMagmaBlock.class);
         helper.assertTrue(vents == 8, "Respiraderos: " + vents);
+        helper.assertTrue(keyChests == 4, "Cofres con llave: " + keyChests);
+        helper.assertTrue(bigChests == 3, "Grandes Cofres: " + bigChests);
+        helper.assertTrue(locks == 27 + 12, "Bloques de cerradura (3 puertas + la del jefe): " + locks);
+        helper.assertTrue(hammerSwitches == 6, "Interruptores de obsidiana: " + hammerSwitches);
         helper.assertTrue(seals == 3, "Sellos: " + seals);
-        helper.assertTrue(doors == 56, "Puertas: " + doors);
-        helper.assertTrue(crates == 7, "Cofres (4 de suministros y 3 del tesoro): " + crates);
-        checkEventRooms(helper, level, data);
+        helper.assertTrue(plates == 8, "Placas: " + plates);
+        helper.assertTrue(relics == 3, "Reliquias: " + relics);
+        helper.assertTrue(altars == 1, "Altares de oleadas: " + altars);
+        helper.assertTrue(treasure == 3, "Cofres del tesoro: " + treasure);
+        helper.assertTrue(cracks > 400, "Muros agrietados: " + cracks);
+        helper.assertTrue(lake.size() > 800, "Lago de magma: " + lake.size());
 
-        TempleService.start(level.getServer(), data);
-        helper.assertTrue(TempleService.setDoors(level.getServer(), data, 1, true) == 9, "La puerta del canal 1 no se abre");
+        // Empieza: se abren el campamento y la reja de la Forja
+        TempleService.start(server, data);
+        helper.assertTrue(doorsOpen(level, data, 0), "No se abre la salida del campamento");
+        helper.assertTrue(doorsOpen(level, data, com.sugar.temple.TempleObjectives.V_FORGE_GATE), "No se abre la reja de la Forja");
+
+        // Llaves: la primera abre los sellos, el puente pide la 2 y la 3
+        BlockPos sealLock = lockOf(level, data, com.sugar.temple.TempleObjectives.V_LOCK_SEALS);
+        BlockPos bridgeLock = lockOf(level, data, com.sugar.temple.TempleObjectives.V_LOCK_BRIDGE);
+        helper.assertTrue(!com.sugar.block.LockedDoorBlock.tryUnlock(level, sealLock, level.getBlockState(sealLock), data), "Se abre sin llave");
+        openKeyChest(level, data, 1);
+        helper.assertTrue(com.sugar.block.LockedDoorBlock.tryUnlock(level, sealLock, level.getBlockState(sealLock), data), "La Llave 1 no abre los sellos");
+        openKeyChest(level, data, 2);
+        helper.assertTrue(!com.sugar.block.LockedDoorBlock.tryUnlock(level, bridgeLock, level.getBlockState(bridgeLock), data), "La cerradura doble se abre con una llave");
+        openKeyChest(level, data, 3);
+        helper.assertTrue(com.sugar.block.LockedDoorBlock.tryUnlock(level, bridgeLock, level.getBlockState(bridgeLock), data), "Las llaves 2 y 3 no abren el puente");
+
+        // El Puente vacía el lago
+        TempleService.setDoors(server, data, com.sugar.temple.TempleObjectives.V_BRIDGE, true);
+        helper.assertTrue(level.getBlockState(lake.get(0)).getValue(EventDoorBlock.OPEN), "El lago no se vacía");
+
+        // Martillo: muros agrietados e interruptores
+        BlockPos crack = TempleService.positionsOf(level, data, com.sugar.block.CrackedWallBlock.class).get(0);
+        helper.assertTrue(com.sugar.block.CrackedWallBlock.smash(level, crack) > 0, "El muro agrietado no se rompe");
+        for (BlockPos p : TempleService.positionsOf(level, data, com.sugar.block.HammerSwitchBlock.class)) {
+            var st = level.getBlockState(p);
+            ((com.sugar.block.HammerSwitchBlock) st.getBlock()).activate(level, p, st, data);
+        }
+        helper.assertTrue(data.isDone(com.sugar.temple.TempleObjectives.V_SWITCHES), "Los interruptores no abren la jaula");
+
+        // Llave del Jefe y puerta del jefe
+        BlockPos bossLock = lockOf(level, data, com.sugar.temple.TempleObjectives.V_BOSS_DOOR);
+        helper.assertTrue(!com.sugar.block.LockedDoorBlock.tryUnlock(level, bossLock, level.getBlockState(bossLock), data), "La puerta del jefe se abre sin su llave");
+        for (BlockPos p : TempleService.positionsOf(level, data, com.sugar.block.BigChestBlock.class)) {
+            var st = level.getBlockState(p);
+            if (st.getValue(com.sugar.block.BigChestBlock.KIND) == com.sugar.block.BigChestBlock.BOSS_KEY)
+                com.sugar.block.BigChestBlock.open(level, p, st, data, null);
+        }
+        helper.assertTrue(com.sugar.block.LockedDoorBlock.tryUnlock(level, bossLock, level.getBlockState(bossLock), data), "La Llave del Jefe no abre la puerta");
 
         // Sin jugadores cerca el servidor descargaría la zona: la mantenemos cargada durante la prueba
-        int acx = data.altar.getX() >> 4, acz = data.altar.getZ() >> 4;
-        for (int cx = acx - 2; cx <= acx + 2; cx++)
-            for (int cz = acz - 2; cz <= acz + 2; cz++)
-                level.setChunkForced(cx, cz, true);
+        BlockPos forgeAltar = TempleService.positionsOf(level, data, com.sugar.block.WaveAltarBlock.class).get(0);
+        List<long[]> forced = new java.util.ArrayList<>();
+        for (BlockPos c : new BlockPos[]{data.altar, forgeAltar})
+            for (int cx = (c.getX() >> 4) - 2; cx <= (c.getX() >> 4) + 2; cx++)
+                for (int cz = (c.getZ() >> 4) - 2; cz <= (c.getZ() >> 4) + 2; cz++) {
+                    level.setChunkForced(cx, cz, true);
+                    forced.add(new long[]{cx, cz});
+                }
+
+        // El Capataz
+        com.sugar.entity.ForgeForeman foreman = com.sugar.temple.WaveRoom.spawnForeman(level, data, forgeAltar);
+        helper.assertTrue(foreman != null, "No sale el Capataz");
 
         BlockPos spawn = data.altar.above();
         MagmaSerpent boss = ModEntities.MAGMA_SERPENT.get().create(level);
@@ -95,19 +156,51 @@ public class SugarGameTests {
         boss.beginIntro();
         data.bossId = boss.getUUID();
 
+        helper.runAfterDelay(120, () -> {
+            helper.assertTrue(foreman.isAlive(), "El Capataz ha desaparecido");
+            helper.assertTrue(foreman.phase() != com.sugar.entity.ForgeForeman.INTRO, "El Capataz no termina su presentación");
+            foreman.kill();
+        });
+        helper.runAfterDelay(180, () ->
+            helper.assertTrue(data.isDone(com.sugar.temple.TempleObjectives.V_FORGE) && doorsOpen(level, data, com.sugar.temple.TempleObjectives.V_FORGE),
+                    "Al morir el Capataz no se abre la Forja"));
+
         helper.runAfterDelay(400, () -> {
             helper.assertTrue(!boss.inIntro(), "La presentación de la Sierpe no ha terminado (fase " + boss.phase() + ")");
             helper.assertTrue(boss.isAlive(), "La Sierpe ha desaparecido durante el evento (motivo: "
                     + boss.getRemovalReason() + ", fase " + boss.phase() + ", pos " + boss.blockPosition().toShortString() + ")");
-            helper.assertTrue(boss.tickCount > 300, "La Sierpe no se actualiza");
-            TempleService.reset(level.getServer(), data);
+            TempleService.reset(server, data);
             helper.assertTrue(!boss.isAlive(), "El reset no ha quitado a la Sierpe");
+            helper.assertTrue(data.keys == 0, "El reset no quita las llaves");
+            helper.assertTrue(!level.getBlockState(lake.get(0)).getValue(EventDoorBlock.OPEN), "El reset no vuelve a llenar el lago");
+            helper.assertTrue(!level.getBlockState(crack).getValue(com.sugar.block.CrackedWallBlock.BROKEN), "El reset no levanta el muro");
             saved.remove(TempleType.VOLCAN);
-            for (int cx = acx - 2; cx <= acx + 2; cx++)
-                for (int cz = acz - 2; cz <= acz + 2; cz++)
-                    level.setChunkForced(cx, cz, false);
+            for (long[] c : forced) level.setChunkForced((int) c[0], (int) c[1], false);
             helper.succeed();
         });
+    }
+
+    private static boolean doorsOpen(ServerLevel level, TempleData data, int channel) {
+        boolean any = false;
+        for (BlockPos p : TempleService.positionsOf(level, data, EventDoorBlock.class)) {
+            var st = level.getBlockState(p);
+            if (st.getValue(EventDoorBlock.CHANNEL) != channel) continue;
+            if (!st.getValue(EventDoorBlock.OPEN)) return false;
+            any = true;
+        }
+        return any;
+    }
+
+    private static BlockPos lockOf(ServerLevel level, TempleData data, int channel) {
+        return TempleService.positionsOf(level, data, com.sugar.block.LockedDoorBlock.class).stream()
+                .filter(p -> level.getBlockState(p).getValue(EventDoorBlock.CHANNEL) == channel).findFirst().orElseThrow();
+    }
+
+    private static void openKeyChest(ServerLevel level, TempleData data, int key) {
+        for (BlockPos p : TempleService.positionsOf(level, data, com.sugar.block.KeyChestBlock.class)) {
+            var st = level.getBlockState(p);
+            if (st.getValue(com.sugar.block.KeyChestBlock.KEY) == key) com.sugar.block.KeyChestBlock.open(level, p, st, data);
+        }
     }
 
     @GameTest(template = "empty", timeoutTicks = 200)

@@ -134,5 +134,31 @@ public final class ModBlocks {
     public static final RegistryObject<Block> TREASURE_CRATE = BLOCKS.register("treasure_crate",
             () -> new com.sugar.block.TreasureCrateBlock(eventBlock(MapColor.GOLD).sound(SoundType.WOOD).lightLevel(s -> 7)));
 
+    // ---------- Templo al estilo Ocarina (llaves, cerraduras, martillo) ----------
+
+    public static final RegistryObject<Block> KEY_CHEST = BLOCKS.register("key_chest",
+            () -> new com.sugar.block.KeyChestBlock(eventBlock(MapColor.WOOD).sound(SoundType.WOOD).noOcclusion()));
+
+    public static final RegistryObject<Block> BIG_CHEST = BLOCKS.register("big_chest",
+            () -> new com.sugar.block.BigChestBlock(eventBlock(MapColor.GOLD).sound(SoundType.WOOD).noOcclusion().lightLevel(s -> 6)));
+
+    public static final RegistryObject<Block> LOCKED_DOOR = BLOCKS.register("locked_door",
+            () -> new com.sugar.block.LockedDoorBlock(eventBlock(MapColor.METAL).sound(SoundType.METAL).noOcclusion()));
+
+    public static final RegistryObject<Block> BOSS_DOOR = BLOCKS.register("boss_door",
+            () -> new com.sugar.block.LockedDoorBlock(eventBlock(MapColor.COLOR_RED).sound(SoundType.METAL).noOcclusion().lightLevel(s -> 4)));
+
+    public static final RegistryObject<Block> CRACKED_WALL = BLOCKS.register("cracked_wall",
+            () -> new com.sugar.block.CrackedWallBlock(eventBlock(MapColor.COLOR_BLACK).sound(SoundType.DEEPSLATE_BRICKS).noOcclusion()));
+
+    public static final RegistryObject<Block> HAMMER_SWITCH = BLOCKS.register("hammer_switch",
+            () -> new com.sugar.block.HammerSwitchBlock(eventBlock(MapColor.COLOR_PURPLE).sound(SoundType.STONE)
+                    .lightLevel(s -> s.getValue(EventSwitchBlock.ACTIVE) ? 13 : 4)));
+
+    public static final RegistryObject<Block> MAGMA_LAKE = BLOCKS.register("magma_lake",
+            () -> new com.sugar.block.DrainableMagmaBlock(eventBlock(MapColor.FIRE).noOcclusion().noCollission()
+                    .lightLevel(s -> s.getValue(com.sugar.block.EventDoorBlock.OPEN) ? 0 : 15)
+                    .isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false)));
+
     private ModBlocks() {}
 }

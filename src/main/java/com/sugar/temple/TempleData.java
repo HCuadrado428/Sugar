@@ -38,6 +38,11 @@ public class TempleData {
     /** Tick de juego en que se abrió la puerta del vestíbulo (-1 si no ha empezado). */
     public long startTime = -1;
     public int deaths;
+    /** Llaves del grupo (bits): 1-4 llaves pequeñas, {@link #BOSS_KEY} la Llave del Jefe. */
+    public int keys;
+    /** Quién ha sacado ya su objeto de cada Gran Cofre (posición → jugadores). */
+    public final Map<Long, Set<UUID>> chestClaims = new HashMap<>();
+    public static final int BOSS_KEY = 1 << 4;
     // Sin guardar: cuentas atrás en ticks
     public transient int countdown;
     public transient int summonCountdown;
@@ -61,6 +66,8 @@ public class TempleData {
         progressMask = 0;
         startTime = -1;
         deaths = 0;
+        keys = 0;
+        chestClaims.clear();
         countdown = 0;
         summonCountdown = 0;
     }
@@ -115,6 +122,15 @@ public class TempleData {
         tag.putInt("progress", progressMask);
         tag.putLong("start", startTime);
         tag.putInt("deaths", deaths);
+        tag.putInt("keys", keys);
+        ListTag chests = new ListTag();
+        chestClaims.forEach((pos, players) -> players.forEach(uuid -> {
+            CompoundTag c = new CompoundTag();
+            c.putLong("pos", pos);
+            c.putUUID("player", uuid);
+            chests.add(c);
+        }));
+        tag.put("chests", chests);
         return tag;
     }
 
@@ -149,6 +165,12 @@ public class TempleData {
         data.progressMask = tag.getInt("progress");
         data.startTime = tag.contains("start") ? tag.getLong("start") : -1;
         data.deaths = tag.getInt("deaths");
+        data.keys = tag.getInt("keys");
+        ListTag chests = tag.getList("chests", Tag.TAG_COMPOUND);
+        for (int i = 0; i < chests.size(); i++) {
+            CompoundTag c = chests.getCompound(i);
+            data.chestClaims.computeIfAbsent(c.getLong("pos"), k -> new HashSet<>()).add(c.getUUID("player"));
+        }
         return data;
     }
 }

@@ -60,6 +60,7 @@ public final class WaveRoom {
         State s = new State(data.type, altar.immutable(), channel);
         STATES.put(s.altar, s);
         level.playSound(null, altar, SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 4.0F, 0.7F);
+        if (isForge(data, channel)) TempleService.setDoors(level.getServer(), data, TempleObjectives.V_FORGE_GATE, false);
         TempleStory.narrate(level, data, TempleStory.waveStart(data.type));
     }
 
@@ -93,9 +94,13 @@ public final class WaveRoom {
             if (s.wave >= WAVES) {
                 it.remove();
                 level.setBlock(s.altar, level.getBlockState(s.altar).setValue(WaveAltarBlock.STATE, 2), 3);
-                level.playSound(null, s.altar, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                TempleService.setDoors(server, data, s.channel, true);
-                data.markDone(s.channel);
+                if (isForge(data, s.channel)) {
+                    spawnForeman(level, data, s.altar);
+                } else {
+                    level.playSound(null, s.altar, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    TempleService.setDoors(server, data, s.channel, true);
+                    data.markDone(s.channel);
+                }
             } else {
                 s.delay = PAUSE;
                 level.playSound(null, s.altar, SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 3.0F, 0.8F);
@@ -104,9 +109,27 @@ public final class WaveRoom {
         }
     }
 
+    /** La Forja del Templo del Volcán: tras las oleadas sale el Capataz. */
+    private static boolean isForge(TempleData data, int channel) {
+        return data.type == TempleType.VOLCAN && channel == TempleObjectives.V_FORGE;
+    }
+
+    public static com.sugar.entity.ForgeForeman spawnForeman(ServerLevel level, TempleData data, BlockPos altar) {
+        com.sugar.entity.ForgeForeman f = ModEntities.FORGE_FOREMAN.get().create(level);
+        if (f == null) return null;
+        f.moveTo(altar.getX() + 0.5, altar.getY() + 0.1, altar.getZ() + 4.5, 180, 0);
+        f.scaleFor(TempleService.playersInside(level, data).size());
+        f.addTag(TAG);
+        level.addFreshEntity(f);
+        level.sendParticles(ParticleTypes.LAVA, f.getX(), f.getY() + 1, f.getZ(), 30, 0.8, 0.8, 0.8, 0.2);
+        level.playSound(null, altar, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.5F, 0.6F);
+        TempleStory.narrate(level, data, TempleStory.foreman());
+        return f;
+    }
+
     private static void spawnWave(ServerLevel level, TempleData data, State s) {
         int players = Math.max(1, TempleService.playersInside(level, data).size());
-        int count = Math.min(18, 3 + players / 2 + s.wave * 2);
+        int count = Math.min(36, 4 + (int) (players * 0.6) + s.wave * 2);     // 25 jugadores: 19-23; 50: 34-36
         List<EntityType<? extends Mob>> types = roster(data.type, s.wave);
         s.spawned = 0;
         s.waveTicks = 0;

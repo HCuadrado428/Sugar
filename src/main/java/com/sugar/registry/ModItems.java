@@ -57,6 +57,19 @@ public final class ModItems {
     public static final RegistryObject<Item> RELIC = blockItem("relic", ModBlocks.RELIC);
     public static final RegistryObject<Item> TREASURE_CRATE = blockItem("treasure_crate", ModBlocks.TREASURE_CRATE);
 
+    public static final RegistryObject<Item> KEY_CHEST = blockItem("key_chest", ModBlocks.KEY_CHEST);
+    public static final RegistryObject<Item> BIG_CHEST = blockItem("big_chest", ModBlocks.BIG_CHEST);
+    public static final RegistryObject<Item> LOCKED_DOOR = blockItem("locked_door", ModBlocks.LOCKED_DOOR);
+    public static final RegistryObject<Item> BOSS_DOOR = blockItem("boss_door", ModBlocks.BOSS_DOOR);
+    public static final RegistryObject<Item> CRACKED_WALL = blockItem("cracked_wall", ModBlocks.CRACKED_WALL);
+    public static final RegistryObject<Item> HAMMER_SWITCH = blockItem("hammer_switch", ModBlocks.HAMMER_SWITCH);
+    public static final RegistryObject<Item> MAGMA_LAKE = blockItem("magma_lake", ModBlocks.MAGMA_LAKE);
+    /** Llaves para admins: en creativo, clic derecho en una cerradura para abrirla sin el grupo. */
+    public static final RegistryObject<Item> SMALL_KEY = ITEMS.register("small_key",
+            () -> new TrophyItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), "item.sugar.small_key.desc"));
+    public static final RegistryObject<Item> BOSS_KEY = ITEMS.register("boss_key",
+            () -> new TrophyItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC), "item.sugar.boss_key.desc"));
+
     private static RegistryObject<Item> blockItem(String name, RegistryObject<Block> block) {
         return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().rarity(Rarity.EPIC)));
     }

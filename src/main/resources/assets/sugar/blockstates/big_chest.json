@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "sugar:block/big_chest",
+      "y": 180
+    },
+    "open=true": {
+      "model": "sugar:block/big_chest_open",
+      "y": 180
+    }
+  }
+}

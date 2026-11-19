@@ -59,6 +59,7 @@ public final class TempleEvents {
             if (!data.active) continue;
             summonDelay(level, data);
             if (tick % 5 == 0) plates(level, data);
+            if (tick % 20 == 0) lairQuorum(level, data);
         }
         WaveRoom.tick(server);
     }
@@ -82,6 +83,9 @@ public final class TempleEvents {
             byChannel.computeIfAbsent(level.getBlockState(p).getValue(GroupPlateBlock.CHANNEL), k -> new ArrayList<>()).add(p);
         }
         int litTotal = 0;
+        // Con mucha gente hacen falta más placas: 4 hasta 10 jugadores, luego una más cada 7 (8 con 38 o más)
+        int inside = TempleService.playersInside(level, data).size();
+        int needed = 4 + Math.max(0, inside - 10) / 7;
         for (Map.Entry<Integer, List<BlockPos>> e : byChannel.entrySet()) {
             int channel = e.getKey();
             boolean solved = data.isDone(channel);
@@ -99,12 +103,36 @@ public final class TempleEvents {
             }
             if (solved) continue;
             litTotal += lit;
-            if (lit == e.getValue().size()) {
+            if (lit >= Math.min(e.getValue().size(), needed)) {
                 TempleService.setDoors(level.getServer(), data, channel, true);
                 data.markDone(channel);     // por si el canal no es un paso de la historia
             }
         }
         LAST_PLATES.put(data.type, litTotal);
+    }
+
+    // ---------- Guarida del Volcán ----------
+
+    /**
+     * Templo del Volcán: con la puerta del jefe abierta, cuando el 60 % de los que están dentro han bajado a la
+     * guarida, la puerta se cierra a su espalda y la Sierpe despierta.
+     */
+    private static void lairQuorum(ServerLevel level, TempleData data) {
+        if (data.type != TempleType.VOLCAN || data.altar == null || !data.isDone(TempleObjectives.V_BOSS_DOOR)
+                || data.isDone(TempleObjectives.BELL) || data.summonCountdown > 0 || TempleService.findBoss(level, data) != null) return;
+        List<ServerPlayer> inside = TempleService.playersInside(level, data);
+        if (inside.isEmpty()) return;
+        long inLair = inside.stream().filter(p -> inLair(data, p.blockPosition())).count();
+        if (inLair < Math.max(1, Math.ceil(inside.size() * 0.6))) return;
+        TempleService.setDoors(level.getServer(), data, TempleObjectives.V_BOSS_DOOR, false);
+        TempleService.markObjective(level, data, TempleObjectives.BELL);
+        data.summonCountdown = 100;
+    }
+
+    public static boolean inLair(TempleData data, BlockPos p) {
+        BlockPos a = data.altar;
+        int dx = p.getX() - a.getX(), dz = p.getZ() - a.getZ();
+        return dx * dx + dz * dz <= 25 * 25 && p.getY() >= a.getY() - 2 && p.getY() <= a.getY() + 16;
     }
 
     // ---------- Caídas ----------

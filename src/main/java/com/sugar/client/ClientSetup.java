@@ -23,6 +23,7 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModEntities.ASH_BOMB.get(), ThrownItemRenderer::new);
         event.registerEntityRenderer(ModEntities.ECHO_DRUMMER.get(), EchoDrummerRenderer::new);
         event.registerEntityRenderer(ModEntities.DRUMMER_HAND.get(), DrummerHandRenderer::new);
+        event.registerEntityRenderer(ModEntities.FORGE_FOREMAN.get(), ForgeForemanRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ECHO_PLATFORM.get(), EchoPlatformRenderer::new);
     }
 

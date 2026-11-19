@@ -100,6 +100,7 @@ public final class TempleService {
     /** Se abre la puerta del vestíbulo (empieza a contar el tiempo, aunque no se muestra). */
     public static void openLobby(MinecraftServer server, TempleData data) {
         setDoors(server, data, 0, true);
+        if (data.type == TempleType.VOLCAN) setDoors(server, data, TempleObjectives.V_FORGE_GATE, true);
         ServerLevel level = levelOf(server, data);
         if (level == null) return;
         data.startTime = level.getGameTime();
@@ -159,11 +160,20 @@ public final class TempleService {
         ServerLevel level = levelOf(server, data);
         if (level == null) return 0;
         int changed = 0;
+        BlockPos lake = null;
         for (BlockPos pos : List.copyOf(data.blocks)) {
             BlockState state = level.getBlockState(pos);
             if (state.getBlock() instanceof EventDoorBlock && state.getValue(EventDoorBlock.CHANNEL) == channel) {
-                if (EventDoorBlock.setOpen(level, pos, state, open)) changed++;
+                if (EventDoorBlock.setOpen(level, pos, state, open)) {
+                    changed++;
+                    if (state.getBlock() instanceof com.sugar.block.DrainableMagmaBlock) lake = pos;
+                }
             }
+        }
+        if (lake != null) {
+            level.playSound(null, lake, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 6.0F, 0.5F);
+            level.playSound(null, lake, SoundEvents.WARDEN_EMERGE, SoundSource.BLOCKS, 4.0F, 0.6F);
+            com.sugar.fx.Fx.shake(level, net.minecraft.world.phys.Vec3.atCenterOf(lake), 64, 0.6F, 40);
         }
         if (open) markObjective(level, data, channel);
         return changed;
@@ -185,7 +195,8 @@ public final class TempleService {
     public static void rumble(ServerLevel level, TempleData data, int channel) {
         for (BlockPos pos : data.blocks) {
             BlockState state = level.getBlockState(pos);
-            if (!(state.getBlock() instanceof EventDoorBlock) || state.getValue(EventDoorBlock.CHANNEL) != channel) continue;
+            if (!(state.getBlock() instanceof EventDoorBlock) || state.getValue(EventDoorBlock.CHANNEL) != channel
+                    || state.getBlock() instanceof com.sugar.block.DrainableMagmaBlock) continue;
             level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 1, 0.3, 0.3, 0.3, 0.01);
             level.playSound(null, pos, SoundEvents.DEEPSLATE_BRICKS_BREAK, SoundSource.BLOCKS, 0.4F, 0.5F);
         }
@@ -201,6 +212,7 @@ public final class TempleService {
     /** El jefe ha caído: el narrador cierra la historia y corre el rumor por el servidor. */
     public static void complete(ServerLevel level, TempleData data, SugarBoss boss) {
         data.markDone(TempleObjectives.BOSS);
+        if (data.type == TempleType.VOLCAN) setDoors(level.getServer(), data, TempleObjectives.V_BOSS_DOOR, true);
         TempleSavedData.get(level.getServer()).setDirty();
         TempleStory.narrate(level, data, TempleStory.ending(data.type));
         level.getServer().getPlayerList().broadcastSystemMessage(

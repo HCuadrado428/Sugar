@@ -43,5 +43,17 @@
   "block.sugar.wave_altar": "Wave Altar",
   "block.sugar.boss_bell": "Boss Bell",
   "block.sugar.relic": "Relic",
-  "block.sugar.treasure_crate": "Treasure Chest"
+  "block.sugar.treasure_crate": "Treasure Chest",
+  "block.sugar.key_chest": "Key Chest",
+  "block.sugar.big_chest": "Big Chest",
+  "block.sugar.locked_door": "Locked Door",
+  "block.sugar.boss_door": "Boss Door",
+  "block.sugar.cracked_wall": "Cracked Wall",
+  "block.sugar.hammer_switch": "Obsidian Switch",
+  "block.sugar.magma_lake": "Magma Lake",
+  "item.sugar.small_key": "Small Key",
+  "item.sugar.boss_key": "Boss Key",
+  "item.sugar.small_key.desc": "Admin: in creative, right-click a lock to open it.",
+  "item.sugar.boss_key.desc": "Admin: in creative, right-click the Boss Door to open it.",
+  "entity.sugar.forge_foreman": "Forge Foreman"
 }
