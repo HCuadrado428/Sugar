@@ -45,13 +45,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Tamborilero Sin Cuerpo: una máscara invisible que flota sobre un tambor gigante y dos manos enormes.
+ * Tamborilero Sin Cuerpo: un torso fantasma sin cabeza, invisible, que flota sobre un tambor gigante,
+ * con un corazón de sculk dentro de las costillas, y dos manos de piedra enormes.
  *
  * OCULTO: solo se ve con la Lente del Eco en la mano y apenas le afecta el daño (25%).
  *   Las manos atacan: golpe con sombra de aviso, redoble que hace botar a todo el que esté en el suelo
  *   (saltad a tiempo), agarre y lanzamiento, barrido a ras de suelo y, con poca vida, palmada.
  * Golpear una mano la va aturdiendo; cuando cae se queda unos segundos en el suelo.
- * Si las DOS manos están en el suelo a la vez, la máscara cae, se hace visible y recibe todo el daño.
+ * Si las DOS manos están en el suelo a la vez, el torso se desploma, las costillas se abren y el corazón recibe todo el daño.
  */
 public class EchoDrummer extends SugarBoss implements GeoEntity {
     public static final int INTRO = 0, HIDDEN = 1, EXPOSE = 2, EXPOSED = 3, RETREAT = 4, LAUGH = 5;
@@ -119,7 +120,7 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
         timer = 0;
     }
 
-    /** Se ve sin lente: presentación, máscara caída o muerte. */
+    /** Se ve sin lente: presentación, torso caído o muerte. */
     public boolean isRevealed() {
         return entityData.get(VISIBLE) || isDeadOrDying();
     }
@@ -222,7 +223,7 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
             setVisible(true);
             level.playSound(null, blockPosition(), SoundEvents.ELDER_GUARDIAN_HURT, SoundSource.HOSTILE, 4.0F, 0.4F);
             templeData().ifPresent(d -> TempleService.actionbar(level, d,
-                    Component.literal("¡La máscara ha caído! ¡Atacadla ahora!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
+                    Component.literal("¡Su corazón ha quedado al descubierto! ¡Atacad ahora!").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)));
         } else {
             templeData().ifPresent(d -> TempleService.actionbar(level, d,
                     Component.literal("¡Una mano ha caído! Tirad la otra antes de que se levante.").withStyle(ChatFormatting.YELLOW)));
@@ -241,7 +242,7 @@ public class EchoDrummer extends SugarBoss implements GeoEntity {
 
     // ---------- Presentación ----------
 
-    /** Oscuridad y tambores que aceleran; las manos trepan del abismo y golpean; la máscara sale, se ríe y se desvanece. */
+    /** Oscuridad y tambores que aceleran; las manos trepan del abismo y golpean; el torso sale, prende el fuego del cuello, se ríe y se desvanece. */
     @Override
     public void beginIntro() {
         if (home == null) home = position();

@@ -39,7 +39,7 @@ import java.util.UUID;
 /**
  * Mano del Tamborilero. No tiene vida propia: los golpes de los jugadores la van "aturdiendo".
  * Cuando el aturdimiento llega al máximo cae al suelo unos segundos. Si las dos manos están
- * en el suelo a la vez, la máscara queda expuesta.
+ * en el suelo a la vez, el torso queda expuesto.
  *
  * El Tamborilero ({@link EchoDrummer}) decide los ataques; la mano los ejecuta.
  */
@@ -141,7 +141,7 @@ public class DrummerHand extends Mob implements GeoEntity {
 
     public void orderDie() { release(); setState(DYING); }
 
-    /** Mantiene la mano en el suelo mientras la máscara está expuesta. */
+    /** Mantiene la mano en el suelo mientras el torso está expuesto. */
     public void holdDown(int ticks) {
         if (state() == STUNNED) stunLength = Math.max(stunLength, timer + ticks);
     }

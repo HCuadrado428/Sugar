@@ -80,15 +80,15 @@ Templo por defecto: `/eventtemple place eco` (~140 × 52 bloques hacia el este).
 4. **Antesala**: checkpoint, 4 cofres y 2 atriles más. Puerta canal 2 para el admin.
 5. **Gran Tambor**: arena circular sobre el abismo (si caes, agua y escalera hasta el puente). `/eventboss summon eco`.
 
-**Tamborilero Sin Cuerpo**: una máscara que flota invisible sobre el tambor (solo se ve con la lente) y dos manos enormes.
-- **Presentación**: todo se oscurece y suenan tambores cada vez más rápido; las manos trepan desde el abismo y golpean el tambor, la máscara sale, abre el ojo, se ríe y se desvanece.
+**Tamborilero Sin Cuerpo**: un torso fantasma sin cabeza (costillas de hueso, hombreras de deepslate y fuego de alma saliendo del cuello) que flota invisible sobre el tambor (solo se ve con la lente), y dos enormes manos de piedra.
+- **Presentación**: todo se oscurece y suenan tambores cada vez más rápido; las manos trepan desde el abismo y golpean el tambor, el torso sube encorvado, se yergue de golpe, prende el fuego del cuello, se ríe sacudiendo los hombros y se desvanece.
 - **Golpe**: una mano sube sobre alguien; su sombra marca dónde caerá. Después se queda unos segundos en el suelo.
 - **Redoble**: las manos golpean el tambor por turnos y todo el que esté apoyado sale botando. Saltad justo antes del golpe.
 - **Agarre**: atrapa a un jugador, lo aprieta y lo lanza. Si los demás golpean la mano, lo suelta.
 - **Barrido**: arrastra la mano a ras de suelo en arco; saltad por encima.
 - **Palmada** (por debajo del 40% de vida): las dos manos se cierran de golpe sobre alguien.
 
-Golpear una mano la va aturdiendo (la barra sale en pantalla); al llenarse cae al suelo unos 7 s. **Si las dos manos están en el suelo a la vez, la máscara cae, se ve sin lente y recibe todo el daño** durante unos 8 s; luego se sacude, se ríe y vuelve a esconderse. Oculta solo recibe el 25% del daño (flechas de quien lleve la lente).
+Golpear una mano la va aturdiendo (la barra sale en pantalla); al llenarse cae al suelo unos 7 s. **Si las dos manos están en el suelo a la vez, el torso se desploma, las costillas se abren como puertas y el corazón queda a la vista y recibe todo el daño** durante unos 8 s; luego se sacude, se ríe y vuelve a esconderse. Oculta solo recibe el 25% del daño (flechas de quien lleve la lente).
 
 Bloques nuevos: **Tambor del Eco** (nota 0-3 con shift + clic derecho en creativo), **Gong del Eco**, **Atril de la Lente**, **Plataforma Oculta** (en creativo se ve siempre).
 

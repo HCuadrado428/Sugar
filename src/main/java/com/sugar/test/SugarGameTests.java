@@ -285,13 +285,13 @@ public class SugarGameTests {
             helper.assertTrue(l != null && r != null, "Faltan manos");
             l.debugStun();
             r.debugStun();
-            helper.assertTrue(b.isExposed(), "Con las dos manos en el suelo la máscara no cae (fase " + b.phase() + ")");
+            helper.assertTrue(b.isExposed(), "Con las dos manos en el suelo el torso no cae (fase " + b.phase() + ")");
         });
         helper.runAfterDelay(590, () -> {
             EchoDrummer b = boss[0];
             float before = b.getHealth();
             b.hurt(level.damageSources().generic(), 20.0F);
-            helper.assertTrue(b.getHealth() < before, "La máscara expuesta no recibe daño");
+            helper.assertTrue(b.getHealth() < before, "El torso expuesto no recibe daño");
             TempleService.reset(level.getServer(), data);
             helper.assertTrue(!b.isAlive(), "El reset no ha quitado al Tamborilero");
             helper.assertTrue(!EchoPuzzle.isSolved(gong), "El reset no reinicia el puzle");

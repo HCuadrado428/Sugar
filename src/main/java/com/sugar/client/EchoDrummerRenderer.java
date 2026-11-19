@@ -18,7 +18,7 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 /**
- * La máscara solo se dibuja si está revelada (presentación, caída o muerte) o si el jugador
+ * El torso solo se dibuja si está revelada (presentación, caída o muerte) o si el jugador
  * lleva la Lente del Eco; en ese caso se ve como un fantasma semitransparente.
  */
 public class EchoDrummerRenderer extends GeoEntityRenderer<EchoDrummer> {
