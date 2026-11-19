@@ -1,6 +1,6 @@
 # Sugar
 
-Mod de bosses de evento para SMP (Forge 1.20.1 + GeckoLib). Tres templos con recorrido, puzles y un boss final, pensados para 20–50 jugadores.
+Mod de bosses de evento para SMP (Forge 1.20.1 + GeckoLib). Tres templos con recorrido, puzles y un boss final, pensados para 25–50 jugadores.
 
 | Templo (id) | Boss | Estado |
 |---|---|---|
@@ -32,16 +32,31 @@ Bloques de mecánicas (sirven en cualquier templo):
 
 ## Evento: Corazón del Volcán
 
-Templo por defecto: `/eventtemple place volcan` construye todo hacia el este (+X) desde tu posición (~170 × 60 bloques). Mejor en una zona llana y despejada.
+Templo al estilo Ocarina of Time, pensado para 25–50 jugadores. `/eventtemple place volcan` lo construye entero con **tu posición como campamento base**: la montaña queda al norte (unos 180 × 220 bloques y 56 de alto, y la guarida 18 bloques bajo tus pies). Hace falta una zona amplia y despejada; tarda unos segundos en construirse.
 
-1. **Vestíbulo** → puerta canal 0 (se abre con `/event start volcan`).
-2. **Pasarela de lava**: dos carriles de basalto inestable sobre magma, con rocas cayendo del techo.
-3. **Sala de sellos**: 3 sellos (suelo, media altura y arriba, subiendo por plataformas) → abren la puerta canal 1.
-4. **La Forja**: sala de oleadas (cubos de magma, blazes y esqueletos wither) → puerta canal 2.
-5. **Puente de Brasas**: cuatro placas de grupo sobre un foso de magma → puerta canal 3.
-6. **Pozo de ascenso**: espiral de plataformas mientras el magma sube y baja.
-7. **Antesala**: checkpoint, 4 cofres (martillo, comida, manzana dorada, flechas), la Campana del Jefe y la puerta de la cámara del tesoro.
-8. **Cráter**: la campana abre la puerta (canal 9) y despierta a la Sierpe.
+**Fuera, la subida.** El campamento base tiene una empalizada con dos puertas: la del sur (canal 10) se abre con `/event open`, la del norte (canal 0) con `/event start`. Desde ahí un sendero de 5 de ancho da dos vueltas a la montaña hasta el cráter: géiseres de fuego, coladas de lava con puentes que se hunden, una cornisa con desprendimientos, un campamento a media subida (checkpoint, cofres y una cueva con la **reliquia 1**) y un mirador arriba. En el fondo del cráter está la fachada del templo.
+
+**Dentro, la Gran Caldera**: un pozo circular con balcones en tres pisos, rampas entre ellos y un lago de magma al fondo, donde ya se ve la Puerta del Jefe. Alrededor:
+
+| Sala | Piso | Para entrar | Qué hay | Da |
+|---|---|---|---|---|
+| Pasarela de lava | 3 · oeste | — | dos carriles de basalto inestable, rocas del techo | Llave 1 |
+| Galería de las Cadenas | 3 · este | — | plataformas colgadas sobre magma, géiseres | Brújula (una por jugador), reliquia 2 |
+| La Forja | 2 · sur | — | se cierra al tocar el altar: 3 oleadas y el **Capataz de la Forja** | Martillo de Obsidiana (uno por jugador) |
+| Sala de los sellos | 2 · este | 🔒 Llave 1 | 3 sellos a distintas alturas, a la vez | Llave 2 |
+| Pozo de ascenso | 1→3 · noroeste | muro agrietado (martillo) | espiral mientras sube el magma | Llave 3 |
+| Puente de Brasas | 2 · norte | 🔒 Llaves 2 y 3 | 8 placas: vacían el lago de la Caldera | Llave 4 |
+| Sala del Martillo | 1 · este | 🔒 Llave 4 | muros agrietados, géiseres, 6 interruptores de obsidiana a la vez | Llave del Jefe |
+| Cámara oculta | 1 · oeste | muro agrietado | reliquia 3 y la puerta del tesoro (canal 8) | tesoro |
+| Corazón del Volcán | fondo | Puerta del Jefe (Llave del Jefe y lago vacío) | túnel con checkpoint y la arena (radio 24) | la Sierpe |
+
+Las primeras tres salas se hacen a la vez, así que el grupo puede repartirse. El Puente de Brasas obliga a juntarse: pide una llave de cada rama y mucha gente en las placas. Las llaves son **del grupo** (no van al inventario): cualquiera abre la cerradura y pasan todos. **La Sierpe despierta cuando ha bajado el 60 % del grupo a la guarida**: la Puerta del Jefe se cierra a su espalda y se abre de nuevo al vencerla.
+
+Bloques nuevos: **Cofre con Llave** (llave 1-4), **Gran Cofre** (martillo, brújula o Llave del Jefe), **Puerta con Cerradura** y **Puerta del Jefe** (se abren con las llaves del grupo o con `/event door`), **Muro Agrietado** (un martillazo, golpe o clic derecho, derrumba todo el muro), **Interruptor de Obsidiana** (solo con el martillo, dura 5 s) y **Lago de Magma** (desaparece al abrir su canal). En creativo, shift + clic derecho con la mano vacía cambia la llave, el contenido o el canal. Las **Llaves Pequeña y del Jefe** de la pestaña creativa abren cualquier cerradura con clic derecho (solo admins en creativo).
+
+**Escalado con mucha gente**: monstruos por oleada = 4 + 0,6 × jugadores (+2 por oleada, máx. 36); placas necesarias = 4 hasta 10 jugadores, una más cada 7 (las 8 con 38 o más); vida del Capataz = 200 + 18 × jugadores.
+
+**Capataz de la Forja**: gigante de basalto con un martillo de fragua. Martillazo con onda de fuego (se esquiva saltando), giro con el martillo si le rodeáis y, después del giro, se queda sin aliento unos segundos (recibe más daño). Sin barra de jefe.
 
 **Sierpe de Magma**: asoma por un respiradero y solo la aturde el **Martillo de Obsidiana** (hacen falta más golpes cuantos más jugadores haya). Aturdida recibe daño durante 8 s; luego vuela en círculos lanzando magma (vulnerable a flechas) y vuelve a hundirse. Con 10+ jugadores salen cabezas señuelo: tienen los ojos apagados y explotan si las golpeas.
 - **Fase II (66%)**: sale disparada, sube al centro rugiendo y todos los respiraderos escupen fuego. Desde ahora hace **pasadas de fuego**: marca una línea de humo en el suelo, baja en rasante y deja un reguero de llamas (al pasar baja es vulnerable). Además, antes de hundirse da un **golpe de lava**: una onda de fuego que hay que saltar.
@@ -49,9 +64,8 @@ Templo por defecto: `/eventtemple place volcan` construye todo hacia el este (+X
 
 Orden típico:
 ```
-/event open volcan             (el grupo se reúne en el vestíbulo)
-/event start volcan
-   (el grupo recorre el templo y toca la campana en la antesala)
+/event open volcan             (el grupo se reúne en el campamento base)
+/event start volcan            (se abre el camino a la montaña)
 /event reset volcan            (al terminar)
 ```
 
@@ -112,11 +126,11 @@ Salas comunes a los tres templos:
 - **Sala de oleadas** (Forja / Nido de crías / Cripta del Eco): al tocar el **Altar de Oleadas** salen 3 oleadas de monstruos del templo, más cuantos más jugadores haya. Al limpiar la última se abre la siguiente puerta. Si un monstruo se queda atascado mucho rato, vuelve junto al altar.
 - **Sala de las placas**: cuatro **Placas de Grupo** en islotes sobre un foso. Hace falta alguien encima de cada una a la vez. En el Santuario del Eco las piedras de salto son plataformas ocultas: solo se ven con la lente.
 - **Reliquias**: tres por templo, escondidas en rincones de parkour. Cada una cuenta a quien la encuentra un trozo de la historia del jefe. Con las tres se abre la **cámara del tesoro** junto a la antesala (canal 8), con un **Cofre del Tesoro** por jugador.
-- **Campana del Jefe** en la antesala: solo suena si la mayoría del grupo está allí. Abre la arena (canal 9), el suelo late unos segundos y el jefe despierta con su presentación. El admin puede seguir usando `/eventboss summon`.
+- **Campana del Jefe** en la antesala (Ceniza y Eco): solo suena si la mayoría del grupo está allí. Abre la arena (canal 9), el suelo late unos segundos y el jefe despierta con su presentación. El admin puede seguir usando `/eventboss summon`.
 
 `/event info <templo>` muestra a los admins los pasos cumplidos, el tiempo y las caídas del grupo.
 
-Canales de puertas de los templos por defecto: 10 entrada (`/event open`), 0 vestíbulo (`/event start`), 1-3 salas, 8 tesoro, 9 arena.
+Canales de puertas de los templos por defecto: 10 entrada (`/event open`), 0 vestíbulo (`/event start`), 1-3 salas, 8 tesoro, 9 arena. En el Volcán: 1-3 cerraduras (sellos, puente, martillo), 4 jaula del martillo, 5 Puente de Brasas y lago, 6 interruptores, 7 sellos, 8 tesoro, 11 Puerta del Jefe, 12 reja de la Forja.
 
 ## Fases, ondas y sacudida de pantalla
 

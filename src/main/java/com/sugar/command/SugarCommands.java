@@ -182,11 +182,19 @@ public final class SugarCommands {
                 + "\n  Checkpoints guardados: " + data.checkpoints.size()
                 + "\n  Pasos cumplidos: " + com.sugar.temple.TempleObjectives.done(data) + "/" + com.sugar.temple.TempleObjectives.of(data.type).size()
                 + (com.sugar.temple.TempleObjectives.current(data) != null ? " (ahora: " + com.sugar.temple.TempleObjectives.current(data).name() + ")" : "")
-                + "\n  Tiempo: " + com.sugar.temple.TempleService.elapsed(c.getSource().getLevel(), data) + "   Caídas: " + data.deaths;
+                + "\n  Tiempo: " + com.sugar.temple.TempleService.elapsed(c.getSource().getLevel(), data) + "   Caídas: " + data.deaths
+                + (data.keys != 0 ? "\n  Llaves del grupo: " + keyNames(data.keys) : "");
         return ok(c, text);
     }
 
     // ---------- Utilidades ----------
+
+    private static String keyNames(int keys) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 4; i++) if ((keys & (1 << i)) != 0) sb.append(sb.length() > 0 ? ", " : "").append(i + 1);
+        if ((keys & TempleData.BOSS_KEY) != 0) sb.append(sb.length() > 0 ? ", " : "").append("del Jefe");
+        return sb.toString();
+    }
 
     private static boolean admin(CommandSourceStack source) {
         return source.hasPermission(2);

@@ -210,7 +210,7 @@ public class VolcanoTempleGenerator implements TempleGenerator {
         b.fill(p[0] - 4, p[1], p[2] - 4, p[0] + 4, p[1], p[2] + 4, path);
         b.air(p[0] - 4, p[1] + 1, p[2] - 4, p[0] + 4, p[1] + 5, p[2] + 4);
         b.set(p[0], p[1], p[2], ModBlocks.CHECKPOINT_STONE.get());
-        b.set(p[0] + 2, p[1] + 1, p[2] + 2, Blocks.CAMPFIRE);
+        b.set(p[0] - (int) Math.signum(-p[0]) * 3, p[1] + 1, p[2] - (int) Math.signum(MZ - p[2]) * 3, Blocks.CAMPFIRE);
         b.set(p[0] - 3, p[1] + 1, p[2] + 3, ModBlocks.SUPPLY_CRATE.get());
         b.set(p[0] + 3, p[1] + 1, p[2] - 3, ModBlocks.SUPPLY_CRATE.get());
         // Cueva hacia el interior de la montaña

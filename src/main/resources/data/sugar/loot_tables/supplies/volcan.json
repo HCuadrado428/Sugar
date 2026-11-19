@@ -6,8 +6,14 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "sugar:obsidian_hammer",
-          "weight": 1
+          "name": "minecraft:bread",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": 4
+            }
+          ]
         }
       ]
     },
