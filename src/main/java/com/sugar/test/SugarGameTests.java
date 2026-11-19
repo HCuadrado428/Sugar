@@ -361,7 +361,7 @@ public class SugarGameTests {
         helper.assertTrue(treasure == 3, "Cofres del tesoro: " + treasure);
     }
 
-    /** Modo evento completo en el templo de ceniza: cuenta atrás, oleadas, reliquias, campana y jefe. */
+    /** Recorrido del templo de ceniza: oleadas, reliquias, campana y jefe. */
     @GameTest(template = "empty", timeoutTicks = 1200, batch = "evento")
     public static void eventModeFlow(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -384,12 +384,9 @@ public class SugarGameTests {
                 .filter(p -> level.getBlockState(p).getValue(EventDoorBlock.CHANNEL) == ch)
                 .allMatch(p -> level.getBlockState(p).getValue(EventDoorBlock.OPEN));
 
-        // Cuenta atrás de 2 s: la puerta del vestíbulo sigue cerrada hasta que termina
-        TempleService.start(level.getServer(), data, 40);
-        helper.assertTrue(!doorOpen.test(0), "La puerta del vestíbulo se abre antes de la cuenta atrás");
+        TempleService.start(level.getServer(), data);
+        helper.assertTrue(doorOpen.test(0), "No se abre el vestíbulo");
         helper.runAfterDelay(50, () -> {
-            helper.assertTrue(doorOpen.test(0), "La cuenta atrás no abre el vestíbulo");
-            helper.assertTrue(data.startTime >= 0, "No arranca el cronómetro");
             // Oleadas
             net.minecraft.world.level.block.state.BlockState st = level.getBlockState(altarWave);
             com.sugar.block.WaveAltarBlock.activate(level, altarWave, st, data);

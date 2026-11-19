@@ -4,6 +4,7 @@ import com.sugar.temple.TempleData;
 import com.sugar.temple.TempleObjectives;
 import com.sugar.temple.TempleSavedData;
 import com.sugar.temple.TempleService;
+import com.sugar.temple.TempleStory;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,7 +30,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Reliquia escondida. Encontrar todas las del templo abre la cámara del tesoro (canal 8).
+ * Reliquia escondida. Cada una cuenta un trozo de la historia del jefe a quien la encuentra;
+ * con todas se abre la cámara del tesoro (canal 8).
  */
 public class RelicBlock extends TempleBlock {
     public static final BooleanProperty FOUND = BooleanProperty.create("found");
@@ -70,18 +72,19 @@ public class RelicBlock extends TempleBlock {
     }
 
     public static void collect(ServerLevel level, BlockPos pos, BlockState state, TempleData data, String who) {
-        level.setBlock(pos, state.setValue(FOUND, true), Block.UPDATE_ALL);
-        level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 30, 0.3, 0.4, 0.3, 0.3);
-        level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 2.0F, 1.2F);
         List<BlockPos> relics = TempleService.positionsOf(level, data, RelicBlock.class);
-        long got = relics.stream().filter(p -> level.getBlockState(p).getValue(FOUND)).count();
-        level.getServer().getPlayerList().broadcastSystemMessage(Component.literal("✦ " + who + " ha encontrado una reliquia en ")
-                .withStyle(ChatFormatting.LIGHT_PURPLE).append(data.type.displayName())
-                .append(Component.literal(" (" + got + "/" + relics.size() + ")").withStyle(ChatFormatting.LIGHT_PURPLE)), false);
-        if (got >= relics.size()) {
+        long before = relics.stream().filter(p -> level.getBlockState(p).getValue(FOUND)).count();
+        level.setBlock(pos, state.setValue(FOUND, true), Block.UPDATE_ALL);
+        level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.2, 0.3, 0.2, 0.03);
+        level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.5F, 1.2F);
+        // Cada reliquia cuenta un trozo de la historia del jefe, en orden
+        net.minecraft.server.level.ServerPlayer finder = level.getServer().getPlayerList().getPlayerByName(who);
+        String text = TempleStory.relic(data.type, (int) before);
+        if (finder != null) TempleStory.narrate(finder, text, ChatFormatting.LIGHT_PURPLE);
+        if (before + 1 >= relics.size()) {
             TempleService.setDoors(level.getServer(), data, TempleObjectives.VAULT, true);
-            TempleService.celebrate(level, data, Component.literal("✦ ¡Cámara del tesoro abierta!").withStyle(ChatFormatting.LIGHT_PURPLE),
-                    Component.literal("Junto a la antesala").withStyle(ChatFormatting.GRAY), TempleObjectives.VAULT);
+            TempleService.rumble(level, data, TempleObjectives.VAULT);
+            TempleStory.narrate(level, data, TempleStory.vault(data.type));
         }
     }
 

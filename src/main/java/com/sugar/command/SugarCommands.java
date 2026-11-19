@@ -174,7 +174,10 @@ public final class SugarCommands {
                 + "\n  Altar: " + (data.altar != null ? data.altar.toShortString() : "no colocado")
                 + "\n  Activo: " + (data.active ? "sí" : "no")
                 + "\n  Bloques especiales: " + data.blocks.size()
-                + "\n  Checkpoints guardados: " + data.checkpoints.size();
+                + "\n  Checkpoints guardados: " + data.checkpoints.size()
+                + "\n  Pasos cumplidos: " + com.sugar.temple.TempleObjectives.done(data) + "/" + com.sugar.temple.TempleObjectives.of(data.type).size()
+                + (com.sugar.temple.TempleObjectives.current(data) != null ? " (ahora: " + com.sugar.temple.TempleObjectives.current(data).name() + ")" : "")
+                + "\n  Tiempo: " + com.sugar.temple.TempleService.elapsed(c.getSource().getLevel(), data) + "   Caídas: " + data.deaths;
         return ok(c, text);
     }
 

@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Campana del Jefe: cuando la mayoría del grupo está en la antesala, tocarla abre la puerta de la
- * arena (canal 9) y el jefe despierta tras una cuenta atrás de 5 segundos.
+ * Campana del Jefe: solo suena si la mayoría del grupo está en la antesala. Al tocarla se abre la
+ * puerta de la arena (canal 9), el suelo late unos segundos y el jefe despierta.
  */
 public class BossBellBlock extends TempleBlock {
     public static final BooleanProperty RUNG = BooleanProperty.create("rung");
@@ -55,7 +55,7 @@ public class BossBellBlock extends TempleBlock {
         }
         TempleData data = found.get();
         if (state.getValue(RUNG) || TempleService.findBoss(sl, data) != null || data.summonCountdown > 0) {
-            player.displayClientMessage(Component.literal("El jefe ya está despierto.").withStyle(ChatFormatting.RED), true);
+            player.displayClientMessage(Component.literal("La campana ya ha sonado.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
             return InteractionResult.CONSUME;
         }
         List<ServerPlayer> inside = TempleService.playersInside(sl, data);
@@ -63,8 +63,8 @@ public class BossBellBlock extends TempleBlock {
         int needed = Math.max(1, (int) Math.ceil(inside.size() * QUORUM));
         if (near < needed) {
             level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.BLOCKS, 1.0F, 0.5F);
-            player.displayClientMessage(Component.literal("Reunid al grupo en la antesala: " + near + "/" + needed + " listos")
-                    .withStyle(ChatFormatting.YELLOW), true);
+            player.displayClientMessage(Component.literal("La campana apenas se mueve. Pesa demasiado para tan pocas manos...")
+                    .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
             return InteractionResult.CONSUME;
         }
         ring(sl, pos, state, data);

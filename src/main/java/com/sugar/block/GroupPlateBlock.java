@@ -44,7 +44,7 @@ public class GroupPlateBlock extends TempleBlock {
             player.displayClientMessage(Component.literal("Canal de la placa: " + next).withStyle(ChatFormatting.AQUA), true);
             return InteractionResult.CONSUME;
         }
-        player.displayClientMessage(Component.literal("Hace falta alguien encima de cada placa a la vez.").withStyle(ChatFormatting.GRAY), true);
+        player.displayClientMessage(Component.literal("Hay algo grabado: «Cuatro piedras, cuatro pies, un solo paso.»").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
         return InteractionResult.CONSUME;
     }
 
