@@ -71,9 +71,11 @@ Orden típico:
 
 ## Evento: Las Fauces de Ceniza
 
-Templo por defecto: `/eventtemple place ceniza` (~165 × 50 bloques hacia el este).
+Templo por defecto: `/eventtemple place ceniza`. **Tu posición queda como campamento base** y todo se construye hacia el este (unos 290 × 80 bloques): el templo empieza 100 bloques más allá, dentro de un monte.
 
-1. **Vestíbulo** → puerta canal 0 (`/event start ceniza`).
+**Fuera, el Desfiladero de Ceniza.** El campamento minero tiene dos puertas: la del oeste (canal 10) se abre con `/event open` y la del este (canal 0) con `/event start`. El camino cruza una llanura de ceniza con filas de géiseres y matas de pólvora, entra en un desfiladero cerrado por un muro de estatuas (hay que volarlo con bombas), salta una grieta de lava por un puente que se hunde y llega a **las Fauces**: la boca de piedra de la montaña, que da al vestíbulo. Hay checkpoints en el campamento, antes del desfiladero y después de la grieta.
+
+1. **Vestíbulo** (tras las Fauces) → puerta canal 0, que se abre con `/event start ceniza` junto con la del campamento.
 2. **Paso de los géiseres**: pasarela sobre magma con filas de géiseres que se alternan y un tramo de basalto inestable.
 3. **Galería de estatuas**: tres muros de Estatuas Agrietadas; solo las rompen las Bombas de Ceniza (las dan las Matas de Pólvora, que rebrotan a los 10 s). Hay géiseres entre muro y muro.
    Tras el último muro, un sello abre la puerta canal 1.
@@ -94,7 +96,9 @@ Bloques nuevos: **Mata de Pólvora**, **Estatua Agrietada**, **Géiser de Fuego*
 
 ## Evento: Santuario del Eco
 
-Templo por defecto: `/eventtemple place eco` (~180 × 52 bloques hacia el este).
+Templo por defecto: `/eventtemple place eco`. **Tu posición queda como campamento**, arriba, y todo se construye hacia el este (unos 300 × 80 bloques). El santuario está 100 bloques al este y **20 bloques más abajo**, enterrado bajo un monte.
+
+**Fuera, el Barranco de los Ecos.** El campamento tiene dos puertas: oeste (canal 10, `/event open`) y este (canal 0, `/event start`). Un barranco baja 20 bloques haciendo eses: una sima con un puente que se hunde, un cementerio con checkpoint y cofres, la **Puerta de los Ecos** (una reja, canal 4, que se abre con cuatro placas a la vez), arcos de roca que sueltan piedras y, al fondo, la fachada del Santuario.
 
 1. **Vestíbulo**: 6 **Atriles de la Lente**. Cada atril da UNA **Lente del Eco** por evento; llevarla en una mano deja ver lo oculto. Puerta canal 0 (`/event start eco`).
 2. **Puente invisible**: un abismo cruzado por **Plataformas Ocultas** que solo ve quien lleva la lente; esa persona guía al resto. Si caes, hay agua abajo y una escalera para volver al principio. Descanso con checkpoint a mitad de camino.
