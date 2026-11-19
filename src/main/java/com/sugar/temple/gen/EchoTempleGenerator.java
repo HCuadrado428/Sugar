@@ -398,16 +398,16 @@ public class EchoTempleGenerator implements TempleGenerator {
         }
         b.set(g[0] + 2, g[1] + 1, g[2] - 5, ModBlocks.SUPPLY_CRATE.get());
         b.set(g[0] - 2, g[1] + 1, g[2] + 5, ModBlocks.SUPPLY_CRATE.get());
-        // 3. La Puerta de los Ecos: una reja (canal 4) que se abre con cuatro placas a la vez
+        // 3. La Puerta de los Ecos: una reja (canal 13) que se abre con cuatro placas a la vez
         clearing(b, path, 0.48, 0.55, floor);
-        BlockState plate = ModBlocks.GROUP_PLATE.get().defaultBlockState().setValue(com.sugar.block.GroupPlateBlock.CHANNEL, 4);
+        BlockState plate = ModBlocks.GROUP_PLATE.get().defaultBlockState().setValue(com.sugar.block.GroupPlateBlock.CHANNEL, 13);
         for (double s : new double[]{0.49, 0.54}) {
             int[] c = Approach.at(path, s);
             b.set(c[0], c[1], c[2] - 6, plate);
             b.set(c[0], c[1], c[2] + 6, plate);
         }
         int[] gate = Approach.at(path, 0.57);
-        b.fill(gate[0], gate[1] + 1, gate[2] - 3, gate[0], gate[1] + 6, gate[2] + 3, Approach.door(4));
+        b.fill(gate[0], gate[1] + 1, gate[2] - 3, gate[0], gate[1] + 6, gate[2] + 3, Approach.door(13));
         b.fill(gate[0], gate[1] + 7, gate[2] - 4, gate[0], gate[1] + 7, gate[2] + 4, Blocks.DEEPSLATE_BRICKS.defaultBlockState());
         for (int w : new int[]{-4, 4}) b.fill(gate[0], gate[1] + 1, gate[2] + w, gate[0], gate[1] + 6, gate[2] + w, Blocks.POLISHED_DEEPSLATE.defaultBlockState());
         b.set(gate[0] - 1, gate[1] + 7, gate[2], Blocks.SOUL_LANTERN);

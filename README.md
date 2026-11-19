@@ -75,14 +75,20 @@ Templo por defecto: `/eventtemple place ceniza`. **Tu posición queda como campa
 
 **Fuera, el Desfiladero de Ceniza.** El campamento minero tiene dos puertas: la del oeste (canal 10) se abre con `/event open` y la del este (canal 0) con `/event start`. El camino cruza una llanura de ceniza con filas de géiseres y matas de pólvora, entra en un desfiladero cerrado por un muro de estatuas (hay que volarlo con bombas), salta una grieta de lava por un puente que se hunde y llega a **las Fauces**: la boca de piedra de la montaña, que da al vestíbulo. Hay checkpoints en el campamento, antes del desfiladero y después de la grieta.
 
-1. **Vestíbulo** (tras las Fauces) → puerta canal 0, que se abre con `/event start ceniza` junto con la del campamento.
-2. **Paso de los géiseres**: pasarela sobre magma con filas de géiseres que se alternan y un tramo de basalto inestable.
-3. **Galería de estatuas**: tres muros de Estatuas Agrietadas; solo las rompen las Bombas de Ceniza (las dan las Matas de Pólvora, que rebrotan a los 10 s). Hay géiseres entre muro y muro.
-   Tras el último muro, un sello abre la puerta canal 1.
-4. **Nido de crías**: sala de oleadas (crías, husks y esqueletos) → puerta canal 2.
-5. **Sala de los Géiseres**: cuatro placas de grupo sobre magma; dos piedras del camino son géiseres → puerta canal 3.
-6. **Antesala**: checkpoint, 4 cofres (4 bombas, comida, manzana dorada, flechas), la Campana del Jefe y el tesoro.
-7. **Caverna**: cúpula con foso de lava junto a la pared, 6 matas de pólvora y 6 grietas. La campana despierta a la Bestia.
+**Dentro, la Gran Garganta**: un pozo circular con balcones en dos pisos, rampas entre ellos y un lago de lava al fondo, donde está la Puerta del Jefe.
+
+| Sala | Piso | Para entrar | Qué hay | Da |
+|---|---|---|---|---|
+| Galería de las estatuas | 2 · norte | — | dos muros de estatuas que hay que volar con bombas, matas de pólvora, géiseres | Llave 1, reliquia 1 |
+| Nido de crías | 2 · sur | — | se cierra al tocar el altar: 3 oleadas | Bombas (8 por jugador) |
+| Sala de los sellos | 2 · este | 🔒 Llave 1 | 3 sellos a distintas alturas, a la vez | Llave 2 |
+| Mina abandonada | 1 · norte | muro de estatuas (bombas) | foso de lava con puente que se hunde, desprendimientos | Llave 3, brújula, reliquia 2 |
+| Sala de los Géiseres | 1 · este | 🔒 Llaves 2 y 3 | 8 placas entre géiseres: vacían el lago | Llave 4 |
+| Polvorín | 1 · sur | 🔒 Llave 4 | 6 interruptores de obsidiana que se encienden con bombas, a la vez | Llave del Jefe |
+| Cámara oculta | 1 · oeste | muro de estatuas (bombas) | reliquia 3 y la puerta del tesoro (canal 8) | tesoro |
+| Caverna de la Bestia | fondo | Puerta del Jefe (Llave del Jefe y lago vacío) | túnel con checkpoint y la cúpula | la Bestia |
+
+Como en el Volcán, las llaves son del grupo y la Bestia despierta cuando el 60 % del grupo ha bajado a la caverna. Las Matas de Pólvora rebrotan a los 10 s, así que nunca faltan bombas.
 
 **Gran Bestia de Ceniza**: acecha a los jugadores y da pisotones (saltar los esquiva). Su coraza solo deja pasar el 20% del daño. Cada pocos segundos:
 - **Inhala** (3 s, avisa en pantalla): aspira bombas y ceniza. Si se traga suficientes Bombas de Ceniza (1 + 1 por cada 12 jugadores) queda **aturdida 8 s** y recibe todo el daño. Si no, escupe un abanico de fuego.
@@ -98,15 +104,22 @@ Bloques nuevos: **Mata de Pólvora**, **Estatua Agrietada**, **Géiser de Fuego*
 
 Templo por defecto: `/eventtemple place eco`. **Tu posición queda como campamento**, arriba, y todo se construye hacia el este (unos 300 × 80 bloques). El santuario está 100 bloques al este y **20 bloques más abajo**, enterrado bajo un monte.
 
-**Fuera, el Barranco de los Ecos.** El campamento tiene dos puertas: oeste (canal 10, `/event open`) y este (canal 0, `/event start`). Un barranco baja 20 bloques haciendo eses: una sima con un puente que se hunde, un cementerio con checkpoint y cofres, la **Puerta de los Ecos** (una reja, canal 4, que se abre con cuatro placas a la vez), arcos de roca que sueltan piedras y, al fondo, la fachada del Santuario.
+**Fuera, el Barranco de los Ecos.** El campamento tiene dos puertas: oeste (canal 10, `/event open`) y este (canal 0, `/event start`). Un barranco baja 20 bloques haciendo eses: una sima con un puente que se hunde, un cementerio con checkpoint y cofres, la **Puerta de los Ecos** (una reja, canal 13, que se abre con cuatro placas a la vez), arcos de roca que sueltan piedras y, al fondo, la fachada del Santuario.
 
-1. **Vestíbulo**: 6 **Atriles de la Lente**. Cada atril da UNA **Lente del Eco** por evento; llevarla en una mano deja ver lo oculto. Puerta canal 0 (`/event start eco`).
-2. **Puente invisible**: un abismo cruzado por **Plataformas Ocultas** que solo ve quien lleva la lente; esa persona guía al resto. Si caes, hay agua abajo y una escalera para volver al principio. Descanso con checkpoint a mitad de camino.
-3. **Sala de los Tambores**: tocad el **Gong** y los tambores tocarán un ritmo; repetidlo golpeando los **Tambores del Eco** en el mismo orden (cada nota está en dos tambores, uno a cada lado). Tres rondas (3, 4 y 5 golpes). Un fallo reinicia el ritmo. Al terminar se abre la puerta canal 1.
-4. **Cripta del Eco**: sala de oleadas (zombis, esqueletos, arañas de cueva) → puerta canal 2.
-5. **Placas del abismo**: cuatro placas de grupo en islotes; las piedras de salto son plataformas ocultas → puerta canal 3.
-6. **Antesala**: checkpoint, 4 cofres, 2 atriles más, la Campana del Jefe y el tesoro.
-7. **Gran Tambor**: arena circular sobre el abismo (si caes, agua y escalera hasta el puente). La campana despierta al Tamborilero.
+**Dentro, el Pozo de los Ecos**: una sala central de dos pisos sobre un abismo con agua al fondo (si caes, una escalera sube a la repisa del fondo). Desde la repisa, un camino oculto cruza el abismo hasta la reja y la Puerta del Jefe.
+
+| Sala | Piso | Para entrar | Qué hay | Da |
+|---|---|---|---|---|
+| Sala de los Tambores | 2 · norte | — | tocad el **Gong** y repetid el ritmo en los **Tambores del Eco** (3 rondas de 3, 4 y 5 golpes; cada nota está en dos tambores) | Llave 1, reliquia 1 |
+| Cripta | 2 · sur | — | se cierra al tocar el altar: 3 oleadas | **Lente del Eco** (una por jugador) |
+| Puente invisible | 2 · este | 🔒 Llave 1 | abismo con un camino oculto en zigzag y un ramal escondido | Llave 2, reliquia 2 |
+| Osario | 1 · norte | — | foso de fuego de alma con un puente oculto, desprendimientos | Llave 3, brújula |
+| Placas del abismo | 1 · este | 🔒 Llaves 2 y 3 | 8 placas en islotes unidos por piedras ocultas: abren la reja del fondo | Llave 4 |
+| Sala de los Ecos | 1 · sur | 🔒 Llave 4 | laberinto oscuro con 6 sellos, a la vez | Llave del Jefe |
+| Cámara oculta | 1 · oeste | un tramo oculto del balcón (con la lente) | reliquia 3 y la puerta del tesoro (canal 8) | tesoro |
+| Gran Tambor | fondo | reja (canal 5) y Puerta del Jefe | túnel con checkpoint y la arena sobre el agua | el Tamborilero |
+
+La lente ya no se reparte en atriles: sale del Gran Cofre de la Cripta, una para cada uno. Quien la lleva en la mano ve las **Plataformas Ocultas** y puede guiar al resto. El Tamborilero despierta cuando el 60 % del grupo ha bajado a la arena.
 
 **El Tamborilero**: un torso fantasma sin cabeza (costillas de hueso, hombreras de deepslate y fuego de alma saliendo del cuello) que flota invisible sobre el tambor (solo se ve con la lente), y dos enormes manos de piedra.
 - **Presentación**: todo se oscurece y suenan tambores cada vez más rápido; las manos trepan desde el abismo y golpean el tambor, el torso sube encorvado, se yergue de golpe, prende el fuego del cuello, se ríe sacudiendo los hombros y se desvanece.
@@ -120,21 +133,21 @@ Templo por defecto: `/eventtemple place eco`. **Tu posición queda como campamen
 
 Golpear una mano la va aturdiendo (la barra sale en pantalla); al llenarse cae al suelo unos 7 s. **Si las dos manos están en el suelo a la vez, el torso se desploma, las costillas se abren como puertas y el corazón queda a la vista y recibe todo el daño** durante unos 8 s; luego se sacude, se ríe y vuelve a esconderse. Oculta solo recibe el 25% del daño (flechas de quien lleve la lente).
 
-Bloques nuevos: **Tambor del Eco** (nota 0-3 con shift + clic derecho en creativo), **Gong del Eco**, **Atril de la Lente**, **Plataforma Oculta** (en creativo se ve siempre).
+Bloques nuevos: **Tambor del Eco** (nota 0-3 con shift + clic derecho en creativo), **Gong del Eco**, **Plataforma Oculta** (en creativo se ve siempre). El **Atril de la Lente** sigue en la pestaña creativa por si montáis vuestro propio templo.
 
 ## Los templos como una historia
 
 Los templos se recorren como una aventura, sin marcadores en pantalla: un narrador cuenta en el chat (en cursiva) lo que pasa al abrir el templo, al superar cada sala, al despertar al jefe y al derrotarlo. Al final corre por el servidor el rumor de que el jefe ha caído.
 
 Salas comunes a los tres templos:
-- **Sala de oleadas** (Forja / Nido de crías / Cripta del Eco): al tocar el **Altar de Oleadas** salen 3 oleadas de monstruos del templo, más cuantos más jugadores haya. Al limpiar la última se abre la siguiente puerta. Si un monstruo se queda atascado mucho rato, vuelve junto al altar.
+- **Sala de oleadas** (Forja / Nido de crías / Cripta del Eco): al tocar el **Altar de Oleadas** se cierra la reja de la sala (canal 12) y salen 3 oleadas de monstruos del templo, más cuantos más jugadores haya. Al limpiarlas se abre la jaula del Gran Cofre (canal 4) y la reja (en el Volcán, antes sale el Capataz). Si un monstruo se queda atascado mucho rato, vuelve junto al altar.
 - **Sala de las placas**: cuatro **Placas de Grupo** en islotes sobre un foso. Hace falta alguien encima de cada una a la vez. En el Santuario del Eco las piedras de salto son plataformas ocultas: solo se ven con la lente.
 - **Reliquias**: tres por templo, escondidas en rincones de parkour. Cada una cuenta a quien la encuentra un trozo de la historia del jefe. Con las tres se abre la **cámara del tesoro** junto a la antesala (canal 8), con un **Cofre del Tesoro** por jugador.
-- **Campana del Jefe** en la antesala (Ceniza y Eco): solo suena si la mayoría del grupo está allí. Abre la arena (canal 9), el suelo late unos segundos y el jefe despierta con su presentación. El admin puede seguir usando `/eventboss summon`.
+- **Campana del Jefe**: ya no la usa ningún templo por defecto (el jefe despierta cuando baja el 60 % del grupo), pero sigue disponible para templos propios: solo suena si la mayoría del grupo está allí. Abre la arena (canal 9), el suelo late unos segundos y el jefe despierta con su presentación. El admin puede seguir usando `/eventboss summon`.
 
 `/eventtemple info <templo>` muestra a los admins los pasos cumplidos, el tiempo y las caídas del grupo.
 
-Canales de puertas de los templos por defecto: 10 entrada (`/event open`), 0 vestíbulo (`/event start`), 1-3 salas, 8 tesoro, 9 arena. En el Volcán: 1-3 cerraduras (sellos, puente, martillo), 4 jaula del martillo, 5 Puente de Brasas y lago, 6 interruptores, 7 sellos, 8 tesoro, 11 Puerta del Jefe, 12 reja de la Forja.
+Canales de puertas de los tres templos por defecto: 10 entrada del campamento (`/event open`), 0 camino y vestíbulo (`/event start`), 1-3 cerraduras, 4 jaula del Gran Cofre de la sala de oleadas, 5 placas (lago o reja del fondo), 6 interruptores / sellos de la Llave del Jefe, 7 jaula de la Llave 2 (Volcán, Ceniza) o de la Llave 1 (Eco, tambores), 8 tesoro, 11 Puerta del Jefe, 12 reja de la sala de oleadas. En el barranco del Eco, la Puerta de los Ecos es el canal 13.
 
 ## Fases, ondas y sacudida de pantalla
 
