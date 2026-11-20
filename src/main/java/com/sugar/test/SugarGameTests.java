@@ -198,6 +198,18 @@ public class SugarGameTests {
     }
 
     /** El Caballero del Eco aparece, termina su presentación y pierde la armadura a media vida. */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void heartContainerAddsHealth(GameTestHelper helper) {
+        net.minecraft.world.entity.player.Player pl = helper.makeMockPlayer();
+        float before = pl.getMaxHealth();
+        net.minecraft.world.item.ItemStack heart = new net.minecraft.world.item.ItemStack(com.sugar.registry.ModItems.HEART_CONTAINER.get());
+        pl.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, heart);
+        heart.getItem().use(helper.getLevel(), pl, net.minecraft.world.InteractionHand.MAIN_HAND);
+        helper.assertTrue(pl.getMaxHealth() == before + 2.0F, "El corazón no sube la vida: " + before + " -> " + pl.getMaxHealth());
+        helper.assertTrue(com.sugar.item.HeartContainerItem.hearts(pl) == 1, "El corazón no se guarda");
+        helper.succeed();
+    }
+
     @GameTest(template = "empty", timeoutTicks = 300)
     public static void echoKnightBreaksArmor(GameTestHelper helper) {
         com.sugar.entity.EchoKnight k = ModEntities.ECHO_KNIGHT.get().create(helper.getLevel());

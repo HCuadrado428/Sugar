@@ -215,6 +215,8 @@ public final class TempleService {
         setDoors(level.getServer(), data, TempleObjectives.V_BOSS_DOOR, true);
         TempleSavedData.get(level.getServer()).setDirty();
         TempleStory.narrate(level, data, TempleStory.ending(data.type));
+        for (ServerPlayer p : playersInside(level, data))
+            com.sugar.item.HeartContainerItem.reward(p, new net.minecraft.world.item.ItemStack(com.sugar.registry.ModItems.HEART_CONTAINER.get()));
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal(TempleStory.rumour(data.type)).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
     }

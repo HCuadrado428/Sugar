@@ -64,5 +64,6 @@
   "block.sugar.push_target": "Target Tile",
   "block.sugar.brazier": "Temple Brazier",
   "block.sugar.eye_switch": "Stone Eye",
-  "block.sugar.blink_platform": "Blinking Platform"
+  "block.sugar.blink_platform": "Blinking Platform",
+  "item.sugar.heart_container": "Heart Container"
 }

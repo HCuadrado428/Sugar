@@ -64,6 +64,7 @@ public final class TempleEvents {
                     com.sugar.block.BlinkPlatformBlock.update(level, p, level.getBlockState(p), level.getGameTime());
             if (tick % 5 == 0) plates(level, data);
             if (tick % 20 == 0) lairQuorum(level, data);
+            TempleAmbience.tick(level, data, tick);
         }
         WaveRoom.tick(server);
     }

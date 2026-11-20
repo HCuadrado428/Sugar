@@ -23,6 +23,7 @@ public final class SugarEvents {
     /** Si el jugador muere durante un evento activo y tiene checkpoint, reaparece allí. */
     @SubscribeEvent
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        com.sugar.item.HeartContainerItem.apply(event.getEntity());
         if (event.isEndConquered() || !SugarConfig.RESPAWN_AT_CHECKPOINT.get()) return;
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
@@ -32,6 +33,12 @@ public final class SugarEvents {
                 return;
             }
         }
+    }
+
+    /** Los contenedores de corazón se guardan en el jugador; se vuelven a aplicar al entrar. */
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        com.sugar.item.HeartContainerItem.apply(event.getEntity());
     }
 
     private SugarEvents() {}

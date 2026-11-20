@@ -71,6 +71,8 @@ public final class ModItems {
     public static final RegistryObject<Item> EYE_SWITCH = blockItem("eye_switch", ModBlocks.EYE_SWITCH);
     public static final RegistryObject<Item> BLINK_PLATFORM = blockItem("blink_platform", ModBlocks.BLINK_PLATFORM);
     /** Llaves para admins: en creativo, clic derecho en una cerradura para abrirla sin el grupo. */
+    public static final RegistryObject<Item> HEART_CONTAINER = ITEMS.register("heart_container",
+            () -> new com.sugar.item.HeartContainerItem(new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC)));
     public static final RegistryObject<Item> SMALL_KEY = ITEMS.register("small_key",
             () -> new TrophyItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), "item.sugar.small_key.desc"));
     public static final RegistryObject<Item> BOSS_KEY = ITEMS.register("boss_key",
