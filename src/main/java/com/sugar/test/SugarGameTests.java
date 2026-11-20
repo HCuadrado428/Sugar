@@ -197,7 +197,7 @@ public class SugarGameTests {
         });
     }
 
-    /** El Caballero del Eco aparece, termina su presentación y pierde la armadura a media vida. */
+    /** Usar un Contenedor de Corazón sube la vida máxima y queda guardado en el jugador. */
     @GameTest(template = "empty", timeoutTicks = 100)
     public static void heartContainerAddsHealth(GameTestHelper helper) {
         net.minecraft.world.entity.player.Player pl = helper.makeMockPlayer();
@@ -210,6 +210,7 @@ public class SugarGameTests {
         helper.succeed();
     }
 
+    /** El Caballero del Eco aparece, termina su presentación y pierde la armadura a media vida. */
     @GameTest(template = "empty", timeoutTicks = 300)
     public static void echoKnightBreaksArmor(GameTestHelper helper) {
         com.sugar.entity.EchoKnight k = ModEntities.ECHO_KNIGHT.get().create(helper.getLevel());

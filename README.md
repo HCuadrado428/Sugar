@@ -30,6 +30,15 @@ Bloques de mecánicas (sirven en cualquier templo):
 - **Cofre de Suministros**: cada jugador recoge un lote por evento (`data/sugar/loot_tables/supplies/<templo>.json`).
 - **Respiradero de Magma**: agujero por donde asoma la Sierpe. Quema al pisarlo.
 
+Puzles estilo Zelda (canal con shift + clic derecho en creativo, como las puertas):
+
+- **Bloque Empujable**: clic derecho lo empuja un bloque en la dirección en que miras (solo si hay suelo y hueco). Al reiniciar el templo vuelve a su sitio.
+- **Baldosa Destino**: se ilumina con un Bloque Empujable encima. Cuando todas las del canal lo están, se abren sus puertas.
+- **Brasero del Templo**: se enciende con antorcha, mechero, carga ígnea, vara de blaze, flecha en llamas o Bomba de Ceniza. Se apaga a los 20 s; si todos los del canal arden a la vez, abre el canal.
+- **Ojo de Piedra**: solo se activa con un proyectil (flecha, tridente…). Se cierra a los 10 s; todos los del canal abiertos a la vez abren las puertas.
+- **Plataforma Intermitente**: aparece y desaparece cada 3 s. Las de fase 0 y 1 se alternan.
+- **Nido de Guardianes** (invisible): al acercarse el primer jugador suelta Keese (de fuego, de ceniza o del eco) o los guardias del templo.
+
 ## Evento: Corazón del Volcán
 
 Templo al estilo Ocarina of Time, pensado para 25–50 jugadores. `/eventtemple place volcan` lo construye entero con **tu posición como campamento base**: la montaña queda al norte (unos 180 × 220 bloques y 56 de alto, y la guarida 18 bloques bajo tus pies). Hace falta una zona amplia y despejada; tarda unos segundos en construirse.
@@ -192,6 +201,8 @@ Configurable en `config/sugar-common.toml`:
 - Reciben recompensa quienes hagan al menos el 1% del daño total y, opcionalmente, todos los que estén vivos en el templo.
 - Los 3 que más daño hacen reciben además la recompensa MVP.
 - Tablas de botín: `data/sugar/loot_tables/bosses/<boss>_participante.json` y `<boss>_mvp.json` (se pueden cambiar con un datapack).
+- Cada jugador dentro del templo cuando cae el jefe recibe un **Contenedor de Corazón**: +1 corazón de vida máxima para siempre (máximo 3, uno por templo). Se mantiene al morir.
+- Tras las oleadas de la sala del Gran Cofre aparece un **minijefe**: el Capataz de Obsidiana (Volcán), la Matriarca del Nido (Ceniza; aturdidla con una bomba) y el Caballero del Eco (Eco; solo recibe daño por la espalda o al atacar, y a media vida pierde la armadura y queda el esqueleto).
 
 ## Estilo
 
