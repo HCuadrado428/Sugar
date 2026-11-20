@@ -80,5 +80,10 @@ public final class ModEntities {
                     .sized(1.3F, 3.4F).clientTrackingRange(10)
                     .build(SugarMod.id("echo_knight").toString()));
 
+    public static final RegistryObject<EntityType<com.sugar.entity.Keese>> KEESE = ENTITIES.register("keese",
+            () -> EntityType.Builder.of(com.sugar.entity.Keese::new, MobCategory.MONSTER)
+                    .sized(0.7F, 0.6F).clientTrackingRange(8)
+                    .build(SugarMod.id("keese").toString()));
+
     private ModEntities() {}
 }

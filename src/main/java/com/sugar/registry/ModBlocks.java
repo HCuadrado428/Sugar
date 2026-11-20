@@ -160,5 +160,8 @@ public final class ModBlocks {
                     .lightLevel(s -> s.getValue(com.sugar.block.EventDoorBlock.OPEN) ? 0 : 15)
                     .isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false)));
 
+    public static final RegistryObject<Block> GUARDIAN_NEST = BLOCKS.register("guardian_nest",
+            () -> new com.sugar.block.GuardianNestBlock(eventBlock(MapColor.NONE).noCollission().noOcclusion()));
+
     private ModBlocks() {}
 }

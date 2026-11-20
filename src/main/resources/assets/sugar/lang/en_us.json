@@ -57,5 +57,7 @@
   "item.sugar.boss_key.desc": "Admin: in creative, right-click the Boss Door to open it.",
   "entity.sugar.forge_foreman": "Forge Foreman",
   "entity.sugar.nest_matriarch": "Nest Matriarch",
-  "entity.sugar.echo_knight": "Echo Knight"
+  "entity.sugar.echo_knight": "Echo Knight",
+  "block.sugar.guardian_nest": "Guardian Nest",
+  "entity.sugar.keese": "Keese"
 }

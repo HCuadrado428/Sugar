@@ -57,6 +57,8 @@ public class AshTempleGenerator implements TempleGenerator {
         powder(b, k);
         hidden(b, k);
         tunnel(b, wall, floor);
+        OotKit.nests(b, new int[][]{{26, F2 + 4, -12, 1}, {20, F2 + 1, -18, 3}, {HX, F2 - 4, HZ, 1}, {51, F2 + 1, 0, 3},
+                {30, F1 + 4, -25, 1}, {20, F1 + 1, -13, 3}, {54, F1 + 4, 5, 1}, {26, F1 + 1, 25, 3}});
 
         Supplier<BlockState> ash = b.mix(3, Blocks.TUFF, 3, Blocks.LIGHT_GRAY_CONCRETE_POWDER, 2, Blocks.GRAVEL, 2, Blocks.BASALT, 1, Blocks.COARSE_DIRT);
         Approach.drape(b, b.bounds(), 10, rock, ash);

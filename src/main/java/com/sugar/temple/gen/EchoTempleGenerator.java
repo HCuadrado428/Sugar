@@ -63,6 +63,8 @@ public class EchoTempleGenerator implements TempleGenerator {
         echoes(b, k);
         hidden(b, k);
         tunnel(b, wall, floor);
+        OotKit.nests(b, new int[][]{{28, F2 + 5, -12, 2}, {HX, F1 - 4, HZ, 2}, {58, F2 + 4, 7, 2}, {32, F1 + 1, -11, 3},
+                {54, F1 + 3, 7, 2}, {20, F1 + 1, 29, 3}, {36, F1 + 1, 34, 3}});
 
         Supplier<BlockState> moss = b.mix(4, Blocks.MOSS_BLOCK, 3, Blocks.PODZOL, 2, Blocks.COARSE_DIRT, 1, Blocks.SCULK);
         Approach.drape(b, b.bounds(), 10, rock, moss);

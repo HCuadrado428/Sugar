@@ -58,6 +58,7 @@ public final class TempleEvents {
             if (level == null) continue;
             if (!data.active) continue;
             summonDelay(level, data);
+            if (tick % 40 == 0) guardians(level, data);
             if (tick % 5 == 0) plates(level, data);
             if (tick % 20 == 0) lairQuorum(level, data);
         }
@@ -109,6 +110,24 @@ public final class TempleEvents {
             }
         }
         LAST_PLATES.put(data.type, litTotal);
+    }
+
+    // ---------- Guardianes de las salas ----------
+
+    /** Cada nido de guardianes se activa la primera vez que un jugador pasa a menos de 14 bloques. */
+    private static void guardians(ServerLevel level, TempleData data) {
+        List<ServerPlayer> inside = TempleService.playersInside(level, data);
+        if (inside.isEmpty()) return;
+        for (BlockPos pos : TempleService.positionsOf(level, data, com.sugar.block.GuardianNestBlock.class)) {
+            BlockState st = level.getBlockState(pos);
+            if (st.getValue(com.sugar.block.GuardianNestBlock.TRIGGERED)) continue;
+            for (ServerPlayer p : inside) {
+                if (!p.isSpectator() && !p.isCreative() && p.blockPosition().distSqr(pos) < 14 * 14) {
+                    com.sugar.block.GuardianNestBlock.trigger(level, pos, st, data);
+                    break;
+                }
+            }
+        }
     }
 
     // ---------- Guarida del Volcán ----------

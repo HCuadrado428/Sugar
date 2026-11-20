@@ -101,6 +101,16 @@ final class OotKit {
                 .setValue(LockedDoorBlock.KEYS, TempleData.BOSS_KEY);
     }
 
+    /** Nido de guardianes: 0-2 Keese de fuego / ceniza / eco, 3 guardianes del templo. */
+    static BlockState nest(int kind) {
+        return ModBlocks.GUARDIAN_NEST.get().defaultBlockState().setValue(com.sugar.block.GuardianNestBlock.KIND, kind);
+    }
+
+    /** Coloca nidos: cada entrada es {x, y, z, tipo}. */
+    static void nests(StructureBuilder b, int[][] list) {
+        for (int[] n : list) b.set(n[0], n[1], n[2], nest(n[3]));
+    }
+
     static BlockState keyChest(int key) {
         return ModBlocks.KEY_CHEST.get().defaultBlockState().setValue(KeyChestBlock.KEY, key);
     }

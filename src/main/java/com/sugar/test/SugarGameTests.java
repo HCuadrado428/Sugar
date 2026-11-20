@@ -514,6 +514,13 @@ public class SugarGameTests {
         helper.assertTrue(!doorOpen.test(0), "El camino se abre antes de /event start");
         TempleService.start(server, data);
         helper.assertTrue(doorOpen.test(0), "No se abre el camino");
+        // Nidos de guardianes: hacen salir a sus bichos y el reset los quita
+        var nests = TempleService.positionsOf(level, data, com.sugar.block.GuardianNestBlock.class);
+        helper.assertTrue(nests.size() >= 6, "Nidos de guardianes: " + nests.size());
+        BlockPos nest0 = nests.get(0);
+        com.sugar.block.GuardianNestBlock.trigger(level, nest0, level.getBlockState(nest0), data);
+        helper.assertTrue(!level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(nest0).inflate(4),
+                e -> e.getTags().contains(com.sugar.block.GuardianNestBlock.TAG)).isEmpty(), "El nido no hace salir a nadie");
         helper.assertTrue(doorOpen.test(gate), "No se abre la reja del nido");
         helper.runAfterDelay(50, () -> {
             com.sugar.block.WaveAltarBlock.activate(level, altarWave, level.getBlockState(altarWave), data);
@@ -570,6 +577,8 @@ public class SugarGameTests {
             helper.assertTrue(data.progressMask == 0 && !data.active && !data.open && data.keys == 0, "El reset no borra el progreso");
             helper.assertTrue(!doorOpen.test(com.sugar.temple.TempleObjectives.ENTRANCE), "El reset no cierra la entrada");
             helper.assertTrue(!doorOpen.test(cage), "El reset no cierra las jaulas");
+            helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(nest0).inflate(24),
+                    e -> e.getTags().contains(com.sugar.block.GuardianNestBlock.TAG)).isEmpty(), "El reset no quita a los guardianes");
             saved.remove(TempleType.CENIZA);
             for (int[] c : forced) level.setChunkForced(c[0], c[1], false);
             helper.succeed();

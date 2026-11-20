@@ -87,6 +87,8 @@ public class VolcanoTempleGenerator implements TempleGenerator {
         hiddenRoom(b);
         bossPath(b);
         lair(b);
+        OotKit.nests(b, new int[][]{{-30, F3 + 5, -27, 0}, {25, F3 + 6, -34, 0}, {0, F3 - 3, -34, 0}, {25, F2 + 1, -28, 3},
+                {17, F1 + 1, -30, 3}, {34, F1 + 5, -42, 0}, {-27, F1 + 18, -45, 0}, {0, F2 + 5, -60, 0}});
 
         return new Result(b.bounds(), feet);
     }
