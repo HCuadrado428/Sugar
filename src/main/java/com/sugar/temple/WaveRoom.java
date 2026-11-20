@@ -94,8 +94,8 @@ public final class WaveRoom {
             if (s.wave >= WAVES) {
                 it.remove();
                 level.setBlock(s.altar, level.getBlockState(s.altar).setValue(WaveAltarBlock.STATE, 2), 3);
-                if (isForge(data, s.channel)) {
-                    spawnForeman(level, data, s.altar);
+                if (s.channel == TempleObjectives.V_FORGE) {
+                    spawnGuardian(level, data, s.altar);
                 } else {
                     level.playSound(null, s.altar, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 1.0F, 1.0F);
                     TempleService.setDoors(server, data, s.channel, true);
@@ -113,6 +113,21 @@ public final class WaveRoom {
     /** La Forja del Templo del Volcán: tras las oleadas sale el Capataz. */
     private static boolean isForge(TempleData data, int channel) {
         return data.type == TempleType.VOLCAN && channel == TempleObjectives.V_FORGE;
+    }
+
+    /** El minijefe de la sala de oleadas de cada templo. */
+    public static net.minecraft.world.entity.Mob spawnGuardian(ServerLevel level, TempleData data, BlockPos altar) {
+        if (data.type == TempleType.VOLCAN) return spawnForeman(level, data, altar);
+        com.sugar.entity.TempleMiniBoss m = (data.type == TempleType.CENIZA ? ModEntities.NEST_MATRIARCH.get() : ModEntities.ECHO_KNIGHT.get()).create(level);
+        if (m == null) return null;
+        m.moveTo(altar.getX() + 0.5, altar.getY() + 0.1, altar.getZ() + 4.5, 180, 0);
+        m.scaleFor(TempleService.playersInside(level, data).size());
+        m.addTag(TAG);
+        level.addFreshEntity(m);
+        level.sendParticles(ParticleTypes.LARGE_SMOKE, m.getX(), m.getY() + 1, m.getZ(), 40, 0.8, 1.2, 0.8, 0.05);
+        level.playSound(null, altar, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.5F, 0.8F);
+        TempleStory.narrate(level, data, TempleStory.guardian(data.type));
+        return m;
     }
 
     public static com.sugar.entity.ForgeForeman spawnForeman(ServerLevel level, TempleData data, BlockPos altar) {

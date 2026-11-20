@@ -70,5 +70,15 @@ public final class ModEntities {
                     .sized(1.9F, 2.9F).fireImmune().clientTrackingRange(10)
                     .build(SugarMod.id("forge_foreman").toString()));
 
+    public static final RegistryObject<EntityType<com.sugar.entity.NestMatriarch>> NEST_MATRIARCH = ENTITIES.register("nest_matriarch",
+            () -> EntityType.Builder.of(com.sugar.entity.NestMatriarch::new, MobCategory.MONSTER)
+                    .sized(1.3F, 3.4F).fireImmune().clientTrackingRange(10)
+                    .build(SugarMod.id("nest_matriarch").toString()));
+
+    public static final RegistryObject<EntityType<com.sugar.entity.EchoKnight>> ECHO_KNIGHT = ENTITIES.register("echo_knight",
+            () -> EntityType.Builder.of(com.sugar.entity.EchoKnight::new, MobCategory.MONSTER)
+                    .sized(1.3F, 3.4F).clientTrackingRange(10)
+                    .build(SugarMod.id("echo_knight").toString()));
+
     private ModEntities() {}
 }

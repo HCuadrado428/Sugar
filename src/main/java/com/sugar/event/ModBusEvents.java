@@ -22,6 +22,8 @@ public final class ModBusEvents {
         event.put(ModEntities.ECHO_DRUMMER.get(), com.sugar.entity.EchoDrummer.createAttributes().build());
         event.put(ModEntities.DRUMMER_HAND.get(), com.sugar.entity.DrummerHand.createAttributes().build());
         event.put(ModEntities.FORGE_FOREMAN.get(), com.sugar.entity.ForgeForeman.createAttributes().build());
+        event.put(ModEntities.NEST_MATRIARCH.get(), com.sugar.entity.NestMatriarch.createAttributes().build());
+        event.put(ModEntities.ECHO_KNIGHT.get(), com.sugar.entity.EchoKnight.createAttributes().build());
     }
 
     private ModBusEvents() {}

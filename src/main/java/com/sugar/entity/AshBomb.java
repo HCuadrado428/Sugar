@@ -139,6 +139,7 @@ public class AshBomb extends ThrowableItemProjectile {
         if (level() instanceof ServerLevel sl) {
             sl.explode(this, getX(), getY() + 0.2, getZ(), 2.4F, Level.ExplosionInteraction.NONE);
             AshStatueBlock.breakAround(sl, position(), 3.0);
+            for (NestMatriarch m : sl.getEntitiesOfClass(NestMatriarch.class, getBoundingBox().inflate(3.5))) m.bombed();
             // Una explosión también enciende los interruptores de obsidiana cercanos
             BlockPos c = blockPosition();
             for (BlockPos p : BlockPos.betweenClosed(c.offset(-3, -2, -3), c.offset(3, 2, 3))) {

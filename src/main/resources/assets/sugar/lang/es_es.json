@@ -55,5 +55,7 @@
   "item.sugar.boss_key": "Llave del Jefe",
   "item.sugar.small_key.desc": "Admin: en creativo, clic derecho en una cerradura para abrirla.",
   "item.sugar.boss_key.desc": "Admin: en creativo, clic derecho en la Puerta del Jefe para abrirla.",
-  "entity.sugar.forge_foreman": "Capataz de la Forja"
+  "entity.sugar.forge_foreman": "Capataz de la Forja",
+  "entity.sugar.nest_matriarch": "Matriarca del Nido",
+  "entity.sugar.echo_knight": "Caballero del Eco"
 }

@@ -1,0 +1,621 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.echo_knight",
+    "texture_width": 128,
+    "texture_height": 128,
+    "visible_bounds_width": 2,
+    "visible_bounds_height": 3,
+    "visible_bounds_offset": [
+     0,
+     2,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "legL",
+     "pivot": [
+      2,
+      12,
+      0
+     ],
+     "parent": "root",
+     "cubes": [
+      {
+       "origin": [
+        0,
+        0,
+        -2
+       ],
+       "size": [
+        4,
+        12,
+        4
+       ],
+       "uv": [
+        106,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "name": "legR",
+     "pivot": [
+      -2,
+      12,
+      0
+     ],
+     "parent": "root",
+     "cubes": [
+      {
+       "origin": [
+        -4,
+        0,
+        -2
+       ],
+       "size": [
+        4,
+        12,
+        4
+       ],
+       "uv": [
+        0,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "name": "greaveL",
+     "pivot": [
+      2,
+      12,
+      0
+     ],
+     "parent": "legL",
+     "cubes": [
+      {
+       "origin": [
+        -1,
+        0,
+        -3
+       ],
+       "size": [
+        6,
+        7,
+        6
+       ],
+       "uv": [
+        56,
+        42
+       ]
+      }
+     ]
+    },
+    {
+     "name": "greaveR",
+     "pivot": [
+      -2,
+      12,
+      0
+     ],
+     "parent": "legR",
+     "cubes": [
+      {
+       "origin": [
+        -5,
+        0,
+        -3
+       ],
+       "size": [
+        6,
+        7,
+        6
+       ],
+       "uv": [
+        80,
+        42
+       ]
+      }
+     ]
+    },
+    {
+     "name": "body",
+     "pivot": [
+      0,
+      12,
+      0
+     ],
+     "parent": "root",
+     "cubes": [
+      {
+       "origin": [
+        -4,
+        12,
+        -2
+       ],
+       "size": [
+        8,
+        12,
+        4
+       ],
+       "uv": [
+        16,
+        26
+       ]
+      },
+      {
+       "origin": [
+        -4,
+        12,
+        -3
+       ],
+       "size": [
+        8,
+        1,
+        6
+       ],
+       "uv": [
+        52,
+        70
+       ]
+      }
+     ]
+    },
+    {
+     "name": "cape",
+     "pivot": [
+      0,
+      24,
+      3
+     ],
+     "parent": "body",
+     "cubes": [
+      {
+       "origin": [
+        -5,
+        5,
+        3
+       ],
+       "size": [
+        10,
+        19,
+        1
+       ],
+       "uv": [
+        52,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "name": "armor",
+     "pivot": [
+      0,
+      12,
+      0
+     ],
+     "parent": "body",
+     "cubes": [
+      {
+       "origin": [
+        -5,
+        13,
+        -3
+       ],
+       "size": [
+        10,
+        11,
+        6
+       ],
+       "uv": [
+        74,
+        0
+       ]
+      },
+      {
+       "origin": [
+        -5,
+        9,
+        -3
+       ],
+       "size": [
+        10,
+        4,
+        6
+       ],
+       "uv": [
+        0,
+        70
+       ]
+      }
+     ]
+    },
+    {
+     "name": "head",
+     "pivot": [
+      0,
+      24,
+      0
+     ],
+     "parent": "body",
+     "cubes": [
+      {
+       "origin": [
+        -4,
+        24,
+        -4
+       ],
+       "size": [
+        8,
+        8,
+        8
+       ],
+       "uv": [
+        40,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "name": "helm",
+     "pivot": [
+      0,
+      24,
+      0
+     ],
+     "parent": "head",
+     "cubes": [
+      {
+       "origin": [
+        -5,
+        28,
+        -5
+       ],
+       "size": [
+        10,
+        5,
+        10
+       ],
+       "uv": [
+        0,
+        42
+       ]
+      },
+      {
+       "origin": [
+        -5,
+        24,
+        -5
+       ],
+       "size": [
+        1,
+        4,
+        9
+       ],
+       "uv": [
+        104,
+        42
+       ]
+      },
+      {
+       "origin": [
+        4,
+        24,
+        -5
+       ],
+       "size": [
+        1,
+        4,
+        9
+       ],
+       "uv": [
+        0,
+        57
+       ]
+      },
+      {
+       "origin": [
+        -4,
+        24,
+        4
+       ],
+       "size": [
+        8,
+        4,
+        1
+       ],
+       "uv": [
+        0,
+        80
+       ]
+      },
+      {
+       "origin": [
+        -1,
+        33,
+        -4
+       ],
+       "size": [
+        2,
+        2,
+        8
+       ],
+       "uv": [
+        32,
+        70
+       ]
+      }
+     ]
+    },
+    {
+     "name": "armL",
+     "pivot": [
+      5,
+      22,
+      0
+     ],
+     "parent": "body",
+     "cubes": [
+      {
+       "origin": [
+        4,
+        12,
+        -2
+       ],
+       "size": [
+        4,
+        12,
+        4
+       ],
+       "uv": [
+        72,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "name": "pauldronL",
+     "pivot": [
+      5,
+      22,
+      0
+     ],
+     "parent": "armL",
+     "cubes": [
+      {
+       "origin": [
+        4,
+        20,
+        -3
+       ],
+       "size": [
+        5,
+        5,
+        6
+       ],
+       "uv": [
+        68,
+        57
+       ]
+      }
+     ]
+    },
+    {
+     "name": "vambraceL",
+     "pivot": [
+      5,
+      22,
+      0
+     ],
+     "parent": "armL",
+     "cubes": [
+      {
+       "origin": [
+        3,
+        12,
+        -3
+       ],
+       "size": [
+        6,
+        6,
+        6
+       ],
+       "uv": [
+        20,
+        57
+       ]
+      }
+     ]
+    },
+    {
+     "name": "armR",
+     "pivot": [
+      -5,
+      22,
+      0
+     ],
+     "parent": "body",
+     "cubes": [
+      {
+       "origin": [
+        -8,
+        12,
+        -2
+       ],
+       "size": [
+        4,
+        12,
+        4
+       ],
+       "uv": [
+        88,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "name": "pauldronR",
+     "pivot": [
+      -5,
+      22,
+      0
+     ],
+     "parent": "armR",
+     "cubes": [
+      {
+       "origin": [
+        -9,
+        20,
+        -3
+       ],
+       "size": [
+        5,
+        5,
+        6
+       ],
+       "uv": [
+        90,
+        57
+       ]
+      }
+     ]
+    },
+    {
+     "name": "vambraceR",
+     "pivot": [
+      -5,
+      22,
+      0
+     ],
+     "parent": "armR",
+     "cubes": [
+      {
+       "origin": [
+        -9,
+        12,
+        -3
+       ],
+       "size": [
+        6,
+        6,
+        6
+       ],
+       "uv": [
+        44,
+        57
+       ]
+      }
+     ]
+    },
+    {
+     "name": "axe",
+     "pivot": [
+      -6,
+      13,
+      0
+     ],
+     "parent": "armR",
+     "cubes": [
+      {
+       "origin": [
+        -7,
+        12,
+        -18
+       ],
+       "size": [
+        2,
+        2,
+        24
+       ],
+       "uv": [
+        0,
+        0
+       ]
+      },
+      {
+       "origin": [
+        -7,
+        5,
+        -22
+       ],
+       "size": [
+        2,
+        9,
+        6
+       ],
+       "uv": [
+        40,
+        42
+       ]
+      },
+      {
+       "origin": [
+        -7,
+        3,
+        -23
+       ],
+       "size": [
+        2,
+        3,
+        4
+       ],
+       "uv": [
+        80,
+        70
+       ]
+      },
+      {
+       "origin": [
+        -7,
+        14,
+        -21
+       ],
+       "size": [
+        2,
+        3,
+        3
+       ],
+       "uv": [
+        92,
+        70
+       ]
+      },
+      {
+       "origin": [
+        -8,
+        11,
+        -15
+       ],
+       "size": [
+        4,
+        4,
+        2
+       ],
+       "uv": [
+        102,
+        70
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

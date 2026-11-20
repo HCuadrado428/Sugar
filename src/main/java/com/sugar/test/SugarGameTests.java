@@ -180,6 +180,26 @@ public class SugarGameTests {
         });
     }
 
+    /** El Caballero del Eco aparece, termina su presentación y pierde la armadura a media vida. */
+    @GameTest(template = "empty", timeoutTicks = 300)
+    public static void echoKnightBreaksArmor(GameTestHelper helper) {
+        com.sugar.entity.EchoKnight k = ModEntities.ECHO_KNIGHT.get().create(helper.getLevel());
+        helper.assertTrue(k != null, "No se pudo crear el Caballero");
+        BlockPos p = helper.absolutePos(new BlockPos(1, 2, 1));
+        k.moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
+        k.scaleFor(10);
+        helper.getLevel().addFreshEntity(k);
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(k.phase() != com.sugar.entity.TempleMiniBoss.INTRO, "No termina la presentación");
+            k.setHealth(k.getMaxHealth() * 0.4F);
+        });
+        helper.runAfterDelay(140, () -> {
+            helper.assertTrue(k.broken(), "No pierde la armadura a media vida");
+            k.discard();
+            helper.succeed();
+        });
+    }
+
     private static boolean doorsOpen(ServerLevel level, TempleData data, int channel) {
         boolean any = false;
         for (BlockPos p : TempleService.positionsOf(level, data, EventDoorBlock.class)) {
@@ -515,7 +535,14 @@ public class SugarGameTests {
             });
         }
         helper.runAfterDelay(50 + 80 * 3 + 20, () -> {
-            helper.assertTrue(doorOpen.test(cage) && data.isDone(cage), "Superar las oleadas no abre la jaula del Gran Cofre");
+            // Tras las oleadas sale la Matriarca; al morir se abre la sala
+            var mats = level.getEntitiesOfClass(com.sugar.entity.NestMatriarch.class, new net.minecraft.world.phys.AABB(altarWave).inflate(16));
+            helper.assertTrue(!mats.isEmpty(), "No sale la Matriarca del Nido");
+            helper.assertTrue(!doorOpen.test(cage), "La jaula se abre antes de vencer a la Matriarca");
+            mats.forEach(net.minecraft.world.entity.LivingEntity::kill);
+        });
+        helper.runAfterDelay(50 + 80 * 3 + 80, () -> {
+            helper.assertTrue(doorOpen.test(cage) && data.isDone(cage), "Vencer a la Matriarca no abre la jaula del Gran Cofre");
             helper.assertTrue(doorOpen.test(gate), "La reja del nido no se vuelve a abrir");
             // Reliquias: al encontrar las tres se abre el tesoro
             for (BlockPos r : TempleService.positionsOf(level, data, com.sugar.block.RelicBlock.class))
@@ -537,7 +564,7 @@ public class SugarGameTests {
             helper.assertTrue(com.sugar.block.LockedDoorBlock.tryUnlock(level, bossLock, level.getBlockState(bossLock), data), "No se abre la puerta del jefe");
             helper.assertTrue(TempleService.summonBoss(level, data, e -> {}) != null, "No despierta el jefe");
         });
-        helper.runAfterDelay(50 + 80 * 3 + 20 + 120, () -> {
+        helper.runAfterDelay(50 + 80 * 3 + 80 + 120, () -> {
             helper.assertTrue(TempleService.findBoss(level, data) != null, "El jefe ha desaparecido");
             TempleService.reset(server, data);
             helper.assertTrue(data.progressMask == 0 && !data.active && !data.open && data.keys == 0, "El reset no borra el progreso");
