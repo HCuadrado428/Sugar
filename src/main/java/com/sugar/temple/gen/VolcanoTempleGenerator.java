@@ -471,7 +471,9 @@ public class VolcanoTempleGenerator implements TempleGenerator {
         for (int xi = 0; xi < 3; xi++)
             for (int zi = 0; zi < 3; zi++) {
                 int x = xs[xi], z = zs[zi], top = F3 + 2 + (xi + zi) % 2;
-                b.fill(x - 1, top, z - 1, x + 1, top, z + 1, Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
+                BlockState plat = zi == 0 ? ModBlocks.BLINK_PLATFORM.get().defaultBlockState().setValue(com.sugar.block.BlinkPlatformBlock.PHASE, xi % 2)
+                        : Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+                b.fill(x - 1, top, z - 1, x + 1, top, z + 1, plat);
                 for (int y = top + 1; y < F3 + 11; y++) { b.set(x - 1, y, z - 1, Blocks.CHAIN); b.set(x + 1, y, z + 1, Blocks.CHAIN); }
                 if (zi == 1) b.set(x, top, z, ModBlocks.FIRE_GEYSER.get().defaultBlockState().setValue(FireGeyserBlock.PHASE, k++ % 4));
             }
@@ -510,10 +512,10 @@ public class VolcanoTempleGenerator implements TempleGenerator {
             int top = Math.min(F2 + 5, F2 + 1 + (x - 16));
             b.fill(x, F2 + 1, -25, x, top, -24, step);
         }
-        BlockState seal = ModBlocks.EVENT_SWITCH.get().defaultBlockState().setValue(EventSwitchBlock.CHANNEL, V_SEALS);
-        b.set(29, F2 + 3, -44, seal);
-        b.set(29, F2 + 6, -24, seal);
-        b.set(35, F2 + 1, -34, seal);
+        // Puzle de bloques: tres bloques de piedra que hay que empujar hasta sus baldosas
+        BlockState target = ModBlocks.PUSH_TARGET.get().defaultBlockState().setValue(com.sugar.block.PushTargetBlock.CHANNEL, V_SEALS);
+        for (int[] t : new int[][]{{19, -41}, {31, -41}, {31, -27}}) b.set(t[0], F2, t[1], target);
+        for (int[] p : new int[][]{{19, -36}, {27, -41}, {31, -31}}) b.set(p[0], F2 + 1, p[1], ModBlocks.PUSH_BLOCK.get());
         b.set(25, F2 + 1, -34, keyChest(2));
         cage(b, 25, F2 + 1, -34, V_SEALS);
         for (int[] l : new int[][]{{20, -34}, {31, -34}, {25, -40}, {25, -28}}) b.set(l[0], F2 + 9, l[1], Blocks.SHROOMLIGHT);

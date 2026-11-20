@@ -84,7 +84,10 @@ public class SugarGameTests {
         helper.assertTrue(bigChests == 3, "Grandes Cofres: " + bigChests);
         helper.assertTrue(locks == 27 + 12, "Bloques de cerradura (3 puertas + la del jefe): " + locks);
         helper.assertTrue(hammerSwitches == 6, "Interruptores de obsidiana: " + hammerSwitches);
-        helper.assertTrue(seals == 3, "Sellos: " + seals);
+        helper.assertTrue(seals == 0, "Sellos: " + seals);
+        int targets = TempleService.positionsOf(level, data, com.sugar.block.PushTargetBlock.class).size();
+        int pushes = TempleService.positionsOf(level, data, com.sugar.block.PushBlock.class).size();
+        helper.assertTrue(targets == 3 && pushes == 3, "Puzle de bloques: " + pushes + " bloques y " + targets + " baldosas");
         helper.assertTrue(plates == 8, "Placas: " + plates);
         helper.assertTrue(relics == 3, "Reliquias: " + relics);
         helper.assertTrue(altars == 1, "Altares de oleadas: " + altars);
@@ -107,6 +110,20 @@ public class SugarGameTests {
         helper.assertTrue(!com.sugar.block.LockedDoorBlock.tryUnlock(level, bridgeLock, level.getBlockState(bridgeLock), data), "La cerradura doble se abre con una llave");
         openKeyChest(level, data, 3);
         helper.assertTrue(com.sugar.block.LockedDoorBlock.tryUnlock(level, bridgeLock, level.getBlockState(bridgeLock), data), "Las llaves 2 y 3 no abren el puente");
+
+        // Bloques empujables: llevarlos a sus baldosas abre la jaula de la Llave 2
+        var pushBlocks = TempleService.positionsOf(level, data, com.sugar.block.PushBlock.class);
+        BlockPos b0 = pushBlocks.stream().filter(p -> p.getX() == pushBlocks.stream().mapToInt(BlockPos::getX).min().getAsInt()).findFirst().orElseThrow();
+        for (int i = 0; i < 5; i++) com.sugar.block.PushBlock.push(level, b0.north(i), net.minecraft.core.Direction.NORTH, data);
+        helper.assertTrue(level.getBlockState(b0.north(5)).getBlock() instanceof com.sugar.block.PushBlock, "El bloque empujable no se mueve");
+        helper.assertTrue(level.getBlockState(b0.north(5).below()).getValue(com.sugar.block.PushTargetBlock.LIT), "La baldosa no se enciende");
+        for (BlockPos t : TempleService.positionsOf(level, data, com.sugar.block.PushTargetBlock.class)) {
+            if (level.getBlockState(t.above()).isAir()) {
+                level.setBlock(t.above(), com.sugar.registry.ModBlocks.PUSH_BLOCK.get().defaultBlockState(), 3);
+            }
+        }
+        com.sugar.block.PushTargetBlock.check(level, data);
+        helper.assertTrue(data.isDone(com.sugar.temple.TempleObjectives.V_SEALS), "Las tres baldosas no abren la jaula");
 
         // El Puente vacía el lago
         TempleService.setDoors(server, data, com.sugar.temple.TempleObjectives.V_BRIDGE, true);
@@ -266,7 +283,7 @@ public class SugarGameTests {
         helper.assertTrue(data.altar != null, "Falta el altar");
         int statues = TempleService.positionsOf(level, data, AshStatueBlock.class).size();
         helper.assertTrue(statues > 300, "Estatuas: " + statues);
-        checkOot(helper, level, data, 3, 6);
+        checkOot(helper, level, data, 0, 6);
 
         int acx = data.altar.getX() >> 4, acz = data.altar.getZ() >> 4;
         for (int cx = acx - 2; cx <= acx + 2; cx++)

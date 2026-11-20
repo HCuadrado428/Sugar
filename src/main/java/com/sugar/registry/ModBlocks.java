@@ -163,5 +163,19 @@ public final class ModBlocks {
     public static final RegistryObject<Block> GUARDIAN_NEST = BLOCKS.register("guardian_nest",
             () -> new com.sugar.block.GuardianNestBlock(eventBlock(MapColor.NONE).noCollission().noOcclusion()));
 
+    public static final RegistryObject<Block> PUSH_BLOCK = BLOCKS.register("push_block",
+            () -> new com.sugar.block.PushBlock(eventBlock(MapColor.STONE).sound(SoundType.STONE)));
+    public static final RegistryObject<Block> PUSH_TARGET = BLOCKS.register("push_target",
+            () -> new com.sugar.block.PushTargetBlock(eventBlock(MapColor.STONE).sound(SoundType.STONE)
+                    .lightLevel(s -> s.getValue(com.sugar.block.PushTargetBlock.LIT) ? 10 : 0)));
+    public static final RegistryObject<Block> BRAZIER = BLOCKS.register("brazier",
+            () -> new com.sugar.block.BrazierBlock(eventBlock(MapColor.STONE).sound(SoundType.STONE).noOcclusion()
+                    .lightLevel(s -> s.getValue(com.sugar.block.BrazierBlock.LIT) ? 15 : 0)));
+    public static final RegistryObject<Block> EYE_SWITCH = BLOCKS.register("eye_switch",
+            () -> new com.sugar.block.EyeSwitchBlock(eventBlock(MapColor.STONE).sound(SoundType.STONE)
+                    .lightLevel(s -> s.getValue(EventSwitchBlock.ACTIVE) ? 10 : 0)));
+    public static final RegistryObject<Block> BLINK_PLATFORM = BLOCKS.register("blink_platform",
+            () -> new com.sugar.block.BlinkPlatformBlock(eventBlock(MapColor.COLOR_PURPLE).sound(SoundType.AMETHYST).noOcclusion().lightLevel(s -> 6)));
+
     private ModBlocks() {}
 }

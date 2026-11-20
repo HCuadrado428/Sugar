@@ -59,5 +59,10 @@
   "entity.sugar.nest_matriarch": "Nest Matriarch",
   "entity.sugar.echo_knight": "Echo Knight",
   "block.sugar.guardian_nest": "Guardian Nest",
-  "entity.sugar.keese": "Keese"
+  "entity.sugar.keese": "Keese",
+  "block.sugar.push_block": "Push Block",
+  "block.sugar.push_target": "Target Tile",
+  "block.sugar.brazier": "Temple Brazier",
+  "block.sugar.eye_switch": "Stone Eye",
+  "block.sugar.blink_platform": "Blinking Platform"
 }

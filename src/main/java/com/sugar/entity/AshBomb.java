@@ -140,6 +140,11 @@ public class AshBomb extends ThrowableItemProjectile {
             sl.explode(this, getX(), getY() + 0.2, getZ(), 2.4F, Level.ExplosionInteraction.NONE);
             AshStatueBlock.breakAround(sl, position(), 3.0);
             for (NestMatriarch m : sl.getEntitiesOfClass(NestMatriarch.class, getBoundingBox().inflate(3.5))) m.bombed();
+            for (BlockPos bp : BlockPos.betweenClosed(blockPosition().offset(-3, -2, -3), blockPosition().offset(3, 2, 3))) {
+                var bs = sl.getBlockState(bp);
+                if (bs.getBlock() instanceof com.sugar.block.BrazierBlock && !bs.getValue(com.sugar.block.BrazierBlock.LIT))
+                    com.sugar.block.BrazierBlock.light(sl, bp.immutable(), bs);
+            }
             // Una explosión también enciende los interruptores de obsidiana cercanos
             BlockPos c = blockPosition();
             for (BlockPos p : BlockPos.betweenClosed(c.offset(-3, -2, -3), c.offset(3, 2, 3))) {

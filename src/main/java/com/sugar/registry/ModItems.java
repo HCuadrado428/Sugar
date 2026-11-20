@@ -65,6 +65,11 @@ public final class ModItems {
     public static final RegistryObject<Item> HAMMER_SWITCH = blockItem("hammer_switch", ModBlocks.HAMMER_SWITCH);
     public static final RegistryObject<Item> MAGMA_LAKE = blockItem("magma_lake", ModBlocks.MAGMA_LAKE);
     public static final RegistryObject<Item> GUARDIAN_NEST = blockItem("guardian_nest", ModBlocks.GUARDIAN_NEST);
+    public static final RegistryObject<Item> PUSH_BLOCK = blockItem("push_block", ModBlocks.PUSH_BLOCK);
+    public static final RegistryObject<Item> PUSH_TARGET = blockItem("push_target", ModBlocks.PUSH_TARGET);
+    public static final RegistryObject<Item> BRAZIER = blockItem("brazier", ModBlocks.BRAZIER);
+    public static final RegistryObject<Item> EYE_SWITCH = blockItem("eye_switch", ModBlocks.EYE_SWITCH);
+    public static final RegistryObject<Item> BLINK_PLATFORM = blockItem("blink_platform", ModBlocks.BLINK_PLATFORM);
     /** Llaves para admins: en creativo, clic derecho en una cerradura para abrirla sin el grupo. */
     public static final RegistryObject<Item> SMALL_KEY = ITEMS.register("small_key",
             () -> new TrophyItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), "item.sugar.small_key.desc"));

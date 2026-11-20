@@ -250,8 +250,12 @@ public class EchoTempleGenerator implements TempleGenerator {
         b.fill(21, F1 + 1, 32, 39, F1 + 6, 32, w);
         b.fill(17, F1 + 1, 37, 25, F1 + 6, 37, w);
         b.fill(31, F1 + 1, 37, 39, F1 + 6, 37, w);
-        BlockState seal = ModBlocks.EVENT_SWITCH.get().defaultBlockState().setValue(EventSwitchBlock.CHANNEL, V_SWITCHES);
-        for (int[] s : new int[][]{{17, 23}, {39, 28}, {17, 30}, {39, 35}, {17, 41}, {39, 41}}) b.set(s[0], F1 + 1, s[1], seal);
+        // Seis ojos de piedra: hay que dispararles a todos en menos de 10 s
+        BlockState eye = ModBlocks.EYE_SWITCH.get().defaultBlockState().setValue(EventSwitchBlock.CHANNEL, V_SWITCHES);
+        for (int[] s : new int[][]{{17, 23}, {39, 28}, {17, 30}, {39, 35}, {17, 41}, {39, 41}}) {
+            b.set(s[0], F1 + 1, s[1], Blocks.DEEPSLATE_BRICKS);
+            b.set(s[0], F1 + 2, s[1], eye);
+        }
         b.set(28, F1 + 1, 40, OotKit.bigChest(BigChestBlock.BOSS_KEY));
         k.cage(28, F1 + 1, 40, V_SWITCHES);
         for (int[] c : new int[][]{{28, 23}, {28, 29}, {28, 35}}) b.set(c[0], F1 + 6, c[1], lantern());

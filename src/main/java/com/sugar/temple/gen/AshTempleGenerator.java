@@ -140,10 +140,12 @@ public class AshTempleGenerator implements TempleGenerator {
         b.fill(42, F2 + 1, -5, 42, F2 + 1, -4, step);
         b.fill(43, F2 + 1, -5, 57, F2 + 2, -4, step);
         for (int x = 42; x <= 57; x++) b.fill(x, F2 + 1, 14, x, Math.min(F2 + 5, F2 + 1 + (x - 42)), 15, step);
-        BlockState seal = ModBlocks.EVENT_SWITCH.get().defaultBlockState().setValue(EventSwitchBlock.CHANNEL, V_SEALS);
-        b.set(56, F2 + 3, -5, seal);
-        b.set(56, F2 + 6, 15, seal);
-        b.set(61, F2 + 1, 5, seal);
+        // Cuatro braseros que hay que encender casi a la vez (antorchas, flechas en llamas o bombas)
+        BlockState brazier = ModBlocks.BRAZIER.get().defaultBlockState().setValue(com.sugar.block.BrazierBlock.CHANNEL, V_SEALS);
+        b.set(56, F2 + 3, -5, brazier);
+        b.set(56, F2 + 6, 15, brazier);
+        b.set(61, F2 + 1, 5, brazier);
+        b.set(44, F2 + 1, 5, brazier);
         for (int z : new int[]{-2, 12}) b.fill(48, F2 + 1, z, 54, F2 + 1, z, Blocks.RAIL.defaultBlockState());
         b.set(51, F2 + 1, 5, OotKit.keyChest(2));
         k.cage(51, F2 + 1, 5, V_SEALS);
@@ -159,7 +161,8 @@ public class AshTempleGenerator implements TempleGenerator {
         b.fill(25, F1 + 1, -9, 27, F1 + 3, -9, ModBlocks.ASH_STATUE.get().defaultBlockState());   // muro que hay que volar
         // Foso de lava de lado a lado con un puente que se hunde
         b.fill(15, F1 - 1, -22, 37, F1, -17, ModBlocks.RISING_MAGMA.get().defaultBlockState());
-        b.fill(25, F1, -22, 27, F1, -17, ModBlocks.CRUMBLING_BASALT.get().defaultBlockState());
+        for (int z = -22; z <= -17; z++)
+            b.fill(25, F1, z, 27, F1, z, ModBlocks.BLINK_PLATFORM.get().defaultBlockState().setValue(com.sugar.block.BlinkPlatformBlock.PHASE, Math.floorMod(z, 2)));
         for (int x = 16; x <= 36; x++) b.set(x, F1 + 1, -12, Blocks.RAIL);
         for (int z = -16; z >= -28; z--) b.set(16, F1 + 1, z, Blocks.RAIL);
         for (int x : new int[]{20, 32}) { b.set(x, F1 + 9, -20, ModBlocks.ROCKFALL.get()); b.fill(x, F1 + 1, -14, x, F1 + 8, -14, Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState()); }

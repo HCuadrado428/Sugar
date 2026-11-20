@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "sugar:block/push_target"
+    },
+    "lit=true": {
+      "model": "sugar:block/push_target_on"
+    }
+  }
+}

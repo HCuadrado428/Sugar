@@ -59,6 +59,9 @@ public final class TempleEvents {
             if (!data.active) continue;
             summonDelay(level, data);
             if (tick % 40 == 0) guardians(level, data);
+            if (tick % 5 == 0)
+                for (BlockPos p : TempleService.positionsOf(level, data, com.sugar.block.BlinkPlatformBlock.class))
+                    com.sugar.block.BlinkPlatformBlock.update(level, p, level.getBlockState(p), level.getGameTime());
             if (tick % 5 == 0) plates(level, data);
             if (tick % 20 == 0) lairQuorum(level, data);
         }

@@ -43,6 +43,8 @@ public class TempleData {
     /** Quién ha sacado ya su objeto de cada Gran Cofre (posición → jugadores). */
     public final Map<Long, Set<UUID>> chestClaims = new HashMap<>();
     public static final int BOSS_KEY = 1 << 4;
+    /** Bloques empujables que se han movido: posición actual → posición original (para el reset). */
+    public final Map<Long, Long> pushHome = new HashMap<>();
     // Sin guardar: cuentas atrás en ticks
     public transient int countdown;
     public transient int summonCountdown;
@@ -131,6 +133,9 @@ public class TempleData {
             chests.add(c);
         }));
         tag.put("chests", chests);
+        ListTag pushes = new ListTag();
+        pushHome.forEach((cur, home) -> { CompoundTag c = new CompoundTag(); c.putLong("cur", cur); c.putLong("home", home); pushes.add(c); });
+        tag.put("pushes", pushes);
         return tag;
     }
 
@@ -171,6 +176,8 @@ public class TempleData {
             CompoundTag c = chests.getCompound(i);
             data.chestClaims.computeIfAbsent(c.getLong("pos"), k -> new HashSet<>()).add(c.getUUID("player"));
         }
+        ListTag pushes = tag.getList("pushes", Tag.TAG_COMPOUND);
+        for (int i = 0; i < pushes.size(); i++) data.pushHome.put(pushes.getCompound(i).getLong("cur"), pushes.getCompound(i).getLong("home"));
         return data;
     }
 }

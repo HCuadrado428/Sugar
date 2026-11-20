@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "sugar:block/eye_switch_off"
+    },
+    "active=true": {
+      "model": "sugar:block/eye_switch_on"
+    }
+  }
+}
