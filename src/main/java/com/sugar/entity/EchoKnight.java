@@ -22,7 +22,7 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 /**
  * Caballero del Eco: minijefe del Santuario del Eco. Lento y blindado: de frente su armadura para casi todo el
  * daño (mejor rodearlo o atacarle mientras golpea). Hachazo que hace temblar el suelo y barrido. A media vida
- * la armadura salta en pedazos: se queda con el jubón, más rápido y sin defensa.
+ * la armadura salta en pedazos: queda el esqueleto, más rápido y sin defensa.
  */
 public class EchoKnight extends TempleMiniBoss {
     public static final int CHOP = 2, SWEEP = 3, BREAK = 4;
@@ -179,7 +179,7 @@ public class EchoKnight extends TempleMiniBoss {
         if (broken()) { getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3); getAttribute(Attributes.ARMOR).setBaseValue(4.0); }
     }
 
-    @Override protected SoundEvent getAmbientSound() { return SoundEvents.WARDEN_AMBIENT; }
-    @Override protected SoundEvent getHurtSound(DamageSource source) { return broken() ? SoundEvents.PLAYER_HURT : SoundEvents.IRON_GOLEM_HURT; }
+    @Override protected SoundEvent getAmbientSound() { return broken() ? SoundEvents.SKELETON_AMBIENT : SoundEvents.WARDEN_AMBIENT; }
+    @Override protected SoundEvent getHurtSound(DamageSource source) { return broken() ? SoundEvents.SKELETON_HURT : SoundEvents.IRON_GOLEM_HURT; }
     @Override protected SoundEvent getDeathSound() { return SoundEvents.WARDEN_DEATH; }
 }
