@@ -72,7 +72,7 @@ public final class ModEntities {
 
     public static final RegistryObject<EntityType<com.sugar.entity.NestMatriarch>> NEST_MATRIARCH = ENTITIES.register("nest_matriarch",
             () -> EntityType.Builder.of(com.sugar.entity.NestMatriarch::new, MobCategory.MONSTER)
-                    .sized(1.3F, 3.4F).fireImmune().clientTrackingRange(10)
+                    .sized(2.4F, 2.0F).fireImmune().clientTrackingRange(10)
                     .build(SugarMod.id("nest_matriarch").toString()));
 
     public static final RegistryObject<EntityType<com.sugar.entity.EchoKnight>> ECHO_KNIGHT = ENTITIES.register("echo_knight",

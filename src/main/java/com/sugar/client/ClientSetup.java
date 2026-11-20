@@ -24,7 +24,7 @@ public final class ClientSetup {
         event.registerEntityRenderer(ModEntities.ECHO_DRUMMER.get(), EchoDrummerRenderer::new);
         event.registerEntityRenderer(ModEntities.DRUMMER_HAND.get(), DrummerHandRenderer::new);
         event.registerEntityRenderer(ModEntities.FORGE_FOREMAN.get(), ForgeForemanRenderer::new);
-        event.registerEntityRenderer(ModEntities.NEST_MATRIARCH.get(), ctx -> new MiniBossRenderer<>(ctx, "nest_matriarch", 1.6F));
+        event.registerEntityRenderer(ModEntities.NEST_MATRIARCH.get(), ctx -> new MiniBossRenderer<>(ctx, "nest_matriarch", 1.3F));
         event.registerEntityRenderer(ModEntities.ECHO_KNIGHT.get(), ctx -> new MiniBossRenderer<>(ctx, "echo_knight", 1.7F));
         event.registerBlockEntityRenderer(ModBlockEntities.ECHO_PLATFORM.get(), EchoPlatformRenderer::new);
     }

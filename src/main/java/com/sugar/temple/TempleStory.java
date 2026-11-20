@@ -141,7 +141,7 @@ public final class TempleStory {
     /** Minijefe de la sala de oleadas. */
     public static String guardian(TempleType t) {
         return switch (t) {
-            case CENIZA -> "Del fondo del nido sale una mujer de ceniza con una corona de cuernos. Las crías se apartan a su paso: es su madre.";
+            case CENIZA -> "El suelo del nido se agrieta y sale un lagarto enorme, con el lomo al rojo. Las crías se apartan a su paso: es su madre.";
             case ECO -> "Una de las tumbas se abre. Un caballero se levanta despacio, con la armadura cubierta de sculk y un hacha en la mano.";
             default -> foreman();
         };
