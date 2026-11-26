@@ -71,6 +71,22 @@ public final class ModItems {
     public static final RegistryObject<Item> EYE_SWITCH = blockItem("eye_switch", ModBlocks.EYE_SWITCH);
     public static final RegistryObject<Item> BLINK_PLATFORM = blockItem("blink_platform", ModBlocks.BLINK_PLATFORM);
     /** Llaves para admins: en creativo, clic derecho en una cerradura para abrirla sin el grupo. */
+    public static final RegistryObject<Item> GEM_SERPENT = ITEMS.register("gem_serpent",
+            () -> new TrophyItem(new Item.Properties().stacksTo(64).rarity(Rarity.EPIC).fireResistant(), "item.sugar.gem_serpent.desc"));
+    public static final RegistryObject<Item> GEM_BEAST = ITEMS.register("gem_beast",
+            () -> new TrophyItem(new Item.Properties().stacksTo(64).rarity(Rarity.EPIC).fireResistant(), "item.sugar.gem_beast.desc"));
+    public static final RegistryObject<Item> GEM_DRUMMER = ITEMS.register("gem_drummer",
+            () -> new TrophyItem(new Item.Properties().stacksTo(64).rarity(Rarity.EPIC).fireResistant(), "item.sugar.gem_drummer.desc"));
+
+    /** La gema dedicada al jefe de cada templo. */
+    public static Item gemFor(com.sugar.temple.TempleType type) {
+        return switch (type) {
+            case VOLCAN -> GEM_SERPENT.get();
+            case CENIZA -> GEM_BEAST.get();
+            case ECO -> GEM_DRUMMER.get();
+        };
+    }
+
     public static final RegistryObject<Item> HEART_CONTAINER = ITEMS.register("heart_container",
             () -> new com.sugar.item.HeartContainerItem(new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC)));
     public static final RegistryObject<Item> SMALL_KEY = ITEMS.register("small_key",

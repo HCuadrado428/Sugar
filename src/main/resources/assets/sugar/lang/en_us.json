@@ -65,5 +65,11 @@
   "block.sugar.brazier": "Temple Brazier",
   "block.sugar.eye_switch": "Stone Eye",
   "block.sugar.blink_platform": "Blinking Platform",
-  "item.sugar.heart_container": "Heart Container"
+  "item.sugar.heart_container": "Heart Container",
+  "item.sugar.gem_serpent": "Serpent Gem",
+  "item.sugar.gem_serpent.desc": "Admin gem: the Magma Serpent has fallen",
+  "item.sugar.gem_beast": "Beast Gem",
+  "item.sugar.gem_beast.desc": "Admin gem: the Great Ash Beast has fallen",
+  "item.sugar.gem_drummer": "Drummer Gem",
+  "item.sugar.gem_drummer.desc": "Admin gem: the Drummer has fallen"
 }

@@ -201,6 +201,7 @@ Configurable en `config/sugar-common.toml`:
 - Reciben recompensa quienes hagan al menos el 1% del daño total y, opcionalmente, todos los que estén vivos en el templo.
 - Los 3 que más daño hacen reciben además la recompensa MVP.
 - Tablas de botín: `data/sugar/loot_tables/bosses/<boss>_participante.json` y `<boss>_mvp.json` (se pueden cambiar con un datapack).
+- Cuando cae un jefe, cada jugador en **creativo** conectado al servidor (los admins) recibe la gema de ese jefe: **Gema de la Sierpe**, **Gema de la Bestia** o **Gema del Tamborilero**.
 - Cada jugador dentro del templo cuando cae el jefe recibe un **Contenedor de Corazón**: +1 corazón de vida máxima para siempre (máximo 3, uno por templo). Se mantiene al morir.
 - Tras las oleadas de la sala del Gran Cofre aparece un **minijefe**: el Capataz de Obsidiana (Volcán), la Matriarca del Nido (Ceniza; aturdidla con una bomba) y el Caballero del Eco (Eco; solo recibe daño por la espalda o al atacar, y a media vida pierde la armadura y queda el esqueleto).
 

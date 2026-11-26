@@ -216,9 +216,26 @@ public final class TempleService {
         TempleSavedData.get(level.getServer()).setDirty();
         TempleStory.narrate(level, data, TempleStory.ending(data.type));
         for (ServerPlayer p : playersInside(level, data))
-            com.sugar.item.HeartContainerItem.reward(p, new net.minecraft.world.item.ItemStack(com.sugar.registry.ModItems.HEART_CONTAINER.get()));
+            if (!p.isCreative())
+                com.sugar.item.HeartContainerItem.reward(p, new net.minecraft.world.item.ItemStack(com.sugar.registry.ModItems.HEART_CONTAINER.get()));
+        giveGems(level, data);
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal(TempleStory.rumour(data.type)).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
+    }
+
+    /** Al caer el jefe, cada jugador en creativo del servidor (los admins) recibe la gema dedicada a ese jefe. */
+    public static int giveGems(ServerLevel level, TempleData data) {
+        int n = 0;
+        for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) {
+            if (!p.isCreative()) continue;
+            com.sugar.item.HeartContainerItem.reward(p, new net.minecraft.world.item.ItemStack(com.sugar.registry.ModItems.gemFor(data.type)));
+            p.sendSystemMessage(Component.literal("💎 Recibes la ").withStyle(ChatFormatting.LIGHT_PURPLE)
+                    .append(Component.translatable(com.sugar.registry.ModItems.gemFor(data.type).getDescriptionId()).withStyle(data.type.color(), ChatFormatting.BOLD))
+                    .append(Component.literal(" por la caída de ").withStyle(ChatFormatting.LIGHT_PURPLE))
+                    .append(data.type.bossDisplayName()));
+            n++;
+        }
+        return n;
     }
 
     /** Invoca al jefe del templo en el altar con su presentación. Devuelve null y explica el motivo si no puede. */

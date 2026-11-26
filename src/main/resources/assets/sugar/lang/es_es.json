@@ -65,5 +65,11 @@
   "block.sugar.brazier": "Brasero del Templo",
   "block.sugar.eye_switch": "Ojo de Piedra",
   "block.sugar.blink_platform": "Plataforma Intermitente",
-  "item.sugar.heart_container": "Contenedor de Corazón"
+  "item.sugar.heart_container": "Contenedor de Corazón",
+  "item.sugar.gem_serpent": "Gema de la Sierpe",
+  "item.sugar.gem_serpent.desc": "Gema de admin: la Sierpe de Magma ha caído",
+  "item.sugar.gem_beast": "Gema de la Bestia",
+  "item.sugar.gem_beast.desc": "Gema de admin: la Gran Bestia de Ceniza ha caído",
+  "item.sugar.gem_drummer": "Gema del Tamborilero",
+  "item.sugar.gem_drummer.desc": "Gema de admin: El Tamborilero ha caído"
 }

@@ -207,6 +207,9 @@ public class SugarGameTests {
         heart.getItem().use(helper.getLevel(), pl, net.minecraft.world.InteractionHand.MAIN_HAND);
         helper.assertTrue(pl.getMaxHealth() == before + 2.0F, "El corazón no sube la vida: " + before + " -> " + pl.getMaxHealth());
         helper.assertTrue(com.sugar.item.HeartContainerItem.hearts(pl) == 1, "El corazón no se guarda");
+        // Cada jefe tiene su propia gema para los admins
+        var gems = java.util.Arrays.stream(com.sugar.temple.TempleType.values()).map(com.sugar.registry.ModItems::gemFor).distinct().count();
+        helper.assertTrue(gems == com.sugar.temple.TempleType.values().length, "Las gemas de los jefes no son distintas");
         helper.succeed();
     }
 
