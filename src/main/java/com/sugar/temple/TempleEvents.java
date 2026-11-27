@@ -56,6 +56,7 @@ public final class TempleEvents {
         for (TempleData data : TempleSavedData.get(server).all()) {
             ServerLevel level = TempleService.levelOf(server, data);
             if (level == null) continue;
+            if (tick % 40 == 0 && (data.open || data.active)) ShaderControl.tick(level, data);
             if (!data.active) continue;
             summonDelay(level, data);
             if (tick % 40 == 0) guardians(level, data);

@@ -105,6 +105,7 @@ public final class TempleService {
         if (level == null) return;
         data.startTime = level.getGameTime();
         TempleSavedData.get(server).setDirty();
+        ShaderControl.start(level, data);
         TempleStory.narrate(level, data, TempleStory.opening(data.type));
     }
 
@@ -115,6 +116,7 @@ public final class TempleService {
         data.summonCountdown = 0;
         data.checkpoints.clear();
         TempleSavedData.get(server).setDirty();
+        ShaderControl.restore(server, data);
         server.getPlayerList().broadcastSystemMessage(Component.literal("Las puertas de ").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)
                 .append(data.type.displayName())
                 .append(Component.literal(" vuelven a cerrarse.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)), false);
@@ -122,6 +124,7 @@ public final class TempleService {
 
     /** Deja el templo como nuevo: puertas cerradas, bloques restaurados, sin boss ni checkpoints. */
     public static void reset(MinecraftServer server, TempleData data) {
+        ShaderControl.restore(server, data);
         ServerLevel level = levelOf(server, data);
         if (level != null) {
             List<BlockPos> stale = new ArrayList<>();
@@ -219,6 +222,7 @@ public final class TempleService {
             if (!p.isCreative())
                 com.sugar.item.HeartContainerItem.reward(p, new net.minecraft.world.item.ItemStack(com.sugar.registry.ModItems.HEART_CONTAINER.get()));
         giveGems(level, data);
+        ShaderControl.restore(level.getServer(), data);
         level.getServer().getPlayerList().broadcastSystemMessage(
                 Component.literal(TempleStory.rumour(data.type)).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
     }

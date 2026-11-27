@@ -208,3 +208,13 @@ Configurable en `config/sugar-common.toml`:
 ## Estilo
 
 Texturas de 16×16 al estilo vanilla.
+
+## Shaders (Oculus)
+
+Los templos se ven mejor sin shaders. Si un jugador tiene Oculus con shaders puestos:
+
+- Al unirse a un templo abierto (`/event join` o entrando en la zona) recibe un aviso en el chat.
+- Al empezar el evento (`/event start`), los shaders se le apagan solos. Los que lleguen tarde también.
+- Al caer el jefe, con `/event stop` o `/event reset`, o si sale del servidor, se le vuelven a encender. Solo si se los apagó el mod.
+
+Cada jugador puede desactivarlo en `config/sugar-client.toml` (`apagarShadersEnEventos = false`). Sin Oculus no pasa nada.

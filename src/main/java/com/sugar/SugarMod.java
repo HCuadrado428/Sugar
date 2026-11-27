@@ -44,6 +44,7 @@ public class SugarMod {
         com.sugar.net.SugarNetwork.register();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SugarConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SugarClientConfig.SPEC);
     }
 
     public static ResourceLocation id(String path) {

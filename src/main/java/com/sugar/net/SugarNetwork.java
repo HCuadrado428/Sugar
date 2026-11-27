@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 /** Canal de red del mod. Por ahora solo lleva la sacudida de pantalla. */
 public final class SugarNetwork {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(SugarMod.id("main"),
             () -> VERSION, VERSION::equals, VERSION::equals);
 
@@ -24,6 +24,8 @@ public final class SugarNetwork {
         CHANNEL.registerMessage(0, ShakePacket.class, ShakePacket::encode, ShakePacket::decode, ShakePacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         CHANNEL.registerMessage(1, WavePacket.class, WavePacket::encode, WavePacket::decode, WavePacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(2, ShaderPacket.class, ShaderPacket::encode, ShaderPacket::decode, ShaderPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
@@ -66,6 +68,23 @@ public final class SugarNetwork {
         static void handle(ShakePacket p, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
                     () -> () -> com.sugar.client.ClientFx.startShake(p.intensity, p.ticks)));
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+    /** 0 = avisar, 1 = apagar shaders, 2 = volver a encenderlos. */
+    public static void shaders(ServerPlayer player, int mode) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new ShaderPacket(mode));
+    }
+
+    public record ShaderPacket(int mode) {
+        static void encode(ShaderPacket p, FriendlyByteBuf buf) { buf.writeVarInt(p.mode); }
+
+        static ShaderPacket decode(FriendlyByteBuf buf) { return new ShaderPacket(buf.readVarInt()); }
+
+        static void handle(ShaderPacket p, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                    () -> () -> com.sugar.client.ShaderCompat.handle(p.mode)));
             ctx.get().setPacketHandled(true);
         }
     }

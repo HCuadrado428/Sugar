@@ -120,6 +120,7 @@ public final class SugarCommands {
         TempleData data = data(c);
         if (!data.open && !data.active) return fail(c, "Ese templo está cerrado ahora mismo.");
         TempleService.sendToTemple(player, data);
+        com.sugar.temple.ShaderControl.warn(player, data);
         player.displayClientMessage(Component.literal("Bienvenido a ").append(data.type.displayName()), false);
         return 1;
     }
