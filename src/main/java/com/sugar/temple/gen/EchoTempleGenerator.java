@@ -326,6 +326,12 @@ public class EchoTempleGenerator implements TempleGenerator {
             }
         }
         b.set(CX, 0, CZ, ModBlocks.BOSS_ALTAR.get());
+        // Tótems del jefe: seis tambores del eco sobre la piel del tambor
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6 + Math.PI / 6;
+            b.set(CX + (int) Math.round(Math.cos(a) * 11), 1, CZ + (int) Math.round(Math.sin(a) * 11),
+                    ModBlocks.BOSS_TOTEM.get().defaultBlockState().setValue(com.sugar.block.BossTotemBlock.KIND, 2));
+        }
         // Puente de entrada desde la antesala, con escalera desde el agua
         b.fill(CX - CAVE_R, 0, CZ - 1, CX - R, 0, CZ + 1, Blocks.DEEPSLATE_TILES.defaultBlockState());
         b.air(CX - CAVE_R, 1, CZ - 1, CX - R + 1, 3, CZ + 1);

@@ -1,0 +1,292 @@
+{
+  "variants": {
+    "charged=false,hits=0,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=1,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=2,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=3,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=4,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=5,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=6,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=7,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=8,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=9,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=10,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=11,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=12,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=13,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=14,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=false,hits=15,kind=0": {
+      "model": "sugar:block/boss_totem_magma"
+    },
+    "charged=true,hits=0,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=1,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=2,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=3,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=4,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=5,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=6,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=7,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=8,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=9,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=10,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=11,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=12,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=13,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=14,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=true,hits=15,kind=0": {
+      "model": "sugar:block/boss_totem_magma_on"
+    },
+    "charged=false,hits=0,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=1,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=2,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=3,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=4,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=5,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=6,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=7,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=8,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=9,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=10,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=11,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=12,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=13,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=14,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=false,hits=15,kind=1": {
+      "model": "sugar:block/boss_totem_ash"
+    },
+    "charged=true,hits=0,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=1,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=2,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=3,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=4,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=5,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=6,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=7,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=8,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=9,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=10,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=11,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=12,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=13,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=14,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=true,hits=15,kind=1": {
+      "model": "sugar:block/boss_totem_ash_on"
+    },
+    "charged=false,hits=0,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=1,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=2,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=3,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=4,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=5,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=6,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=7,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=8,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=9,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=10,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=11,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=12,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=13,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=14,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=false,hits=15,kind=2": {
+      "model": "sugar:block/boss_totem_echo"
+    },
+    "charged=true,hits=0,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=1,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=2,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=3,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=4,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=5,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=6,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=7,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=8,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=9,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=10,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=11,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=12,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=13,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=14,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    },
+    "charged=true,hits=15,kind=2": {
+      "model": "sugar:block/boss_totem_echo_on"
+    }
+  }
+}

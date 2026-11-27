@@ -605,8 +605,20 @@ public class SugarGameTests {
             helper.assertTrue(TempleService.summonBoss(level, data, e -> {}) != null, "No despierta el jefe");
         });
         helper.runAfterDelay(50 + 80 * 3 + 80 + 120, () -> {
-            helper.assertTrue(TempleService.findBoss(level, data) != null, "El jefe ha desaparecido");
+            var boss = TempleService.findBoss(level, data);
+            helper.assertTrue(boss != null, "El jefe ha desaparecido");
+            // Tótems: el jefe carga varios; romperlos le quita vida y corta la carga
+            var totems = TempleService.positionsOf(level, data, com.sugar.block.BossTotemBlock.class);
+            helper.assertTrue(totems.size() == 6, "Tótems en la arena: " + totems.size());
+            boss.debugTotems();
+            var lit = totems.stream().filter(t -> level.getBlockState(t).getValue(com.sugar.block.BossTotemBlock.CHARGED)).toList();
+            helper.assertTrue(lit.size() >= 2, "El jefe no carga los tótems: " + lit.size());
+            float hp = boss.getHealth();
+            for (BlockPos t : lit) helper.assertTrue(com.sugar.block.BossTotemBlock.hit(level, t, data, 15, null), "El tótem no se rompe");
+            helper.assertTrue(boss.getHealth() < hp, "Romper tótems no le quita vida");
+            boss.debugTotems();
             TempleService.reset(server, data);
+            helper.assertTrue(totems.stream().noneMatch(t -> level.getBlockState(t).getValue(com.sugar.block.BossTotemBlock.CHARGED)), "El reset no apaga los tótems");
             helper.assertTrue(data.progressMask == 0 && !data.active && !data.open && data.keys == 0, "El reset no borra el progreso");
             helper.assertTrue(!doorOpen.test(com.sugar.temple.TempleObjectives.ENTRANCE), "El reset no cierra la entrada");
             helper.assertTrue(!doorOpen.test(cage), "El reset no cierra las jaulas");

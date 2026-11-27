@@ -65,6 +65,8 @@ public abstract class SugarBoss extends Monster {
     private int stage = 1;
     /** Ticks que quedan de invulnerabilidad por el cambio de fase (la escena del jefe). */
     protected int stageLock;
+    /** Tótems: ticks hasta la próxima carga, ticks que le quedan a la carga en marcha y furia tras alimentarse. */
+    private int totemTimer = 500, channelLeft, channelTotal, empowered;
 
     protected SugarBoss(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -218,7 +220,7 @@ public abstract class SugarBoss extends Monster {
 
     /** Usar en los ataques especiales para que también escalen con los jugadores. */
     public float scaledDamage(float base) {
-        return base * damageScale;
+        return base * damageScale * (empowered > 0 ? 1.3F : 1.0F);
     }
 
     public int scaledPlayers() {
@@ -252,6 +254,7 @@ public abstract class SugarBoss extends Monster {
         if (!level().isClientSide && !this.dead && !isRemoved() && level() instanceof ServerLevel serverLevel) {
             BossRewards.distribute(serverLevel, this);
             templeData().ifPresent(data -> {
+                for (var p : charged(serverLevel, data)) com.sugar.block.BossTotemBlock.charge(serverLevel, p, false);
                 if (data.active) TempleService.complete(serverLevel, data, this);
                 data.bossId = null;
                 TempleSavedData.get(serverLevel.getServer()).setDirty();
@@ -259,6 +262,99 @@ public abstract class SugarBoss extends Monster {
         }
         super.die(source);
     }
+
+    // ---------- Tótems ----------
+
+    private static String totemName(TempleType type) {
+        return switch (type) {
+            case VOLCAN -> "cristales de magma";
+            case CENIZA -> "pilares de ceniza";
+            case ECO -> "tambores del eco";
+        };
+    }
+
+    private List<net.minecraft.core.BlockPos> charged(ServerLevel level, TempleData data) {
+        List<net.minecraft.core.BlockPos> list = new java.util.ArrayList<>();
+        for (var p : TempleService.positionsOf(level, data, com.sugar.block.BossTotemBlock.class))
+            if (level.getBlockState(p).getValue(com.sugar.block.BossTotemBlock.CHARGED)) list.add(p);
+        return list;
+    }
+
+    /**
+     * Cada 30 s (22 s en la última fase) el jefe carga varios tótems de la arena (más cuantos más jugadores)
+     * y durante 15 s absorbe su poder: se ve un rayo de cada tótem hacia él. Los tótems que sigan en pie
+     * al terminar lo curan y lo enfurecen 20 s (+30 % de daño). Así la gente tiene que repartirse.
+     */
+    private void totems(ServerLevel level, TempleData data) {
+        if (empowered > 0) empowered--;
+        if (channelLeft > 0) {
+            channelLeft--;
+            List<net.minecraft.core.BlockPos> live = charged(level, data);
+            if (live.isEmpty()) {
+                channelLeft = 0;
+                level.playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE, net.minecraft.sounds.SoundSource.HOSTILE, 3.0F, 0.7F);
+                TempleService.actionbar(level, data, Component.literal("¡Habéis cortado su poder!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+                return;
+            }
+            if (channelLeft % 4 == 0) beams(level, live);
+            if (channelLeft % 100 == 0 && channelLeft > 0)
+                TempleService.actionbar(level, data, Component.literal("Romped los " + totemName(data.type) + ": " + live.size()
+                        + " en pie · " + (channelLeft / 20) + " s").withStyle(ChatFormatting.YELLOW));
+            if (channelLeft == 0) {
+                int left = live.size();
+                for (var p : live) com.sugar.block.BossTotemBlock.charge(level, p, false);
+                heal(getMaxHealth() * Math.min(0.15F, 0.04F * left));
+                empowered = 400;
+                shake(0.6F, 20);
+                level.playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.WITHER_SPAWN, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.3F);
+                TempleService.actionbar(level, data, Component.literal("¡Se ha alimentado de " + left + (left == 1 ? " tótem" : " tótems")
+                        + "! Se cura y se enfurece.").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
+            }
+            return;
+        }
+        if (stageLock > 0 || --totemTimer > 0) return;
+        totemTimer = stage >= 3 ? 440 : 600;
+        startChannel(level, data);
+    }
+
+    private void startChannel(ServerLevel level, TempleData data) {
+        List<net.minecraft.core.BlockPos> all = new java.util.ArrayList<>(TempleService.positionsOf(level, data, com.sugar.block.BossTotemBlock.class));
+        if (all.isEmpty()) return;
+        Collections.shuffle(all, new java.util.Random(getRandom().nextLong()));
+        int k = Math.min(all.size(), 2 + scaledPlayers() / 12);
+        for (int i = 0; i < k; i++) com.sugar.block.BossTotemBlock.charge(level, all.get(i), true);
+        channelTotal = channelLeft = 300;
+        level.playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, net.minecraft.sounds.SoundSource.HOSTILE, 3.0F, 0.5F);
+        TempleService.actionbar(level, data, Component.literal("¡Absorbe poder de " + k + " " + totemName(data.type) + "! ¡Rompedlos!")
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+    }
+
+    /** Rayo de partículas de cada tótem cargado hacia el pecho del jefe. */
+    private void beams(ServerLevel level, List<net.minecraft.core.BlockPos> live) {
+        var to = position().add(0, getBbHeight() * 0.6, 0);
+        for (var p : live) {
+            var from = net.minecraft.world.phys.Vec3.atCenterOf(p).add(0, 0.6, 0);
+            var particle = com.sugar.block.BossTotemBlock.particle(level.getBlockState(p).getValue(com.sugar.block.BossTotemBlock.KIND));
+            int n = (int) Math.min(40, from.distanceTo(to) * 1.5);
+            for (int i = 0; i < n; i++) {
+                var q = from.lerp(to, (i + (tickCount % 4) / 4.0) / n);
+                level.sendParticles(particle, q.x, q.y, q.z, 1, 0, 0, 0, 0);
+            }
+        }
+    }
+
+    /** Un tótem roto le quita un 2 % de la vida. */
+    public void onTotemBroken(ServerLevel level) {
+        setHealth(Math.max(1.0F, getHealth() - getMaxHealth() * 0.02F));
+        level.playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_HURT, net.minecraft.sounds.SoundSource.HOSTILE, 1.5F, 1.2F);
+    }
+
+    /** Fuerza una carga de tótems (pruebas y /event). */
+    public void debugTotems() {
+        if (level() instanceof ServerLevel sl) templeData().ifPresent(d -> { totemTimer = 1; channelLeft = 0; totems(sl, d); });
+    }
+
+    public boolean empowered() { return empowered > 0; }
 
     public Map<UUID, Float> damageByPlayer() {
         return Collections.unmodifiableMap(damageByPlayer);
@@ -296,6 +392,7 @@ public abstract class SugarBoss extends Monster {
         super.customServerAiStep();
         if (!scaledOnce || tickCount % 200 == 0) rescale();
         if (stageLock > 0) stageLock--;
+        if (!inIntro() && isAlive() && level() instanceof ServerLevel tl) templeData().ifPresent(d -> totems(tl, d));
         if (!inIntro() && stage < 3 && isAlive() && level() instanceof ServerLevel sl
                 && getHealth() / getMaxHealth() <= (stage == 1 ? 0.66F : 0.33F)) advanceStage(sl);
         bossEvent.setProgress(inIntro() ? Math.max(0.0F, Math.min(1.0F, introProgress)) : getHealth() / getMaxHealth());

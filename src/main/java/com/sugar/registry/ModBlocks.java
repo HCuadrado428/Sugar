@@ -177,5 +177,9 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BLINK_PLATFORM = BLOCKS.register("blink_platform",
             () -> new com.sugar.block.BlinkPlatformBlock(eventBlock(MapColor.COLOR_PURPLE).sound(SoundType.AMETHYST).noOcclusion().lightLevel(s -> 6)));
 
+    public static final RegistryObject<Block> BOSS_TOTEM = BLOCKS.register("boss_totem",
+            () -> new com.sugar.block.BossTotemBlock(eventBlock(MapColor.STONE).sound(SoundType.AMETHYST).noOcclusion()
+                    .lightLevel(s -> s.getValue(com.sugar.block.BossTotemBlock.CHARGED) ? 12 : 2)));
+
     private ModBlocks() {}
 }

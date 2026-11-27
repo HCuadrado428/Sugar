@@ -645,6 +645,12 @@ public class VolcanoTempleGenerator implements TempleGenerator {
             b.set(vx, LAIR_FLOOR, vz, ModBlocks.MAGMA_VENT.get());
             b.set(vx, LAIR_FLOOR - 1, vz, Blocks.MAGMA_BLOCK);
         }
+        // Tótems del jefe: seis cristales de magma en el anillo exterior
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6;
+            b.set(LX + (int) Math.round(Math.cos(a) * 19), LAIR_FLOOR + 1, LZ + (int) Math.round(Math.sin(a) * 19),
+                    ModBlocks.BOSS_TOTEM.get().defaultBlockState().setValue(com.sugar.block.BossTotemBlock.KIND, 0));
+        }
         for (int i = 0; i < 12; i++) {
             double a = Math.PI * 2 * i / 12;
             b.set(LX + (int) Math.round(Math.cos(a) * (LAIR_R + 1)), LAIR_FLOOR + 5, LZ + (int) Math.round(Math.sin(a) * (LAIR_R + 1)), Blocks.SHROOMLIGHT);

@@ -70,6 +70,7 @@ public final class ModItems {
     public static final RegistryObject<Item> BRAZIER = blockItem("brazier", ModBlocks.BRAZIER);
     public static final RegistryObject<Item> EYE_SWITCH = blockItem("eye_switch", ModBlocks.EYE_SWITCH);
     public static final RegistryObject<Item> BLINK_PLATFORM = blockItem("blink_platform", ModBlocks.BLINK_PLATFORM);
+    public static final RegistryObject<Item> BOSS_TOTEM = blockItem("boss_totem", ModBlocks.BOSS_TOTEM);
     /** Llaves para admins: en creativo, clic derecho en una cerradura para abrirla sin el grupo. */
     public static final RegistryObject<Item> GEM_SERPENT = ITEMS.register("gem_serpent",
             () -> new TrophyItem(new Item.Properties().stacksTo(64).rarity(Rarity.EPIC).fireResistant(), "item.sugar.gem_serpent.desc"));

@@ -275,6 +275,12 @@ public class AshTempleGenerator implements TempleGenerator {
             b.set(CX + (int) Math.round(Math.cos(a) * 14), 1, CZ + (int) Math.round(Math.sin(a) * 14), ModBlocks.BOMB_BUSH.get());
             b.set(CX + (int) Math.round(Math.cos(a - Math.PI / 6) * 9), 0, CZ + (int) Math.round(Math.sin(a - Math.PI / 6) * 9), ModBlocks.MAGMA_VENT.get());
         }
+        // Tótems del jefe: seis pilares de ceniza, por fuera de los respiraderos
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6;
+            b.set(CX + (int) Math.round(Math.cos(a) * 14), 1, CZ + (int) Math.round(Math.sin(a) * 14),
+                    ModBlocks.BOSS_TOTEM.get().defaultBlockState().setValue(com.sugar.block.BossTotemBlock.KIND, 1));
+        }
         // Luces en la cúpula
         for (int i = 0; i < 10; i++) {
             double a = Math.PI * 2 * i / 10;

@@ -71,5 +71,6 @@
   "item.sugar.gem_beast": "Beast Gem",
   "item.sugar.gem_beast.desc": "Admin gem: the Great Ash Beast has fallen",
   "item.sugar.gem_drummer": "Drummer Gem",
-  "item.sugar.gem_drummer.desc": "Admin gem: the Drummer has fallen"
+  "item.sugar.gem_drummer.desc": "Admin gem: the Drummer has fallen",
+  "block.sugar.boss_totem": "Boss Totem"
 }

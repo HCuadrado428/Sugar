@@ -71,5 +71,6 @@
   "item.sugar.gem_beast": "Gema de la Bestia",
   "item.sugar.gem_beast.desc": "Gema de admin: la Gran Bestia de Ceniza ha caído",
   "item.sugar.gem_drummer": "Gema del Tamborilero",
-  "item.sugar.gem_drummer.desc": "Gema de admin: El Tamborilero ha caído"
+  "item.sugar.gem_drummer.desc": "Gema de admin: El Tamborilero ha caído",
+  "block.sugar.boss_totem": "Tótem del Jefe"
 }

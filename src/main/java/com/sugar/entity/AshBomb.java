@@ -144,6 +144,11 @@ public class AshBomb extends ThrowableItemProjectile {
                 var bs = sl.getBlockState(bp);
                 if (bs.getBlock() instanceof com.sugar.block.BrazierBlock && !bs.getValue(com.sugar.block.BrazierBlock.LIT))
                     com.sugar.block.BrazierBlock.light(sl, bp.immutable(), bs);
+                if (bs.getBlock() instanceof com.sugar.block.BossTotemBlock && bs.getValue(com.sugar.block.BossTotemBlock.CHARGED)) {
+                    BlockPos tp = bp.immutable();
+                    com.sugar.temple.TempleSavedData.get(sl.getServer()).findAt(sl.dimension(), tp)
+                            .ifPresent(d -> com.sugar.block.BossTotemBlock.hit(sl, tp, d, 3, null));
+                }
             }
             // Una explosión también enciende los interruptores de obsidiana cercanos
             BlockPos c = blockPosition();
